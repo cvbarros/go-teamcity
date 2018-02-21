@@ -172,9 +172,6 @@ type Build struct {
 	// task Id
 	TaskID int64 `json:"taskId,omitempty" xml:"taskId"`
 
-	// test occurrences
-	TestOccurrences *TestOccurrences `json:"testOccurrences,omitempty"`
-
 	// triggered
 	Triggered *TriggeredBy `json:"triggered,omitempty"`
 
@@ -325,11 +322,6 @@ func (m *Build) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateTags(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTestOccurrences(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -827,25 +819,6 @@ func (m *Build) validateTags(formats strfmt.Registry) error {
 		if err := m.Tags.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("tags")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *Build) validateTestOccurrences(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.TestOccurrences) { // not required
-		return nil
-	}
-
-	if m.TestOccurrences != nil {
-
-		if err := m.TestOccurrences.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("testOccurrences")
 			}
 			return err
 		}

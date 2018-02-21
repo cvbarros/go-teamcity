@@ -249,34 +249,6 @@ func (a *Client) ServeServerInfo(params *ServeServerInfoParams) (*ServeServerInf
 }
 
 /*
-ServeServerVersion serve server version API
-*/
-func (a *Client) ServeServerVersion(params *ServeServerVersionParams) (*ServeServerVersionOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewServeServerVersionParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "serveServerVersion",
-		Method:             "GET",
-		PathPattern:        "/app/rest/server/{field}",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &ServeServerVersionReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*ServeServerVersionOK), nil
-
-}
-
-/*
 StartBackup start backup API
 */
 func (a *Client) StartBackup(params *StartBackupParams) (*StartBackupOK, error) {

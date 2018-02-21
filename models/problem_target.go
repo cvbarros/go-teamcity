@@ -21,9 +21,6 @@ type ProblemTarget struct {
 
 	// problems
 	Problems *Problems `json:"problems,omitempty"`
-
-	// tests
-	Tests *Tests `json:"tests,omitempty"`
 }
 
 // Validate validates this problem target
@@ -31,11 +28,6 @@ func (m *ProblemTarget) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateProblems(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTests(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -57,25 +49,6 @@ func (m *ProblemTarget) validateProblems(formats strfmt.Registry) error {
 		if err := m.Problems.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("problems")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *ProblemTarget) validateTests(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Tests) { // not required
-		return nil
-	}
-
-	if m.Tests != nil {
-
-		if err := m.Tests.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("tests")
 			}
 			return err
 		}
