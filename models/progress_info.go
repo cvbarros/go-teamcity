@@ -13,29 +13,26 @@ import (
 )
 
 // ProgressInfo progress info
-// swagger:model progress-info
+// swagger:model ProgressInfo
 type ProgressInfo struct {
 
-	// current stage text
-	CurrentStageText string `json:"currentStageText,omitempty" xml:"currentStageText"`
+	// done
+	Done int64 `json:"done,omitempty"`
 
-	// elapsed seconds
-	ElapsedSeconds int64 `json:"elapsedSeconds,omitempty" xml:"elapsedSeconds"`
+	// done humanized
+	DoneHumanized string `json:"doneHumanized,omitempty"`
 
-	// estimated total seconds
-	EstimatedTotalSeconds int64 `json:"estimatedTotalSeconds,omitempty" xml:"estimatedTotalSeconds"`
+	// estimated
+	Estimated int64 `json:"estimated,omitempty"`
 
-	// left seconds
-	LeftSeconds int64 `json:"leftSeconds,omitempty" xml:"leftSeconds"`
+	// estimated humanized
+	EstimatedHumanized string `json:"estimatedHumanized,omitempty"`
 
-	// outdated
-	Outdated *bool `json:"outdated,omitempty" xml:"outdated"`
+	// percent
+	Percent int32 `json:"percent,omitempty"`
 
-	// percentage complete
-	PercentageComplete int32 `json:"percentageComplete,omitempty" xml:"percentageComplete"`
-
-	// probably hanging
-	ProbablyHanging *bool `json:"probablyHanging,omitempty" xml:"probablyHanging"`
+	// phase
+	Phase string `json:"phase,omitempty"`
 }
 
 // Validate validates this progress info

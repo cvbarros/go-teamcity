@@ -37,8 +37,8 @@ func (a *Client) AddLicenseKeys(params *AddLicenseKeysParams) (*AddLicenseKeysOK
 		ID:                 "addLicenseKeys",
 		Method:             "POST",
 		PathPattern:        "/app/rest/server/licensingData/licenseKeys",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &AddLicenseKeysReader{formats: a.formats},
@@ -65,8 +65,8 @@ func (a *Client) DeleteLicenseKey(params *DeleteLicenseKeyParams) error {
 		ID:                 "deleteLicenseKey",
 		Method:             "DELETE",
 		PathPattern:        "/app/rest/server/licensingData/licenseKeys/{licenseKey}",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &DeleteLicenseKeyReader{formats: a.formats},
@@ -93,8 +93,8 @@ func (a *Client) GetBackupStatus(params *GetBackupStatusParams) (*GetBackupStatu
 		ID:                 "getBackupStatus",
 		Method:             "GET",
 		PathPattern:        "/app/rest/server/backup",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetBackupStatusReader{formats: a.formats},
@@ -121,8 +121,8 @@ func (a *Client) GetLicenseKey(params *GetLicenseKeyParams) (*GetLicenseKeyOK, e
 		ID:                 "getLicenseKey",
 		Method:             "GET",
 		PathPattern:        "/app/rest/server/licensingData/licenseKeys/{licenseKey}",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetLicenseKeyReader{formats: a.formats},
@@ -149,8 +149,8 @@ func (a *Client) GetLicenseKeys(params *GetLicenseKeysParams) (*GetLicenseKeysOK
 		ID:                 "getLicenseKeys",
 		Method:             "GET",
 		PathPattern:        "/app/rest/server/licensingData/licenseKeys",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetLicenseKeysReader{formats: a.formats},
@@ -177,8 +177,8 @@ func (a *Client) GetLicensingData(params *GetLicensingDataParams) (*GetLicensing
 		ID:                 "getLicensingData",
 		Method:             "GET",
 		PathPattern:        "/app/rest/server/licensingData",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetLicensingDataReader{formats: a.formats},
@@ -205,8 +205,8 @@ func (a *Client) ServePlugins(params *ServePluginsParams) (*ServePluginsOK, erro
 		ID:                 "servePlugins",
 		Method:             "GET",
 		PathPattern:        "/app/rest/server/plugins",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ServePluginsReader{formats: a.formats},
@@ -233,8 +233,8 @@ func (a *Client) ServeServerInfo(params *ServeServerInfoParams) (*ServeServerInf
 		ID:                 "serveServerInfo",
 		Method:             "GET",
 		PathPattern:        "/app/rest/server",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &ServeServerInfoReader{formats: a.formats},
@@ -245,6 +245,34 @@ func (a *Client) ServeServerInfo(params *ServeServerInfoParams) (*ServeServerInf
 		return nil, err
 	}
 	return result.(*ServeServerInfoOK), nil
+
+}
+
+/*
+ServeServerVersion serve server version API
+*/
+func (a *Client) ServeServerVersion(params *ServeServerVersionParams) (*ServeServerVersionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewServeServerVersionParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "serveServerVersion",
+		Method:             "GET",
+		PathPattern:        "/app/rest/server/{field}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ServeServerVersionReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ServeServerVersionOK), nil
 
 }
 
@@ -261,8 +289,8 @@ func (a *Client) StartBackup(params *StartBackupParams) (*StartBackupOK, error) 
 		ID:                 "startBackup",
 		Method:             "POST",
 		PathPattern:        "/app/rest/server/backup",
-		ProducesMediaTypes: []string{""},
-		ConsumesMediaTypes: []string{""},
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &StartBackupReader{formats: a.formats},

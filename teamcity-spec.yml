@@ -5,6 +5,10 @@ info:
   title: TeamCity REST API
 host: teamcity
 basePath: ''
+consumes:
+  - application/json
+produces: 
+  - application/json
 tags:
 - name: Agent
 - name: AgentPool
@@ -7771,25 +7775,25 @@ paths:
   #           "$ref": "#/definitions/tests"
   #         headers: {}
   # "/app/rest/tests/{testLocator}":
-    get:
-      tags:
-      - Test
-      operationId: serveInstance
-      parameters:
-      - name: testLocator
-        in: path
-        required: true
-        type: string
-      - name: fields
-        in: query
-        required: false
-        type: string
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            "$ref": "#/definitions/test"
-          headers: {}
+    # get:
+    #   tags:
+    #   - Test
+    #   operationId: serveInstance
+    #   parameters:
+    #   - name: testLocator
+    #     in: path
+    #     required: true
+    #     type: string
+    #   - name: fields
+    #     in: query
+    #     required: false
+    #     type: string
+    #   responses:
+    #     '200':
+    #       description: successful operation
+    #       schema:
+    #         "$ref": "#/definitions/test"
+    #       headers: {}
   "/app/rest/userGroups":
     get:
       tags:
