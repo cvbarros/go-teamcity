@@ -7289,6 +7289,10 @@ paths:
       tags:
       - Project
       operationId: serveProjectField
+      consumes:
+        - text/plain
+      produces:
+        - text/plain
       parameters:
       - name: projectLocator
         in: path
@@ -7308,6 +7312,10 @@ paths:
       tags:
       - Project
       operationId: setProjectField
+      consumes:
+        - text/plain
+      produces:
+        - text/plain
       parameters:
       - name: projectLocator
         in: path
