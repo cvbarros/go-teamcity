@@ -5,7 +5,8 @@ services:
     ports:
       - 8112:8111
     volumes:
-      - ./teamcity:/data/teamcity_server/datadir
+      - /docker/data/teamcity_server/datadir:/data/teamcity_server/datadir
+      - /docker/data/teamcity_server/logs:/opt/teamcity/logs
   agent10:
     image: jetbrains/teamcity-agent:2017.2.1
     depends_on:
@@ -15,5 +16,5 @@ services:
     environment:
       SERVER_URL: http://teamcity10:8111/
     volumes:
-      - ./agent:/data/teamcity_agent/conf
+      - /docker/data/teamcity_agent/:/data/teamcity_agent/conf
       - /var/run/docker.sock:/var/run/docker.sock
