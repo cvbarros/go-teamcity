@@ -41,6 +41,16 @@ func getTestProjectData() *teamcity.Project {
 
 func cleanUpProject(t *testing.T, id string) {
 	if err := client.DeleteProject(id); err != nil {
-		t.Errorf("Unable to delete project with id = '%s', err: %s", id, err)
+		t.Fatalf("Unable to delete project with id = '%s', err: %s", id, err)
+	}
+
+	deletedProject, err := client.GetProject(id)
+
+	if deletedProject != nil {
+		t.Fatalf("Project not deleted during cleanup.")
+	}
+
+	if err == nil {
+		t.Fatalf("Expected 404 Not Found error when getting Deleted Project, but no error returned.")
 	}
 }

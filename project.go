@@ -89,7 +89,7 @@ type ProjectReference struct {
 	Name string `json:"name,omitempty" xml:"name"`
 }
 
-// CreateProject - Creates a new project at root project level
+// CreateProject Creates a new project at root project level
 func (c *Client) CreateProject(project *Project) (*ProjectReference, error) {
 	var created ProjectReference
 
@@ -99,6 +99,18 @@ func (c *Client) CreateProject(project *Project) (*ProjectReference, error) {
 	}
 
 	return &created, nil
+}
+
+// GetProject Retrieves a project resource by ID
+func (c *Client) GetProject(id string) (*Project, error) {
+	var out Project
+
+	err := c.doJSONRequest("GET", fmt.Sprintf("projects/%s", id), nil, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, err
 }
 
 //DeleteProject - Deletes a project
