@@ -3,25 +3,11 @@ package tests
 import (
 	"testing"
 
-	teamcity "github.com/cvbarros/go-teamcity-sdk"
 	"github.com/stretchr/testify/assert"
-)
-
-var (
-	client   *teamcity.Client
-	username string
-	password string
 )
 
 func init() {
 	client = initTest()
-}
-
-func initTest() *teamcity.Client {
-	username = "admin"
-	password = "admin"
-
-	return teamcity.NewClient(username, password)
 }
 
 func TestBasicAuth(t *testing.T) {

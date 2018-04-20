@@ -89,6 +89,14 @@ func (c *Client) createRequest(method string, resource string, requestBody inter
 		return nil, err
 	}
 
+	if method != "GET" && requestBody != nil {
+		bjson, err := json.Marshal(requestBody)
+		if err != nil {
+			return nil, err
+		}
+		bodyReader = bytes.NewReader(bjson)
+	}
+
 	req, err := http.NewRequest(method, uri, bodyReader)
 
 	if err != nil {
