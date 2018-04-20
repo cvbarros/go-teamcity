@@ -30,6 +30,14 @@ func TestCreateProject(t *testing.T) {
 	assert.Equal(t, newProject.Name, actual.Name)
 }
 
+func TestCreateProjectWithNoName(t *testing.T) {
+	newProject := teamcity.Project{}
+
+	_, err := client.CreateProject(&newProject)
+
+	assert.Equal(t, error.Error(err), "Project must have a name")
+}
+
 func getTestProjectData() *teamcity.Project {
 
 	return &teamcity.Project{

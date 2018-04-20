@@ -4,11 +4,9 @@ package teamcity
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"errors"
 	"fmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -92,6 +90,9 @@ type ProjectReference struct {
 // CreateProject Creates a new project at root project level
 func (c *Client) CreateProject(project *Project) (*ProjectReference, error) {
 	var created ProjectReference
+	if err := project.Validate(); err != nil {
+		return nil, err
+	}
 
 	err := c.doJSONRequest("POST", "projects", project, &created)
 	if err != nil {
@@ -119,8 +120,12 @@ func (c *Client) DeleteProject(id string) error {
 }
 
 // Validate validates this project
-func (m *Project) Validate(formats strfmt.Registry) error {
-	var res []error
+func (m *Project) Validate() error {
+	//var res []error
+
+	if len(m.Name) <= 0 {
+		return errors.New("Project must have a name")
+	}
 
 	// if err := m.validateBuildTypes(formats); err != nil {
 	// 	// prop
@@ -142,10 +147,10 @@ func (m *Project) Validate(formats strfmt.Registry) error {
 	// 	res = append(res, err)
 	// }
 
-	if err := m.validateParentProject(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
+	// if err := m.validateParentProject(formats); err != nil {
+	// 	// prop
+	// 	res = append(res, err)
+	// }
 
 	// if err := m.validateProjectFeatures(formats); err != nil {
 	// 	// prop
@@ -172,9 +177,9 @@ func (m *Project) Validate(formats strfmt.Registry) error {
 	// 	res = append(res, err)
 	// }
 
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
+	// if len(res) > 0 {
+	// 	return errors.CompositeValidationError(res...)
+	// }
 	return nil
 }
 
@@ -254,24 +259,24 @@ func (m *Project) Validate(formats strfmt.Registry) error {
 // 	return nil
 // }
 
-func (m *Project) validateParentProject(formats strfmt.Registry) error {
+// func (m *Project) validateParentProject(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.ParentProject) { // not required
-		return nil
-	}
+// 	if swag.IsZero(m.ParentProject) { // not required
+// 		return nil
+// 	}
 
-	if m.ParentProject != nil {
+// 	if m.ParentProject != nil {
 
-		if err := m.ParentProject.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("parentProject")
-			}
-			return err
-		}
-	}
+// 		if err := m.ParentProject.Validate(formats); err != nil {
+// 			if ve, ok := err.(*errors.Validation); ok {
+// 				return ve.ValidateName("parentProject")
+// 			}
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // func (m *Project) validateProjectFeatures(formats strfmt.Registry) error {
 
