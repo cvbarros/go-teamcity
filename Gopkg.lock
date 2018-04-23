@@ -33,6 +33,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mailru/easyjson"
   packages = [
     "buffer",
@@ -74,9 +80,15 @@
   ]
   revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
 
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9b631bb76135cbdbc14aeea25da7e2dfaa81cb576a5ba94de7d8a041ab34b01e"
+  inputs-digest = "338cf4e15421b521f6e2d744f029dce59e89baab978d0536119cf4478c4d431e"
   solver-name = "gps-cdcl"
   solver-version = 1

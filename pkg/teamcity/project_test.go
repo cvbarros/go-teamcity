@@ -1,20 +1,21 @@
-package tests
+package teamcity_test
 
 import (
 	"testing"
 
-	teamcity "github.com/cvbarros/go-teamcity-sdk"
+	u "github.com/cvbarros/go-teamcity-sdk/internal/testutil"
+	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
 )
 
 func init() {
-	client = initTest()
+	u.InitTest()
 }
 
 func TestCreateProject(t *testing.T) {
 	newProject := getTestProjectData()
 
-	actual, err := client.CreateProject(newProject)
+	actual, err := u.Client.CreateProject(newProject)
 
 	if err != nil {
 		t.Fatalf("Failed to GetServer: %s", err)
@@ -33,7 +34,7 @@ func TestCreateProject(t *testing.T) {
 func TestCreateProjectWithNoName(t *testing.T) {
 	newProject := teamcity.Project{}
 
-	_, err := client.CreateProject(&newProject)
+	_, err := u.Client.CreateProject(&newProject)
 
 	assert.Equal(t, error.Error(err), "Project must have a name")
 }
@@ -43,16 +44,16 @@ func getTestProjectData() *teamcity.Project {
 	return &teamcity.Project{
 		Name:        "Test Project",
 		Description: "Test Project Description",
-		Archived:    newFalse(),
+		Archived:    teamcity.NewFalse(),
 	}
 }
 
 func cleanUpProject(t *testing.T, id string) {
-	if err := client.DeleteProject(id); err != nil {
+	if err := u.Client.DeleteProject(id); err != nil {
 		t.Fatalf("Unable to delete project with id = '%s', err: %s", id, err)
 	}
 
-	deletedProject, err := client.GetProject(id)
+	deletedProject, err := u.Client.GetProject(id)
 
 	if deletedProject != nil {
 		t.Fatalf("Project not deleted during cleanup.")
