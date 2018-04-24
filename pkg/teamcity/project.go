@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/dghubble/sling"
+
 	"github.com/go-openapi/swag"
 )
 
@@ -87,16 +89,31 @@ type ProjectReference struct {
 	Name string `json:"name,omitempty" xml:"name"`
 }
 
+type ProjectService struct {
+	sling *sling.Sling
+}
+
+func newProjectService(base *sling.Sling) *ProjectService {
+	return &ProjectService{
+		sling: base.Path("projects"),
+	}
+}
+
 // CreateProject Creates a new project at root project level
-func (c *Client) CreateProject(project *Project) (*ProjectReference, error) {
+func (s *ProjectService) CreateProject(project *Project) (*ProjectReference, error) {
 	var created ProjectReference
 	if err := project.Validate(); err != nil {
 		return nil, err
 	}
 
-	err := c.doJSONRequest("POST", "projects", project, &created)
+	response, err := s.sling.New().BodyJSON(project).Post("").ReceiveSuccess(&created)
+
 	if err != nil {
 		return nil, err
+	}
+
+	if response.StatusCode == 400 {
+		return nil, fmt.Errorf("A project with name '%s' already exists", project.Name)
 	}
 
 	return &created, nil

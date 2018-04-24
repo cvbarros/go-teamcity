@@ -3,17 +3,12 @@ package teamcity_test
 import (
 	"testing"
 
-	u "github.com/cvbarros/go-teamcity-sdk/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	u.InitTest()
-}
-
 func TestGetServer(t *testing.T) {
-
-	server, err := u.Client.GetServer()
+	client := setup()
+	server, err := client.GetServer()
 	if err != nil {
 		t.Fatalf("Failed to GetServer: %s", err)
 	}

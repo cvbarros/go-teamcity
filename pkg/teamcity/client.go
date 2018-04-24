@@ -25,9 +25,11 @@ type Client struct {
 	RetryTimeout time.Duration
 
 	commonBase *sling.Sling
+
+	Projects *ProjectService
 }
 
-func NewClient(userName, password string) *Client {
+func New(userName, password string) *Client {
 	address := os.Getenv("TEAMCITY_HOST")
 	if address == "" {
 		address = "http://192.168.99.100:8112"
@@ -38,11 +40,12 @@ func NewClient(userName, password string) *Client {
 		Set("Accept", "application/json")
 
 	return &Client{
-		userName: userName,
-		password: password,
-		address:  address,
-
+		userName:   userName,
+		password:   password,
+		address:    address,
+		HTTPClient: http.DefaultClient,
 		commonBase: sharedClient,
+		Projects:   newProjectService(sharedClient.New()),
 	}
 }
 

@@ -3,20 +3,16 @@ package teamcity_test
 import (
 	"testing"
 
-	u "github.com/cvbarros/go-teamcity-sdk/internal/testutil"
 	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	u.InitTest()
-}
-
 func TestCreateBuildTypeForProject(t *testing.T) {
+	client := setup()
 	newProject := getTestProjectData()
 	newBuildType := getTestBuildTypeData()
 
-	createdProject, err := u.Client.CreateProject(newProject)
+	createdProject, err := client.Projects.CreateProject(newProject)
 
 	if err != nil {
 		t.Fatalf("Failed to create project for buildType: %s", err)
@@ -24,7 +20,7 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 
 	newBuildType.ProjectID = createdProject.ID
 
-	actual, err := u.Client.CreateBuildType(createdProject.ID, newBuildType)
+	actual, err := client.CreateBuildType(createdProject.ID, newBuildType)
 
 	if err != nil {
 		t.Fatalf("Failed to CreateBuildType: %s", err)
@@ -34,8 +30,8 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 		t.Fatalf("CreateBuildType did not return a valid project instance")
 	}
 
-	cleanUpBuildType(t, actual.ID)
-	cleanUpProject(t, createdProject.ID)
+	cleanUpBuildType(t, client, actual.ID)
+	cleanUpProject(t, client, createdProject.ID)
 
 	assert.NotEmpty(t, actual.ID)
 	assert.Equal(t, newBuildType.ProjectID, actual.ProjectID)
@@ -50,12 +46,12 @@ func getTestBuildTypeData() *teamcity.BuildType {
 	}
 }
 
-func cleanUpBuildType(t *testing.T, id string) {
-	if err := u.Client.DeleteBuildType(id); err != nil {
+func cleanUpBuildType(t *testing.T, c *teamcity.Client, id string) {
+	if err := c.DeleteBuildType(id); err != nil {
 		t.Fatalf("Unable to delete build type with id = '%s', err: %s", id, err)
 	}
 
-	deletedProject, err := u.Client.GetBuildType(id)
+	deletedProject, err := c.GetBuildType(id)
 
 	if deletedProject != nil {
 		t.Fatalf("Build type not deleted during cleanup.")
