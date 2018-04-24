@@ -1,5 +1,7 @@
 package teamcity
 
+import "github.com/dghubble/sling"
+
 // Server holds information about the TeamCity server
 type Server struct {
 
@@ -64,14 +66,27 @@ type Server struct {
 	WebURL string `json:"webUrl,omitempty" xml:"webUrl"`
 }
 
-// GetServer returns information about Server
-func (c *Client) GetServer() (server *Server, err error) {
+// ServerService allows retrieving information about the server
+type ServerService struct {
+	sling *sling.Sling
+}
 
-	var serverData Server
-	err = c.doJSONRequest("GET", "server", nil, &serverData)
+func newServerService(base *sling.Sling) *ServerService {
+	return &ServerService{
+		sling: base.Get("server/"),
+	}
+}
+
+// Get returns a struct with server information
+func (s *ServerService) Get() (*Server, error) {
+
+	var out Server
+
+	_, err := s.sling.ReceiveSuccess(&out)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return &serverData, nil
+	return &out, nil
 }

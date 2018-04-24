@@ -6,13 +6,15 @@ package teamcity
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/dghubble/sling"
 
 	"github.com/go-openapi/swag"
 )
 
-// Represents a Project
+// Project is the model for project entities in TeamCity
 type Project struct {
 
 	// archived
@@ -82,6 +84,8 @@ type Project struct {
 	WebURL string `json:"webUrl,omitempty" xml:"webUrl"`
 }
 
+// ProjectReference contains basic information, usually enough to use as a type for relationships.
+// In addition to that, TeamCity does not return the full detailed representation when creating objects, thus the need for a reference.
 type ProjectReference struct {
 	// id
 	ID string `json:"id,omitempty" xml:"id"`
@@ -89,6 +93,7 @@ type ProjectReference struct {
 	Name string `json:"name,omitempty" xml:"name"`
 }
 
+// ProjectService has operations for handling projects
 type ProjectService struct {
 	sling *sling.Sling
 }
@@ -99,8 +104,8 @@ func newProjectService(base *sling.Sling) *ProjectService {
 	}
 }
 
-// CreateProject Creates a new project at root project level
-func (s *ProjectService) CreateProject(project *Project) (*ProjectReference, error) {
+// Create creates a new project at root project level
+func (s *ProjectService) Create(project *Project) (*ProjectReference, error) {
 	var created ProjectReference
 	if err := project.Validate(); err != nil {
 		return nil, err
@@ -119,21 +124,46 @@ func (s *ProjectService) CreateProject(project *Project) (*ProjectReference, err
 	return &created, nil
 }
 
-// GetProject Retrieves a project resource by ID
-func (c *Client) GetProject(id string) (*Project, error) {
+// GetById Retrieves a project resource by ID
+func (s *ProjectService) GetById(id string) (*Project, error) {
 	var out Project
 
-	err := c.doJSONRequest("GET", fmt.Sprintf("projects/%s", id), nil, &out)
+	resp, err := s.sling.New().Get("id:" + id).ReceiveSuccess(&out)
+
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Error when retrieving Project id = '%s', status: %d", id, resp.StatusCode)
 	}
 
 	return &out, err
 }
 
-//DeleteProject - Deletes a project
-func (c *Client) DeleteProject(id string) error {
-	return c.doJSONRequest("DELETE", fmt.Sprintf("projects/%s", id), nil, nil)
+//Delete - Deletes a project
+func (s *ProjectService) Delete(id string) error {
+	request, _ := s.sling.New().Delete(id).Request()
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode == 204 {
+		return nil
+	}
+
+	if response.StatusCode != 200 && response.StatusCode != 204 {
+		respData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting project: %s", response.StatusCode, string(respData))
+	}
+
+	return nil
 }
 
 // Validate validates this project

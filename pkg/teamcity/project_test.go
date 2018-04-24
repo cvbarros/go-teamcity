@@ -10,7 +10,7 @@ import (
 func TestCreateProject(t *testing.T) {
 	newProject := getTestProjectData("Project_Test")
 	client := setup()
-	actual, err := client.Projects.CreateProject(newProject)
+	actual, err := client.Projects.Create(newProject)
 
 	if err != nil {
 		t.Fatalf("Failed to GetServer: %s", err)
@@ -30,7 +30,7 @@ func TestCreateProject(t *testing.T) {
 func TestCreateProjectWithNoName(t *testing.T) {
 	newProject := teamcity.Project{}
 	client := setup()
-	_, err := client.Projects.CreateProject(&newProject)
+	_, err := client.Projects.Create(&newProject)
 
 	assert.Equal(t, error.Error(err), "Project must have a name")
 }
@@ -45,11 +45,11 @@ func getTestProjectData(name string) *teamcity.Project {
 }
 
 func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
-	if err := c.DeleteProject(id); err != nil {
+	if err := c.Projects.Delete(id); err != nil {
 		t.Fatalf("Unable to delete project with id = '%s', err: %s", id, err)
 	}
 
-	deletedProject, err := c.GetProject(id)
+	deletedProject, err := c.Projects.GetById(id)
 
 	if deletedProject != nil {
 		t.Fatalf("Project not deleted during cleanup.")

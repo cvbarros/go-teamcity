@@ -12,7 +12,7 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 	newProject := getTestProjectData("BuildType_Test")
 	newBuildType := getTestBuildTypeData()
 
-	createdProject, err := client.Projects.CreateProject(newProject)
+	createdProject, err := client.Projects.Create(newProject)
 
 	if err != nil {
 		t.Fatalf("Failed to create project for buildType: %s", err)
@@ -52,7 +52,7 @@ func cleanUpBuildType(t *testing.T, c *teamcity.Client, id string) {
 		return
 	}
 
-	deleted, err := c.BuildTypes.Get(id)
+	deleted, err := c.BuildTypes.GetById(id)
 
 	if deleted != nil {
 		t.Errorf("Build type not deleted during cleanup.")

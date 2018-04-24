@@ -8,7 +8,7 @@ import (
 
 func TestGetServer(t *testing.T) {
 	client := setup()
-	server, err := client.GetServer()
+	server, err := client.Server.Get()
 	if err != nil {
 		t.Fatalf("Failed to GetServer: %s", err)
 	}

@@ -127,6 +127,7 @@ type BuildTypeReference struct {
 	ProjectName string `json:"projectName,omitempty" xml:"projectName"`
 }
 
+// BuildTypeService has operations for handling build configurations and templates
 type BuildTypeService struct {
 	sling *sling.Sling
 }
@@ -150,8 +151,8 @@ func (s *BuildTypeService) Create(projectId string, buildType *BuildType) (*Buil
 	return &created, nil
 }
 
-// Get Retrieves a build type resource by ID
-func (s *BuildTypeService) Get(id string) (*BuildType, error) {
+// GetById Retrieves a build type resource by ID
+func (s *BuildTypeService) GetById(id string) (*BuildType, error) {
 	var out BuildType
 
 	resp, err := s.sling.New().Get(id).ReceiveSuccess(&out)
@@ -167,7 +168,7 @@ func (s *BuildTypeService) Get(id string) (*BuildType, error) {
 	return &out, err
 }
 
-//DeleteBuildtype Delete a build type resource
+//Delete a build type resource
 func (s *BuildTypeService) Delete(id string) error {
 	request, _ := s.sling.New().Delete(id).Request()
 
