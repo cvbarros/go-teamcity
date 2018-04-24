@@ -95,7 +95,7 @@ type ProjectService struct {
 
 func newProjectService(base *sling.Sling) *ProjectService {
 	return &ProjectService{
-		sling: base.Path("projects"),
+		sling: base.Path("projects/"),
 	}
 }
 

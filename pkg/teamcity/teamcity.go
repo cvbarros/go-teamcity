@@ -26,7 +26,8 @@ type Client struct {
 
 	commonBase *sling.Sling
 
-	Projects *ProjectService
+	Projects   *ProjectService
+	BuildTypes *BuildTypeService
 }
 
 func New(userName, password string) *Client {
@@ -46,6 +47,7 @@ func New(userName, password string) *Client {
 		HTTPClient: http.DefaultClient,
 		commonBase: sharedClient,
 		Projects:   newProjectService(sharedClient.New()),
+		BuildTypes: newBuildTypeService(sharedClient.New()),
 	}
 }
 

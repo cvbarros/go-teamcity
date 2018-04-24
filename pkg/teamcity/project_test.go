@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreateProject(t *testing.T) {
-	newProject := getTestProjectData()
+	newProject := getTestProjectData("Project_Test")
 	client := setup()
 	actual, err := client.Projects.CreateProject(newProject)
 
@@ -35,10 +35,10 @@ func TestCreateProjectWithNoName(t *testing.T) {
 	assert.Equal(t, error.Error(err), "Project must have a name")
 }
 
-func getTestProjectData() *teamcity.Project {
+func getTestProjectData(name string) *teamcity.Project {
 
 	return &teamcity.Project{
-		Name:        "Test Project",
+		Name:        name,
 		Description: "Test Project Description",
 		Archived:    teamcity.NewFalse(),
 	}

@@ -9,7 +9,7 @@ import (
 
 func TestCreateBuildTypeForProject(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData()
+	newProject := getTestProjectData("BuildType_Test")
 	newBuildType := getTestBuildTypeData()
 
 	createdProject, err := client.Projects.CreateProject(newProject)
@@ -20,7 +20,7 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 
 	newBuildType.ProjectID = createdProject.ID
 
-	actual, err := client.CreateBuildType(createdProject.ID, newBuildType)
+	actual, err := client.BuildTypes.Create(createdProject.ID, newBuildType)
 
 	if err != nil {
 		t.Fatalf("Failed to CreateBuildType: %s", err)
@@ -47,17 +47,19 @@ func getTestBuildTypeData() *teamcity.BuildType {
 }
 
 func cleanUpBuildType(t *testing.T, c *teamcity.Client, id string) {
-	if err := c.DeleteBuildType(id); err != nil {
-		t.Fatalf("Unable to delete build type with id = '%s', err: %s", id, err)
+	if err := c.BuildTypes.Delete(id); err != nil {
+		t.Errorf("Unable to delete build type with id = '%s', err: %s", id, err)
+		return
 	}
 
-	deletedProject, err := c.GetBuildType(id)
+	deleted, err := c.BuildTypes.Get(id)
 
-	if deletedProject != nil {
-		t.Fatalf("Build type not deleted during cleanup.")
+	if deleted != nil {
+		t.Errorf("Build type not deleted during cleanup.")
+		return
 	}
 
 	if err == nil {
-		t.Fatalf("Expected 404 Not Found error when getting Deleted Build Type, but no error returned.")
+		t.Errorf("Expected 404 Not Found error when getting Deleted Build Type, but no error returned.")
 	}
 }

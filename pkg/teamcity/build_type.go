@@ -2,6 +2,10 @@ package teamcity
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/dghubble/sling"
 )
 
 // BuildType represents a build configuration or a build configuration template
@@ -123,11 +127,22 @@ type BuildTypeReference struct {
 	ProjectName string `json:"projectName,omitempty" xml:"projectName"`
 }
 
-// CreateProject Creates a new build type under a project
-func (c *Client) CreateBuildType(projectId string, buildType *BuildType) (*BuildTypeReference, error) {
+type BuildTypeService struct {
+	sling *sling.Sling
+}
+
+func newBuildTypeService(base *sling.Sling) *BuildTypeService {
+	return &BuildTypeService{
+		sling: base.Path("buildTypes/"),
+	}
+}
+
+// Create Creates a new build type under a project
+func (s *BuildTypeService) Create(projectId string, buildType *BuildType) (*BuildTypeReference, error) {
 	var created BuildTypeReference
 
-	err := c.doJSONRequest("POST", fmt.Sprintf("projects/id:%s/buildTypes", projectId), buildType, &created)
+	_, err := s.sling.New().Post("").BodyJSON(buildType).ReceiveSuccess(&created)
+
 	if err != nil {
 		return nil, err
 	}
@@ -135,19 +150,44 @@ func (c *Client) CreateBuildType(projectId string, buildType *BuildType) (*Build
 	return &created, nil
 }
 
-// GetBuildType Retrieves a build type resource by ID
-func (c *Client) GetBuildType(id string) (*BuildType, error) {
+// Get Retrieves a build type resource by ID
+func (s *BuildTypeService) Get(id string) (*BuildType, error) {
 	var out BuildType
 
-	err := c.doJSONRequest("GET", fmt.Sprintf("buildTypes/%s", id), nil, &out)
+	resp, err := s.sling.New().Get(id).ReceiveSuccess(&out)
+
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Error when retrieving BuildType id = '%s', status: %d", id, resp.StatusCode)
 	}
 
 	return &out, err
 }
 
 //DeleteBuildtype Delete a build type resource
-func (c *Client) DeleteBuildType(id string) error {
-	return c.doJSONRequest("DELETE", fmt.Sprintf("buildTypes/%s", id), nil, nil)
+func (s *BuildTypeService) Delete(id string) error {
+	request, _ := s.sling.New().Delete(id).Request()
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode == 204 {
+		return nil
+	}
+
+	if response.StatusCode != 200 && response.StatusCode != 204 {
+		respData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting build type: %s", response.StatusCode, string(respData))
+	}
+
+	return nil
 }
