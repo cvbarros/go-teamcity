@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	"github.com/dghubble/sling"
 )
 
 //Client represents the base for connecting to TeamCity
@@ -22,6 +23,8 @@ type Client struct {
 
 	HTTPClient   *http.Client
 	RetryTimeout time.Duration
+
+	commonBase *sling.Sling
 }
 
 func NewClient(userName, password string) *Client {
@@ -30,30 +33,22 @@ func NewClient(userName, password string) *Client {
 		address = "http://192.168.99.100:8112"
 	}
 
-	return &Client{
-		userName:     userName,
-		password:     password,
-		address:      address,
-		HTTPClient:   http.DefaultClient,
-		RetryTimeout: time.Duration(60 * time.Second),
-	}
-}
+	sharedClient := sling.New().Base(address+"/httpAuth/app/rest/").
+		SetBasicAuth(userName, password).
+		Set("Accept", "application/json")
 
-// SetAddress changes the base address for the Client
-func (c *Client) SetAddress(address string) {
-	c.address = address
+	return &Client{
+		userName: userName,
+		password: password,
+		address:  address,
+
+		commonBase: sharedClient,
+	}
 }
 
 // Validate tests if the client is properly configured and can be used
 func (c *Client) Validate() (bool, error) {
-	req, err := c.createRequest("GET", "server", nil)
-	if err != nil {
-		return false, err
-	}
-
-	var response *http.Response
-
-	response, err = c.HTTPClient.Do(req)
+	response, err := c.commonBase.Get("server").ReceiveSuccess(nil)
 
 	if err != nil {
 		return false, err
@@ -66,8 +61,6 @@ func (c *Client) Validate() (bool, error) {
 		}
 		return false, fmt.Errorf("API error %s: %s", response.Status, body)
 	}
-
-	defer response.Body.Close()
 
 	return true, nil
 }

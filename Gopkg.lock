@@ -20,6 +20,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/dghubble/sling"
+  packages = ["."]
+  revision = "eb56e89ac5088bebb12eef3cb4b293300f43608b"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/go-openapi/errors"
   packages = ["."]
@@ -36,6 +42,12 @@
   name = "github.com/go-openapi/swag"
   packages = ["."]
   revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
   branch = "master"
@@ -89,6 +101,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "338cf4e15421b521f6e2d744f029dce59e89baab978d0536119cf4478c4d431e"
+  inputs-digest = "60d041806cbf990ba082181731e95846104f1d0a9d0234a6bd3d648d846b9ad7"
   solver-name = "gps-cdcl"
   solver-version = 1
