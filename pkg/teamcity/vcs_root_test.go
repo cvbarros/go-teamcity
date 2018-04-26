@@ -42,7 +42,7 @@ func getTestVcsRootData(projectId string) *teamcity.VcsRoot {
 
 	return &teamcity.VcsRoot{
 		Name:    "Application",
-		VcsName: "jetbrains.git",
+		VcsName: teamcity.VcsNames.Git,
 		Project: &teamcity.ProjectReference{
 			ID: projectId,
 		},
