@@ -5,22 +5,34 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"time"
 
 	"github.com/dghubble/sling"
 
+	loghttp "github.com/motemen/go-loghttp"
 	// Enable HTTP log tracing
 	_ "github.com/motemen/go-loghttp/global"
 )
 
+//DebugRequests toggle to enable tracing requests to stdout
+var DebugRequests = false
+
+//DebugResponses tottle to enable tracing responses to stdout
+var DebugResponses = false
+
 func init() {
-	// loghttp.DefaultTransport.LogRequest = func(resp *http.Request) {
-	// 	debug(httputil.DumpRequest(resp, true))
-	// }
-	// loghttp.DefaultTransport.LogResponse = func(resp *http.Response) {
-	// 	debug(httputil.DumpResponse(resp, true))
-	// }
+	loghttp.DefaultTransport.LogRequest = func(resp *http.Request) {
+		if DebugRequests {
+			debug(httputil.DumpRequest(resp, true))
+		}
+	}
+	loghttp.DefaultTransport.LogResponse = func(resp *http.Response) {
+		if DebugResponses {
+			debug(httputil.DumpResponse(resp, true))
+		}
+	}
 }
 
 //Client represents the base for connecting to TeamCity
