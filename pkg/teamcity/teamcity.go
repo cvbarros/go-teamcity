@@ -49,6 +49,7 @@ type Client struct {
 	BuildTypes *BuildTypeService
 	Server     *ServerService
 	VcsRoots   *VcsRootService
+	Parameters *ParameterService
 }
 
 // New creates a new client for interating with TeamCity API
@@ -72,6 +73,7 @@ func New(userName, password string) *Client {
 		BuildTypes: newBuildTypeService(sharedClient.New()),
 		Server:     newServerService(sharedClient.New()),
 		VcsRoots:   newVcsRootService(sharedClient.New()),
+		Parameters: newParameterService(sharedClient.New()),
 	}
 }
 

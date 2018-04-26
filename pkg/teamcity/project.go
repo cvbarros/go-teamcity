@@ -126,8 +126,7 @@ func (s *ProjectService) Create(project *Project) (*ProjectReference, error) {
 func (s *ProjectService) GetById(id string) (*Project, error) {
 	var out Project
 
-	//TODO: Enable locators support. Currently sling will complain that id: is 'unsupported protocol scheme'
-	resp, err := s.sling.New().Get("id%3A" + id).ReceiveSuccess(&out)
+	resp, err := s.sling.New().Get(LocatorProject(id).String()).ReceiveSuccess(&out)
 
 	if err != nil {
 		return nil, err
@@ -162,26 +161,6 @@ func (s *ProjectService) Delete(id string) error {
 		return fmt.Errorf("Error '%d' when deleting project: %s", response.StatusCode, string(respData))
 	}
 
-	return nil
-}
-
-// AddParameters to a remote call for each parameter being added, since TeamCity only support creating them via
-// POST to /projects/projectId/parameterName, and not batch operations.
-// This function is created just for convenience and batch creation of parameters
-// Parameters will be created in the order they are passed and there is no guarantee that it will be an atomic operation
-// On the first failure it will stop and not create any further parameters
-func (s *ProjectService) AddParameters(id string, parameters ...*Property) error {
-	for _, param := range parameters {
-		var out *Property
-		resp, err := s.sling.New().Post(fmt.Sprintf("id%%3A%s/parameters", id)).BodyJSON(param).ReceiveSuccess(&out)
-		if err != nil {
-			return err
-		}
-
-		if resp.StatusCode != 200 {
-			return fmt.Errorf("Error creating parameter: %s, statusCode: %d", param.Name, resp.StatusCode)
-		}
-	}
 	return nil
 }
 
