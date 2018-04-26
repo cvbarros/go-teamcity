@@ -39,9 +39,6 @@ type VcsRoot struct {
 	// properties
 	Properties *Properties `json:"properties,omitempty"`
 
-	// repository Id strings
-	//RepositoryIDStrings *Items `json:"repositoryIdStrings,omitempty"`
-
 	// uuid
 	UUID string `json:"uuid,omitempty" xml:"uuid"`
 
@@ -149,5 +146,13 @@ func (s *VcsRootService) Validate(projectId string, vcsRoot *VcsRoot) (bool, err
 		return false, errors.New("vcsRoot.VcsName must be defined")
 	}
 
+	props := vcsRoot.Properties.Map()
+	if _, ok := props["url"]; !ok {
+		return false, errors.New("'url' property must be defined in VcsRoot.Properties")
+	}
+
+	if _, ok := props["branch"]; !ok {
+		return false, errors.New("'branch' property must be defined in VcsRoot.Properties")
+	}
 	return true, nil
 }

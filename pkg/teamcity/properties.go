@@ -22,6 +22,16 @@ func NewProperties(items ...*Property) *Properties {
 	}
 }
 
+// Map converts Properties to a key/value dictionary as map[string]string
+func (p *Properties) Map() map[string]string {
+	out := make(map[string]string)
+	for _, item := range p.Items {
+		out[item.Name] = item.Value
+	}
+
+	return out
+}
+
 // Property represents a key/value/type structure used by several resources to extend their representation
 type Property struct {
 

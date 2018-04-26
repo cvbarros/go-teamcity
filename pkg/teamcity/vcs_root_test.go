@@ -74,6 +74,32 @@ func TestValidateVcsRootRequiredProperties(t *testing.T) {
 		assert.NotNilf(t, err, "Expected error to be returned when VcsRoot.VcsName property is not defined.")
 	})
 
+	t.Run("Properties must have 'url' specified", func(t *testing.T) {
+		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut.Properties = teamcity.NewProperties(
+			&teamcity.Property{
+				Name:  "someprop",
+				Value: "empty",
+			})
+
+		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+
+		assert.EqualError(t, err, "'url' property must be defined in VcsRoot.Properties")
+	})
+
+	t.Run("Properties must have 'branch' specified", func(t *testing.T) {
+		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut.Properties = teamcity.NewProperties(
+			&teamcity.Property{
+				Name:  "url",
+				Value: "anything",
+			})
+
+		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+
+		assert.EqualError(t, err, "'branch' property must be defined in VcsRoot.Properties")
+	})
+
 	cleanUpProject(t, client, createdProject.ID)
 }
 
