@@ -8,12 +8,6 @@
   version = "v9"
 
 [[projects]]
-  name = "github.com/cenkalti/backoff"
-  packages = ["."]
-  revision = "2ea60e5f094469f9e65adb9cd103795b73ae743e"
-  version = "v2.0.0"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -66,6 +60,21 @@
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/motemen/go-loghttp"
+  packages = [
+    ".",
+    "global"
+  ]
+  revision = "974ac5ceac271576caabe1c0bddf2b7eed471f67"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/motemen/go-nuts"
+  packages = ["roundtime"]
+  revision = "42c35bdb11c20ff50bb14ef05750e8dcdfc75ea5"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -76,12 +85,6 @@
   packages = ["assert"]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
   version = "v1.2.1"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/net"
-  packages = ["context"]
-  revision = "500e7a4f953ddaf55d316b4d3adc516aa0379622"
 
 [[projects]]
   branch = "v2"
@@ -101,6 +104,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "60d041806cbf990ba082181731e95846104f1d0a9d0234a6bd3d648d846b9ad7"
+  inputs-digest = "752953b30d7a99b9cc1ca84bdf3d3bc2feaf23c396df89d1c689dc2fd309eff4"
   solver-name = "gps-cdcl"
   solver-version = 1

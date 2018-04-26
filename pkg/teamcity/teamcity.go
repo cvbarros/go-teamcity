@@ -3,12 +3,22 @@ package teamcity
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/dghubble/sling"
+
+	// Enable HTTP log tracing
+	_ "github.com/motemen/go-loghttp/global"
 )
+
+func init() {
+	// loghttp.DefaultTransport.LogResponse = func(resp *http.Response) {
+	// 	debug(httputil.DumpResponse(resp, true))
+	// }
+}
 
 //Client represents the base for connecting to TeamCity
 type Client struct {
@@ -23,6 +33,7 @@ type Client struct {
 	Projects   *ProjectService
 	BuildTypes *BuildTypeService
 	Server     *ServerService
+	VcsRoots   *VcsRootService
 }
 
 // New creates a new client for interating with TeamCity API
@@ -45,6 +56,7 @@ func New(userName, password string) *Client {
 		Projects:   newProjectService(sharedClient.New()),
 		BuildTypes: newBuildTypeService(sharedClient.New()),
 		Server:     newServerService(sharedClient.New()),
+		VcsRoots:   newVcsRootService(sharedClient.New()),
 	}
 }
 
@@ -65,4 +77,12 @@ func (c *Client) Validate() (bool, error) {
 	}
 
 	return true, nil
+}
+
+func debug(data []byte, err error) {
+	if err == nil {
+		fmt.Printf("%s\n\n", data)
+	} else {
+		log.Printf("[ERROR] %s\n\n", err)
+	}
 }
