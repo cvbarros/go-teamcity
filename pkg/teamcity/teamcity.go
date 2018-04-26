@@ -9,11 +9,15 @@ import (
 	"time"
 
 	"github.com/dghubble/sling"
+
 	// Enable HTTP log tracing
-	//_ "github.com/motemen/go-loghttp/global"
+	_ "github.com/motemen/go-loghttp/global"
 )
 
 func init() {
+	// loghttp.DefaultTransport.LogRequest = func(resp *http.Request) {
+	// 	debug(httputil.DumpRequest(resp, true))
+	// }
 	// loghttp.DefaultTransport.LogResponse = func(resp *http.Response) {
 	// 	debug(httputil.DumpResponse(resp, true))
 	// }

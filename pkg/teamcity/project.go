@@ -10,8 +10,6 @@ import (
 	"net/http"
 
 	"github.com/dghubble/sling"
-
-	"github.com/go-openapi/swag"
 )
 
 // Project is the model for project entities in TeamCity
@@ -47,8 +45,8 @@ type Project struct {
 	// name
 	Name string `json:"name,omitempty" xml:"name"`
 
-	// parameters
-	// Parameters *Properties `json:"parameters,omitempty"`
+	// Parameters for the project. Read-only, only useful when retrieving project details
+	Parameters *Properties `json:"parameters,omitempty"` //TODO: Encapsulate field
 
 	// parent project
 	ParentProject *Project `json:"parentProject,omitempty"`
@@ -128,7 +126,8 @@ func (s *ProjectService) Create(project *Project) (*ProjectReference, error) {
 func (s *ProjectService) GetById(id string) (*Project, error) {
 	var out Project
 
-	resp, err := s.sling.New().Get("id:" + id).ReceiveSuccess(&out)
+	//TODO: Enable locators support. Currently sling will complain that id: is 'unsupported protocol scheme'
+	resp, err := s.sling.New().Get("id%3A" + id).ReceiveSuccess(&out)
 
 	if err != nil {
 		return nil, err
@@ -166,6 +165,26 @@ func (s *ProjectService) Delete(id string) error {
 	return nil
 }
 
+// AddParameters to a remote call for each parameter being added, since TeamCity only support creating them via
+// POST to /projects/projectId/parameterName, and not batch operations.
+// This function is created just for convenience and batch creation of parameters
+// Parameters will be created in the order they are passed and there is no guarantee that it will be an atomic operation
+// On the first failure it will stop and not create any further parameters
+func (s *ProjectService) AddParameters(id string, parameters ...*Property) error {
+	for _, param := range parameters {
+		var out *Property
+		resp, err := s.sling.New().Post(fmt.Sprintf("id%%3A%s/parameters", id)).BodyJSON(param).ReceiveSuccess(&out)
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("Error creating parameter: %s, statusCode: %d", param.Name, resp.StatusCode)
+		}
+	}
+	return nil
+}
+
 // Validate validates this project
 func (m *Project) Validate() error {
 	//var res []error
@@ -174,266 +193,5 @@ func (m *Project) Validate() error {
 		return errors.New("Project must have a name")
 	}
 
-	// if err := m.validateBuildTypes(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateDefaultTemplate(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateLinks(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateParameters(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateParentProject(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateProjectFeatures(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateProjects(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateReadOnlyUI(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateTemplates(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if err := m.validateVcsRoots(formats); err != nil {
-	// 	// prop
-	// 	res = append(res, err)
-	// }
-
-	// if len(res) > 0 {
-	// 	return errors.CompositeValidationError(res...)
-	// }
-	return nil
-}
-
-// func (m *Project) validateBuildTypes(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.BuildTypes) { // not required
-// 		return nil
-// 	}
-
-// 	if m.BuildTypes != nil {
-
-// 		if err := m.BuildTypes.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("buildTypes")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateDefaultTemplate(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.DefaultTemplate) { // not required
-// 		return nil
-// 	}
-
-// 	if m.DefaultTemplate != nil {
-
-// 		if err := m.DefaultTemplate.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("defaultTemplate")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateLinks(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.Links) { // not required
-// 		return nil
-// 	}
-
-// 	if m.Links != nil {
-
-// 		if err := m.Links.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("links")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateParameters(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.Parameters) { // not required
-// 		return nil
-// 	}
-
-// 	if m.Parameters != nil {
-
-// 		if err := m.Parameters.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("parameters")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateParentProject(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.ParentProject) { // not required
-// 		return nil
-// 	}
-
-// 	if m.ParentProject != nil {
-
-// 		if err := m.ParentProject.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("parentProject")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateProjectFeatures(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.ProjectFeatures) { // not required
-// 		return nil
-// 	}
-
-// 	if m.ProjectFeatures != nil {
-
-// 		if err := m.ProjectFeatures.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("projectFeatures")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateProjects(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.Projects) { // not required
-// 		return nil
-// 	}
-
-// 	if m.Projects != nil {
-
-// 		if err := m.Projects.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("projects")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateReadOnlyUI(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.ReadOnlyUI) { // not required
-// 		return nil
-// 	}
-
-// 	if m.ReadOnlyUI != nil {
-
-// 		if err := m.ReadOnlyUI.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("readOnlyUI")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateTemplates(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.Templates) { // not required
-// 		return nil
-// 	}
-
-// 	if m.Templates != nil {
-
-// 		if err := m.Templates.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("templates")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// func (m *Project) validateVcsRoots(formats strfmt.Registry) error {
-
-// 	if swag.IsZero(m.VcsRoots) { // not required
-// 		return nil
-// 	}
-
-// 	if m.VcsRoots != nil {
-
-// 		if err := m.VcsRoots.Validate(formats); err != nil {
-// 			if ve, ok := err.(*errors.Validation); ok {
-// 				return ve.ValidateName("vcsRoots")
-// 			}
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// MarshalBinary interface implementation
-func (m *Project) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *Project) UnmarshalBinary(b []byte) error {
-	var res Project
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
 	return nil
 }
