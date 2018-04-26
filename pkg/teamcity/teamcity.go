@@ -9,9 +9,8 @@ import (
 	"time"
 
 	"github.com/dghubble/sling"
-
 	// Enable HTTP log tracing
-	_ "github.com/motemen/go-loghttp/global"
+	//_ "github.com/motemen/go-loghttp/global"
 )
 
 func init() {

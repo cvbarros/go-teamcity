@@ -1,6 +1,7 @@
 package teamcity
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -79,7 +80,12 @@ func newVcsRootService(base *sling.Sling) *VcsRootService {
 func (s *VcsRootService) Create(projectId string, vcsRoot *VcsRoot) (*VcsRootReference, error) {
 	var created VcsRootReference
 
-	_, err := s.sling.New().Post("").BodyJSON(vcsRoot).ReceiveSuccess(&created)
+	success, err := s.Validate(projectId, vcsRoot)
+	if success == false {
+		return nil, err
+	}
+
+	_, err = s.sling.New().Post("").BodyJSON(vcsRoot).ReceiveSuccess(&created)
 
 	if err != nil {
 		return nil, err
@@ -129,4 +135,19 @@ func (s *VcsRootService) Delete(id string) error {
 	}
 
 	return nil
+}
+
+// Validate verifies if a VcsRoot model is valid for updating/creation before sending to upstream API.
+func (s *VcsRootService) Validate(projectId string, vcsRoot *VcsRoot) (bool, error) {
+	if vcsRoot == nil {
+		return false, errors.New("vcsRoot must not be nil")
+	}
+	if vcsRoot.Project == nil {
+		return false, errors.New("vcsRoot.Project must not be nil")
+	}
+	if vcsRoot.VcsName == "" {
+		return false, errors.New("vcsRoot.VcsName must be defined")
+	}
+
+	return true, nil
 }

@@ -38,6 +38,45 @@ func TestCreateVcsRoot(t *testing.T) {
 	assert.Equal(t, newVcsRoot.Name, actual.Name)
 }
 
+func TestValidateVcsRootRequiredProperties(t *testing.T) {
+	client := setup()
+	newProject := getTestProjectData("VcsRoot_TestProject")
+
+	createdProject, err := client.Projects.Create(newProject)
+
+	if err != nil {
+		t.Fatalf("Failed to create project for VCS root: %s", err)
+	}
+
+	t.Run("VcsRoot must not be nil", func(t *testing.T) {
+		var sut *teamcity.VcsRoot = nil
+
+		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+
+		assert.NotNilf(t, err, "Expected error to be returned when vcsRoot is nil")
+	})
+
+	t.Run("Project must be specified", func(t *testing.T) {
+		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut.Project = nil
+
+		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+
+		assert.NotNilf(t, err, "Expected error to be returned when VcsRoot.Project property is not defined.")
+	})
+
+	t.Run("VcsName must be specified", func(t *testing.T) {
+		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut.VcsName = ""
+
+		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+
+		assert.NotNilf(t, err, "Expected error to be returned when VcsRoot.VcsName property is not defined.")
+	})
+
+	cleanUpProject(t, client, createdProject.ID)
+}
+
 func getTestVcsRootData(projectId string) *teamcity.VcsRoot {
 
 	return &teamcity.VcsRoot{
