@@ -73,7 +73,20 @@ func New(userName, password string) *Client {
 		BuildTypes: newBuildTypeService(sharedClient.New()),
 		Server:     newServerService(sharedClient.New()),
 		VcsRoots:   newVcsRootService(sharedClient.New()),
-		Parameters: newParameterService(sharedClient.New()),
+	}
+}
+
+//ProjectParameterService returns a parameter service that operates parameters for the project with given id
+func (c *Client) ProjectParameterService(id string) *ParameterService {
+	return &ParameterService{
+		base: c.commonBase.New().Path(fmt.Sprintf("projects/%s/", LocatorId(id))),
+	}
+}
+
+//BuildTypeParameterService returns a parameter service that operates parameters for the build configuration with given id
+func (c *Client) BuildTypeParameterService(id string) *ParameterService {
+	return &ParameterService{
+		base: c.commonBase.New().Path(fmt.Sprintf("buildTypes/%s/", LocatorId(id))),
 	}
 }
 

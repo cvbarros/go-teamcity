@@ -9,8 +9,8 @@ import (
 
 func TestCreateVcsRoot(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData("VcsRoot_TestProject")
-	newVcsRoot := getTestVcsRootData("VcsRoot_TestProject")
+	newProject := getTestProjectData(testVcsRootProjectId)
+	newVcsRoot := getTestVcsRootData(testVcsRootProjectId)
 
 	createdProject, err := client.Projects.Create(newProject)
 
@@ -40,7 +40,7 @@ func TestCreateVcsRoot(t *testing.T) {
 
 func TestValidateVcsRootRequiredProperties(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData("VcsRoot_TestProject")
+	newProject := getTestProjectData(testVcsRootProjectId)
 
 	createdProject, err := client.Projects.Create(newProject)
 
@@ -57,7 +57,7 @@ func TestValidateVcsRootRequiredProperties(t *testing.T) {
 	})
 
 	t.Run("Project must be specified", func(t *testing.T) {
-		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut := getTestVcsRootData(testVcsRootProjectId)
 		sut.Project = nil
 
 		_, err := client.VcsRoots.Create(createdProject.ID, sut)
@@ -66,7 +66,7 @@ func TestValidateVcsRootRequiredProperties(t *testing.T) {
 	})
 
 	t.Run("VcsName must be specified", func(t *testing.T) {
-		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut := getTestVcsRootData(testVcsRootProjectId)
 		sut.VcsName = ""
 
 		_, err := client.VcsRoots.Create(createdProject.ID, sut)
@@ -75,7 +75,7 @@ func TestValidateVcsRootRequiredProperties(t *testing.T) {
 	})
 
 	t.Run("Properties must have 'url' specified", func(t *testing.T) {
-		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut := getTestVcsRootData(testVcsRootProjectId)
 		sut.Properties = teamcity.NewProperties(
 			&teamcity.Property{
 				Name:  "someprop",
@@ -88,7 +88,7 @@ func TestValidateVcsRootRequiredProperties(t *testing.T) {
 	})
 
 	t.Run("Properties must have 'branch' specified", func(t *testing.T) {
-		sut := getTestVcsRootData("VcsRoot_TestProject")
+		sut := getTestVcsRootData(testVcsRootProjectId)
 		sut.Properties = teamcity.NewProperties(
 			&teamcity.Property{
 				Name:  "url",

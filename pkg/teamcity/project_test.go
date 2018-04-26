@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreateProject(t *testing.T) {
-	newProject := getTestProjectData("Project_Test")
+	newProject := getTestProjectData(testProjectId)
 	client := setup()
 	actual, err := client.Projects.Create(newProject)
 

@@ -7,6 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	testProjectId          = "ProjectTest"
+	testBuildTypeProjectId = "BuildTypeProjectTest"
+	testVcsRootProjectId   = "VcsRootProjectTest"
+	testBuildTypeId        = "BuildTypeTest"
+	testParameterProjectId = "ParameterProjectId"
+)
+
 func setup() (client *teamcity.Client) {
 	return teamcity.New("admin", "admin")
 }

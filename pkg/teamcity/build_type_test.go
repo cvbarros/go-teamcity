@@ -10,15 +10,12 @@ import (
 func TestCreateBuildTypeForProject(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData("BuildType_Test")
-	newBuildType := getTestBuildTypeData()
-
 	createdProject, err := client.Projects.Create(newProject)
 
 	if err != nil {
 		t.Fatalf("Failed to create project for buildType: %s", err)
 	}
-
-	newBuildType.ProjectID = createdProject.ID
+	newBuildType := getTestBuildTypeData(createdProject.ID)
 
 	actual, err := client.BuildTypes.Create(createdProject.ID, newBuildType)
 
@@ -38,11 +35,12 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 	assert.Equal(t, newBuildType.Name, actual.Name)
 }
 
-func getTestBuildTypeData() *teamcity.BuildType {
+func getTestBuildTypeData(projectId string) *teamcity.BuildType {
 
 	return &teamcity.BuildType{
 		Name:        "Pull Request",
 		Description: "Inspection Build",
+		ProjectID:   projectId,
 	}
 }
 

@@ -56,8 +56,8 @@ type BuildType struct {
 	// name
 	Name string `json:"name,omitempty" xml:"name"`
 
-	// parameters
-	// Parameters *Properties `json:"parameters,omitempty"`
+	// Parameters for the build configuration. Read-only, only useful when retrieving project details
+	Parameters *Properties `json:"parameters,omitempty"`
 
 	// paused
 	Paused *bool `json:"paused,omitempty" xml:"paused"`
