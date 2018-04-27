@@ -102,7 +102,7 @@ type BuildType struct {
 	UUID string `json:"uuid,omitempty" xml:"uuid"`
 
 	// vcs root entries
-	// VcsRootEntries *VcsRootEntries `json:"vcs-root-entries,omitempty"`
+	VcsRootEntries *VcsRootEntries `json:"vcs-root-entries,omitempty"`
 
 	// web Url
 	WebURL string `json:"webUrl,omitempty" xml:"webUrl"`
@@ -188,6 +188,20 @@ func (s *BuildTypeService) Delete(id string) error {
 			return err
 		}
 		return fmt.Errorf("Error '%d' when deleting build type: %s", response.StatusCode, string(respData))
+	}
+
+	return nil
+}
+
+// AttachVcsRoot adds the VcsRoot reference to this build type
+func (s *BuildTypeService) AttachVcsRoot(id string, vcsRoot *VcsRootReference) error {
+	var created VcsRootEntry
+	var vcsEntry = NewVcsRootEntry(vcsRoot)
+
+	_, err := s.sling.New().Post(fmt.Sprintf("%s/vcs-root-entries/", LocatorId(id))).BodyJSON(vcsEntry).ReceiveSuccess(&created)
+
+	if err != nil {
+		return err
 	}
 
 	return nil

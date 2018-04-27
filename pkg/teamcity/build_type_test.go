@@ -9,30 +9,78 @@ import (
 
 func TestCreateBuildTypeForProject(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData("BuildType_Test")
-	createdProject, err := client.Projects.Create(newProject)
+	newProject := getTestProjectData(testBuildTypeProjectId)
+	_, err := client.Projects.Create(newProject)
 
 	if err != nil {
 		t.Fatalf("Failed to create project for buildType: %s", err)
 	}
-	newBuildType := getTestBuildTypeData(createdProject.ID)
+	newBuildType := getTestBuildTypeData(testBuildTypeProjectId)
 
-	actual, err := client.BuildTypes.Create(createdProject.ID, newBuildType)
+	actual, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
 
 	if err != nil {
 		t.Fatalf("Failed to CreateBuildType: %s", err)
 	}
 
 	if actual == nil {
-		t.Fatalf("CreateBuildType did not return a valid project instance")
+		t.Fatalf("CreateBuildType did not return a valid instance")
 	}
 
-	cleanUpBuildType(t, client, actual.ID)
-	cleanUpProject(t, client, createdProject.ID)
+	cleanUpProject(t, client, testBuildTypeProjectId)
 
 	assert.NotEmpty(t, actual.ID)
 	assert.Equal(t, newBuildType.ProjectID, actual.ProjectID)
 	assert.Equal(t, newBuildType.Name, actual.Name)
+}
+
+func TestAttachVcsRoot(t *testing.T) {
+	client := setup()
+	newProject := getTestProjectData(testBuildTypeProjectId)
+
+	if _, err := client.Projects.Create(newProject); err != nil {
+		t.Fatalf("Failed to create project for buildType: %s", err)
+	}
+
+	newBuildType := getTestBuildTypeData(testBuildTypeProjectId)
+
+	createdBuildType, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
+	if err != nil {
+		t.Fatalf("Failed to CreateBuildType: %s", err)
+	}
+
+	newVcsRoot := getTestVcsRootData(testBuildTypeProjectId)
+
+	vcsRootCreated, err := client.VcsRoots.Create(testBuildTypeProjectId, newVcsRoot)
+
+	if err != nil {
+		t.Fatalf("Failed to create vcs root: %s", err)
+	}
+
+	err = client.BuildTypes.AttachVcsRoot(createdBuildType.ID, vcsRootCreated)
+	if err != nil {
+		t.Fatalf("Failed to attach vcsRoot '%s' to buildType '%s': %s", createdBuildType.ID, vcsRootCreated.ID, err)
+	}
+
+	actual, err := client.BuildTypes.GetById(createdBuildType.ID)
+	if err != nil {
+		t.Fatalf("Failed to get buildType '%s' for asserting: %s", createdBuildType.ID, err)
+	}
+
+	assert.NotEqualf(t, actual.VcsRootEntries.Count, 0, "Expected VcsRootEntries to contain at least one element")
+	vcsEntries := idMapVcsRootEntries(actual.VcsRootEntries)
+	assert.Containsf(t, vcsEntries, vcsRootCreated.ID, "Expected VcsRootEntries to contain the VcsRoot with id = %s, but it did not", vcsRootCreated.ID)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+}
+
+func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
+	out := make(map[string]string)
+	for _, item := range v.Items {
+		out[item.VcsRoot.ID] = item.Id
+	}
+
+	return out
 }
 
 func getTestBuildTypeData(projectId string) *teamcity.BuildType {
