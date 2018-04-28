@@ -102,6 +102,27 @@ func TestDeleteBuildStep(t *testing.T) {
 	assert.Empty(t, actual)
 }
 
+func TestAddAgentRequirement(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
+	req, _ := teamcity.NewAgentRequirement(teamcity.Conditions.Equals, "param", "value")
+
+	client.BuildTypes.AddAgentRequirement(buildType.ID, req)
+	buildType, _ = client.BuildTypes.GetById(buildType.ID) //refresh
+
+	actual := buildType.AgentRequirements
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+	assert.NotEmpty(actual.Items)
+	assert.Equal(teamcity.Conditions.Equals, actual.Items[0].Condition)
+
+	assert.Equal("property-name", actual.Items[0].Properties.Items[0].Name)
+	assert.Equal("param", actual.Items[0].Properties.Items[0].Value)
+	assert.Equal("property-value", actual.Items[0].Properties.Items[1].Name)
+	assert.Equal("value", actual.Items[0].Properties.Items[1].Value)
+}
+
 func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 	out := make(map[string]string)
 	for _, item := range v.Items {
@@ -110,8 +131,7 @@ func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 
 	return out
 }
-
-func createTestBuildStep(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
+func createTestBuildType(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
 	newProject := getTestProjectData(buildTypeProjectId)
 
 	if _, err := client.Projects.Create(newProject); err != nil {
@@ -125,10 +145,17 @@ func createTestBuildStep(t *testing.T, client *teamcity.Client, buildTypeProject
 		t.Fatalf("Failed to CreateBuildType: %s", err)
 	}
 
+	detailed, _ := client.BuildTypes.GetById(createdBuildType.ID)
+	return detailed
+}
+
+func createTestBuildStep(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
+	createdBuildType := createTestBuildType(t, client, buildTypeProjectId)
+
 	builder := teamcity.StepPowershellBuilder
 	step := builder.ScriptFile("build.ps1").Build("step1")
 
-	if err = client.BuildTypes.AddStep(createdBuildType.ID, step); err != nil {
+	if err := client.BuildTypes.AddStep(createdBuildType.ID, step); err != nil {
 		t.Fatalf("Failed to add step to buildType '%s'", createdBuildType.ID)
 	}
 

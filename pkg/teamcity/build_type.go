@@ -12,19 +12,10 @@ import (
 type BuildType struct {
 
 	// agent requirements
-	// AgentRequirements *AgentRequirements `json:"agent-requirements,omitempty"`
+	AgentRequirements *AgentRequirements `json:"agent-requirements,omitempty"`
 
 	// // artifact dependencies
 	// ArtifactDependencies *ArtifactDependencies `json:"artifact-dependencies,omitempty"`
-
-	// // branches
-	// Branches *Branches `json:"branches,omitempty"`
-
-	// // builds
-	// Builds *Builds `json:"builds,omitempty"`
-
-	// // compatible agents
-	// CompatibleAgents *Agents `json:"compatibleAgents,omitempty"`
 
 	// description
 	Description string `json:"description,omitempty" xml:"description"`
@@ -44,12 +35,6 @@ type BuildType struct {
 	// internal Id
 	InternalID string `json:"internalId,omitempty" xml:"internalId"`
 
-	// investigations
-	// Investigations *Investigations `json:"investigations,omitempty"`
-
-	// links
-	// Links *Links `json:"links,omitempty"`
-
 	// locator
 	Locator string `json:"locator,omitempty" xml:"locator"`
 
@@ -63,7 +48,7 @@ type BuildType struct {
 	Paused *bool `json:"paused,omitempty" xml:"paused"`
 
 	// project
-	// Project *Project `json:"project,omitempty"`
+	Project *Project `json:"project,omitempty"`
 
 	// project Id
 	ProjectID string `json:"projectId,omitempty" xml:"projectId"`
@@ -83,14 +68,8 @@ type BuildType struct {
 	// steps
 	Steps *Steps `json:"steps,omitempty"`
 
-	// template
-	// Template *BuildType `json:"template,omitempty"`
-
 	// template flag
 	TemplateFlag *bool `json:"templateFlag,omitempty" xml:"templateFlag"`
-
-	// templates
-	// Templates *BuildTypes `json:"templates,omitempty"`
 
 	// triggers
 	// Triggers *Triggers `json:"triggers,omitempty"`
@@ -219,9 +198,21 @@ func (s *BuildTypeService) AddStep(id string, step *Step) error {
 	return nil
 }
 
-//Delete removes a build step from this build type by its id
+//DeleteStep removes a build step from this build type by its id
 func (s *BuildTypeService) DeleteStep(id string, stepId string) error {
 	_, err := s.sling.New().Delete(fmt.Sprintf("%s/steps/%s", LocatorId(id), stepId)).ReceiveSuccess(nil)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//AddAgentRequirement creates a new agent requirement for build type
+func (s *BuildTypeService) AddAgentRequirement(id string, req *AgentRequirement) error {
+	var created AgentRequirement
+	_, err := s.sling.New().Post(fmt.Sprintf("%s/agent-requirements/", LocatorId(id))).BodyJSON(req).ReceiveSuccess(&created)
 
 	if err != nil {
 		return err
