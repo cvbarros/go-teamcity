@@ -36,3 +36,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/motemen/go-loghttp"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/lann/builder"

@@ -22,6 +22,12 @@ func NewProperties(items ...*Property) *Properties {
 	}
 }
 
+// Add a new property to this collection
+func (p *Properties) Add(prop *Property) {
+	p.Count++
+	p.Items = append(p.Items, prop)
+}
+
 // Map converts Properties to a key/value dictionary as map[string]string
 func (p *Properties) Map() map[string]string {
 	out := make(map[string]string)

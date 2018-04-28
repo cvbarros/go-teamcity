@@ -33,15 +33,21 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/go-openapi/swag"
-  packages = ["."]
-  revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
-
-[[projects]]
-  branch = "master"
   name = "github.com/google/go-querystring"
   packages = ["query"]
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lann/builder"
+  packages = ["."]
+  revision = "1b87b36280d04fe7882d1512bf038ea2967ad534"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lann/ps"
+  packages = ["."]
+  revision = "62de8c46ede02a7675c4c79c84883eb164cb71e3"
 
 [[projects]]
   branch = "master"
@@ -95,15 +101,9 @@
   ]
   revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
 
-[[projects]]
-  name = "gopkg.in/yaml.v2"
-  packages = ["."]
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "752953b30d7a99b9cc1ca84bdf3d3bc2feaf23c396df89d1c689dc2fd309eff4"
+  inputs-digest = "ae28a9f7832ba810ddb0e10f50bbf1ff731af507090305f753f178e144845f3f"
   solver-name = "gps-cdcl"
   solver-version = 1
