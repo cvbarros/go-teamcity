@@ -28,6 +28,22 @@ func (p *Properties) Add(prop *Property) {
 	p.Items = append(p.Items, prop)
 }
 
+// AddOrReplace will update a property value if it exists, or add if it doesnt
+func (p *Properties) AddOrReplaceValue(prop *Property) {
+	for _, elem := range p.Items {
+		if elem == nil {
+			continue
+		}
+
+		if elem.Name == prop.Name {
+			elem.Value = prop.Value
+			return
+		}
+	}
+
+	p.Add(prop)
+}
+
 // Map converts Properties to a key/value dictionary as map[string]string
 func (p *Properties) Map() map[string]string {
 	out := make(map[string]string)
