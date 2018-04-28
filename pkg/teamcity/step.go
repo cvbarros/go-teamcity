@@ -24,3 +24,13 @@ type Step struct {
 	// type
 	Type string `json:"type,omitempty" xml:"type"`
 }
+
+// Steps represents a collection of Steps
+type Steps struct {
+
+	// count
+	Count int32 `json:"count,omitempty" xml:"count"`
+
+	// step
+	Items []*Step `json:"step"`
+}

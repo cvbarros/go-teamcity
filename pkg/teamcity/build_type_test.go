@@ -74,6 +74,34 @@ func TestAttachVcsRoot(t *testing.T) {
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
 
+func TestAddBuildStep(t *testing.T) {
+	client := setup()
+	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	actual := updatedBuildType.Steps.Items
+
+	assert.NotEmpty(t, actual)
+}
+
+func TestDeleteBuildStep(t *testing.T) {
+	client := setup()
+	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
+
+	deleteStep := updatedBuildType.Steps.Items[0]
+
+	client.BuildTypes.DeleteStep(updatedBuildType.ID, deleteStep.ID)
+
+	updatedBuildType, _ = client.BuildTypes.GetById(updatedBuildType.ID)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	actual := updatedBuildType.Steps.Items
+
+	assert.Empty(t, actual)
+}
+
 func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 	out := make(map[string]string)
 	for _, item := range v.Items {
@@ -81,6 +109,31 @@ func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 	}
 
 	return out
+}
+
+func createTestBuildStep(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
+	newProject := getTestProjectData(buildTypeProjectId)
+
+	if _, err := client.Projects.Create(newProject); err != nil {
+		t.Fatalf("Failed to create project for buildType: %s", err)
+	}
+
+	newBuildType := getTestBuildTypeData(buildTypeProjectId)
+
+	createdBuildType, err := client.BuildTypes.Create(buildTypeProjectId, newBuildType)
+	if err != nil {
+		t.Fatalf("Failed to CreateBuildType: %s", err)
+	}
+
+	builder := teamcity.StepPowershellBuilder
+	step := builder.ScriptFile("build.ps1").Build("step1")
+
+	if err = client.BuildTypes.AddStep(createdBuildType.ID, step); err != nil {
+		t.Fatalf("Failed to add step to buildType '%s'", createdBuildType.ID)
+	}
+
+	updated, _ := client.BuildTypes.GetById(createdBuildType.ID)
+	return updated
 }
 
 func getTestBuildTypeData(projectId string) *teamcity.BuildType {

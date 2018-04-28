@@ -81,7 +81,7 @@ type BuildType struct {
 	// SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
 
 	// steps
-	// Steps *Steps `json:"steps,omitempty"`
+	Steps *Steps `json:"steps,omitempty"`
 
 	// template
 	// Template *BuildType `json:"template,omitempty"`
@@ -199,6 +199,29 @@ func (s *BuildTypeService) AttachVcsRoot(id string, vcsRoot *VcsRootReference) e
 	var vcsEntry = NewVcsRootEntry(vcsRoot)
 
 	_, err := s.sling.New().Post(fmt.Sprintf("%s/vcs-root-entries/", LocatorId(id))).BodyJSON(vcsEntry).ReceiveSuccess(&created)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AddStep creates a new build steo for this build type
+func (s *BuildTypeService) AddStep(id string, step *Step) error {
+	var created Step
+	_, err := s.sling.New().Post(fmt.Sprintf("%s/steps/", LocatorId(id))).BodyJSON(step).ReceiveSuccess(&created)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//Delete removes a build step from this build type by its id
+func (s *BuildTypeService) DeleteStep(id string, stepId string) error {
+	_, err := s.sling.New().Delete(fmt.Sprintf("%s/steps/%s", LocatorId(id), stepId)).ReceiveSuccess(nil)
 
 	if err != nil {
 		return err
