@@ -60,7 +60,7 @@ type BuildType struct {
 	ProjectName string `json:"projectName,omitempty" xml:"projectName"`
 
 	// settings
-	// Settings *Properties `json:"settings,omitempty"`
+	Settings *Properties `json:"settings,omitempty"`
 
 	// snapshot dependencies
 	// SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
@@ -150,7 +150,6 @@ func (s *BuildTypeService) GetById(id string) (*BuildType, error) {
 //Delete a build type resource
 func (s *BuildTypeService) Delete(id string) error {
 	request, _ := s.sling.New().Delete(id).Request()
-
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return err
@@ -193,6 +192,22 @@ func (s *BuildTypeService) AddStep(id string, step *Step) error {
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// UpdateSettings will do a remote call for each setting being updated. Operation is not atomic, and the list of settings is processed in the order sent.
+// Will return the error of the first failure and not process the rest
+func (s *BuildTypeService) UpdateSettings(id string, settings *Properties) error {
+	for _, item := range settings.Items {
+		bodyProvider := textPlainBodyProvider{payload: item.Value}
+		req, err := s.sling.New().Put(fmt.Sprintf("%s/settings/%s", LocatorId(id), item.Name)).BodyProvider(bodyProvider).Add("Accept", "text/plain").Request()
+		response, err := http.DefaultClient.Do(req)
+		response.Body.Close()
+		if err != nil {
+			return fmt.Errorf("error updating buildType id: '%s' setting '%s': %s", id, item.Name, err)
+		}
 	}
 
 	return nil

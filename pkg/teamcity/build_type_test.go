@@ -113,7 +113,7 @@ func TestAddAgentRequirement(t *testing.T) {
 
 	actual := buildType.AgentRequirements
 
-	cleanUpProject(t, client, testBuildTypeProjectId)
+	//cleanUpProject(t, client, testBuildTypeProjectId)
 	assert.NotEmpty(actual.Items)
 	assert.Equal(teamcity.Conditions.Equals, actual.Items[0].Condition)
 
@@ -121,6 +121,31 @@ func TestAddAgentRequirement(t *testing.T) {
 	assert.Equal("param", actual.Items[0].Properties.Items[0].Value)
 	assert.Equal("property-value", actual.Items[0].Properties.Items[1].Name)
 	assert.Equal("value", actual.Items[0].Properties.Items[1].Value)
+}
+
+func TestSettings(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+
+	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
+	builder := teamcity.BuildTypeSettingsBuilder
+
+	settings := builder.ConfigurationType("composite").
+		PersonalBuildTrigger(false).
+		ArtifactRules("**/*.zip").
+		Build()
+
+	err := client.BuildTypes.UpdateSettings(buildType.ID, settings)
+	assert.Nil(err)
+
+	buildType, _ = client.BuildTypes.GetById(buildType.ID) //refresh
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	actual := buildType.Settings.Map()
+
+	assert.Equal("COMPOSITE", actual["buildConfigurationType"])
+	assert.Equal("false", actual["allowPersonalBuildTriggering"])
+	assert.Equal("**/*.zip", actual["artifactRules"])
 }
 
 func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
