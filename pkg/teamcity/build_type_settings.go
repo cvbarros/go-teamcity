@@ -9,6 +9,7 @@ import (
 
 type buildTypeSettingsBuilder builder.Builder
 
+// BuildTypeSettingsBuilder is a convenience class for creating build type settings
 var BuildTypeSettingsBuilder = builder.Register(buildTypeSettingsBuilder{}, Properties{}).(buildTypeSettingsBuilder)
 
 // ConfigurationType changes this builder to use the specified configuration type, which can be REGULAR, DEPLOYMENT or COMPOSITE

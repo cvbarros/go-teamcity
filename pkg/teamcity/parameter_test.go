@@ -47,7 +47,7 @@ func TestCreateProjectParameters(t *testing.T) {
 
 func TestCreateBuildTypeParameters(t *testing.T) {
 	newProject := getTestProjectData(testParameterProjectId)
-	newBuildType := getTestBuildTypeData(testParameterProjectId)
+	newBuildType := getTestBuildTypeData("PullRequest", "Description", testParameterProjectId)
 	client := setup()
 
 	parameters := getTestParameters()

@@ -44,6 +44,14 @@ func NewProperties(items ...*Property) *Properties {
 	}
 }
 
+// NewProperty returns an instance of Property
+func NewProperty(name string, value string) *Property {
+	return &Property{
+		Name:  name,
+		Value: value,
+	}
+}
+
 // Add a new property to this collection
 func (p *Properties) Add(prop *Property) {
 	p.Count++

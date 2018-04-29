@@ -63,7 +63,7 @@ type BuildType struct {
 	Settings *Properties `json:"settings,omitempty"`
 
 	// snapshot dependencies
-	// SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
+	SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
 
 	// steps
 	Steps *Steps `json:"steps,omitempty"`
@@ -104,6 +104,16 @@ type BuildTypeReference struct {
 
 	// project name
 	ProjectName string `json:"projectName,omitempty" xml:"projectName"`
+}
+
+func (b *BuildType) Reference() *BuildTypeReference {
+	return &BuildTypeReference{
+		ID:          b.ID,
+		Name:        b.Name,
+		ProjectID:   b.ProjectID,
+		Href:        b.Href,
+		ProjectName: b.ProjectName,
+	}
 }
 
 // BuildTypeService has operations for handling build configurations and templates

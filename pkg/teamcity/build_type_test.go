@@ -15,7 +15,7 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create project for buildType: %s", err)
 	}
-	newBuildType := getTestBuildTypeData(testBuildTypeProjectId)
+	newBuildType := getTestBuildTypeData("PullRequest", "Description", testBuildTypeProjectId)
 
 	actual, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
 
@@ -42,7 +42,7 @@ func TestAttachVcsRoot(t *testing.T) {
 		t.Fatalf("Failed to create project for buildType: %s", err)
 	}
 
-	newBuildType := getTestBuildTypeData(testBuildTypeProjectId)
+	newBuildType := getTestBuildTypeData("PullRequest", "Description", testBuildTypeProjectId)
 
 	createdBuildType, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
 	if err != nil {
@@ -113,7 +113,7 @@ func TestAddAgentRequirement(t *testing.T) {
 
 	actual := buildType.AgentRequirements
 
-	//cleanUpProject(t, client, testBuildTypeProjectId)
+	cleanUpProject(t, client, testBuildTypeProjectId)
 	assert.NotEmpty(actual.Items)
 	assert.Equal(teamcity.Conditions.Equals, actual.Items[0].Condition)
 
@@ -156,6 +156,7 @@ func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 
 	return out
 }
+
 func createTestBuildType(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
 	newProject := getTestProjectData(buildTypeProjectId)
 
@@ -163,7 +164,11 @@ func createTestBuildType(t *testing.T, client *teamcity.Client, buildTypeProject
 		t.Fatalf("Failed to create project for buildType: %s", err)
 	}
 
-	newBuildType := getTestBuildTypeData(buildTypeProjectId)
+	return createTestBuildTypeWithName(t, client, buildTypeProjectId, "PullRequest")
+}
+
+func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string) *teamcity.BuildType {
+	newBuildType := getTestBuildTypeData(name, "Inspection", buildTypeProjectId)
 
 	createdBuildType, err := client.BuildTypes.Create(buildTypeProjectId, newBuildType)
 	if err != nil {
@@ -188,11 +193,11 @@ func createTestBuildStep(t *testing.T, client *teamcity.Client, buildTypeProject
 	return updated
 }
 
-func getTestBuildTypeData(projectId string) *teamcity.BuildType {
+func getTestBuildTypeData(name string, description string, projectId string) *teamcity.BuildType {
 
 	return &teamcity.BuildType{
-		Name:        "Pull Request",
-		Description: "Inspection Build",
+		Name:        name,
+		Description: description,
 		ProjectID:   projectId,
 	}
 }

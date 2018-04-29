@@ -92,6 +92,16 @@ func (c *Client) BuildTypeParameterService(id string) *ParameterService {
 	}
 }
 
+//DependencyService returns a service to manage snapshot and artifact dependencies for a build type
+func (c *Client) DependencyService(id string) *DependencyService {
+	return &DependencyService{
+		BuildTypeID:   id,
+		httpClient:    c.HTTPClient,
+		artifactSling: c.commonBase.New().Path(fmt.Sprintf("buildTypes/%s/artifact-dependencies/", id)),
+		snapshotSling: c.commonBase.New().Path(fmt.Sprintf("buildTypes/%s/snapshot-dependencies/", id)),
+	}
+}
+
 // Validate tests if the client is properly configured and can be used
 func (c *Client) Validate() (bool, error) {
 	response, err := c.commonBase.Get("server").ReceiveSuccess(nil)

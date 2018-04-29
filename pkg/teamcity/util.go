@@ -2,12 +2,16 @@ package teamcity
 
 // NewTrue is a helper function to return a *bool to true
 func NewTrue() *bool {
-	b := true
-	return &b
+	return NewBool(true)
 }
 
 // NewFalse is a helper function to return a *bool to true
 func NewFalse() *bool {
-	b := false
-	return &b
+	return NewBool(false)
+}
+
+// NewBool is a helper function to return a *bool to the specified value
+func NewBool(b bool) *bool {
+	out := b
+	return &out
 }
