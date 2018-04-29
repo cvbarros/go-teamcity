@@ -6,10 +6,10 @@ import "github.com/dghubble/sling"
 type Server struct {
 
 	// agent pools
-	AgentPools *Href `json:"agentPools,omitempty"`
+	AgentPools string `json:"agentPools,omitempty"`
 
 	// agents
-	Agents *Href `json:"agents,omitempty"`
+	Agents string `json:"agents,omitempty"`
 
 	// build date
 	BuildDate string `json:"buildDate,omitempty" xml:"buildDate"`
@@ -18,10 +18,10 @@ type Server struct {
 	BuildNumber string `json:"buildNumber,omitempty" xml:"buildNumber"`
 
 	// build queue
-	BuildQueue *Href `json:"buildQueue,omitempty"`
+	BuildQueue string `json:"buildQueue,omitempty"`
 
 	// builds
-	Builds *Href `json:"builds,omitempty"`
+	Builds string `json:"builds,omitempty"`
 
 	// current time
 	CurrentTime string `json:"currentTime,omitempty" xml:"currentTime"`
@@ -30,13 +30,13 @@ type Server struct {
 	InternalID string `json:"internalId,omitempty" xml:"internalId"`
 
 	// investigations
-	Investigations *Href `json:"investigations,omitempty"`
+	Investigations string `json:"investigations,omitempty"`
 
 	// mutes
-	Mutes *Href `json:"mutes,omitempty"`
+	Mutes string `json:"mutes,omitempty"`
 
 	// projects
-	Projects *Href `json:"projects,omitempty"`
+	Projects string `json:"projects,omitempty"`
 
 	// role
 	Role string `json:"role,omitempty" xml:"role"`
@@ -45,13 +45,13 @@ type Server struct {
 	StartTime string `json:"startTime,omitempty" xml:"startTime"`
 
 	// user groups
-	UserGroups *Href `json:"userGroups,omitempty"`
+	UserGroups string `json:"userGroups,omitempty"`
 
 	// users
-	Users *Href `json:"users,omitempty"`
+	Users string `json:"users,omitempty"`
 
 	// vcs roots
-	VcsRoots *Href `json:"vcsRoots,omitempty"`
+	VcsRoots string `json:"vcsRoots,omitempty"`
 
 	// version
 	Version string `json:"version,omitempty" xml:"version"`

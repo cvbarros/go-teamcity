@@ -5,9 +5,9 @@ type stepType = string
 const (
 	//Powershell step type
 	Powershell stepType = "jetbrains_powershell"
-	//Dotnet CLI step type
+	//DotnetCli step type
 	DotnetCli stepType = "dotnet.cli"
-	//Commandline (shell/cmd) step type
+	//CommandLine (shell/cmd) step type
 	CommandLine stepType = "simpleRunner"
 )
 

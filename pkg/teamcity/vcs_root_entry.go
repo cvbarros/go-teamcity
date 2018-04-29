@@ -1,6 +1,6 @@
 package teamcity
 
-// VcsRoots represents a collection of VCS Roots attached to a resource
+// VcsRootEntries represents a collection of VCS Roots attached to a resource
 type VcsRootEntries struct {
 	// count
 	Count int32 `json:"count,omitempty" xml:"count"`
