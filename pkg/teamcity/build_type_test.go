@@ -158,16 +158,18 @@ func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 }
 
 func createTestBuildType(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
-	newProject := getTestProjectData(buildTypeProjectId)
-
-	if _, err := client.Projects.Create(newProject); err != nil {
-		t.Fatalf("Failed to create project for buildType: %s", err)
-	}
-
-	return createTestBuildTypeWithName(t, client, buildTypeProjectId, "PullRequest")
+	return createTestBuildTypeWithName(t, client, buildTypeProjectId, "PullRequest", true)
 }
 
-func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string) *teamcity.BuildType {
+func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string, createProject bool) *teamcity.BuildType {
+	if createProject {
+		newProject := getTestProjectData(buildTypeProjectId)
+
+		if _, err := client.Projects.Create(newProject); err != nil {
+			t.Fatalf("Failed to create project for buildType: %s", err)
+		}
+	}
+
 	newBuildType := getTestBuildTypeData(name, "Inspection", buildTypeProjectId)
 
 	createdBuildType, err := client.BuildTypes.Create(buildTypeProjectId, newBuildType)

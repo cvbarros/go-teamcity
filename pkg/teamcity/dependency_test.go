@@ -13,7 +13,7 @@ func TestAddSnapshotDependency(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
-	buildTypeDep := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, "DependencyBuild")
+	buildTypeDep := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, "DependencyBuild", false)
 
 	sut := client.DependencyService(buildType.ID)
 
