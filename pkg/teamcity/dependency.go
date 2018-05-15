@@ -42,7 +42,7 @@ func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*Sna
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d", resp.StatusCode)
 	}
-
+	out.BuildTypeID = s.BuildTypeID
 	return &out, nil
 }
 
@@ -58,6 +58,6 @@ func (s *DependencyService) GetById(depId string) (*SnapshotDependency, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	out.BuildTypeID = s.BuildTypeID
 	return &out, nil
 }

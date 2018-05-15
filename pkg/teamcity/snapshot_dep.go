@@ -25,6 +25,9 @@ type SnapshotDependency struct {
 	// source build type
 	SourceBuildType *BuildTypeReference `json:"source-buildType,omitempty"`
 
+	// Build type id this dependency belongs to
+	BuildTypeID string `json:"-"`
+
 	// type
 	Type string `json:"type,omitempty" xml:"type"`
 }
