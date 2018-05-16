@@ -3,6 +3,7 @@ package teamcity
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -52,7 +53,7 @@ func (s *DependencyService) GetById(depId string) (*SnapshotDependency, error) {
 	resp, err := s.snapshotSling.New().Get(depId).ReceiveSuccess(&out)
 
 	if resp.StatusCode == 404 {
-		return nil, fmt.Errorf("snapshot dependency for buildTypeId: %s with id: %s not found", s.BuildTypeID, depId)
+		return nil, fmt.Errorf("404 Not Found - Snapshot dependency (id: %s) for buildTypeId (id: %s) was not found", depId, s.BuildTypeID)
 	}
 
 	if err != nil {
@@ -60,4 +61,28 @@ func (s *DependencyService) GetById(depId string) (*SnapshotDependency, error) {
 	}
 	out.BuildTypeID = s.BuildTypeID
 	return &out, nil
+}
+
+//Delete removes a snapshot dependency from the build configuration by its id
+func (s *DependencyService) Delete(depId string) error {
+	request, _ := s.snapshotSling.New().Delete(depId).Request()
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode == 204 {
+		return nil
+	}
+
+	if response.StatusCode != 200 && response.StatusCode != 204 {
+		respData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting snapshot dependency: %s", response.StatusCode, string(respData))
+	}
+
+	return nil
 }

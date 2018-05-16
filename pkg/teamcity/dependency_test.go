@@ -55,3 +55,24 @@ func TestGetSnapshotDependency(t *testing.T) {
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
+
+func TestDeleteSnapshotDependency(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
+	buildTypeDep := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, "DependencyBuild", false)
+
+	sut := client.DependencyService(buildType.ID)
+
+	dep := teamcity.NewSnapshotDependency(buildTypeDep.ID)
+	created, err := sut.AddSnapshotDependency(dep)
+
+	require.Nil(t, err)
+
+	sut.Delete(created.ID)
+	_, err = sut.GetById(created.ID) // refresh
+
+	require.Error(t, err)
+	assert.Contains(err.Error(), "404")
+	cleanUpProject(t, client, testBuildTypeProjectId)
+}
