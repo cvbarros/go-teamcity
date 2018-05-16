@@ -12,15 +12,9 @@ func TestNewSnapshotDependency(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	bt := &teamcity.BuildTypeReference{
-		ID:   "someBuildID",
-		Name: "someBuildName",
-	}
-
-	actual := teamcity.NewSnapshotDependency(bt)
+	actual := teamcity.NewSnapshotDependency("someBuildID")
 
 	require.NotNil(actual)
-	assert.Equal(bt, actual.SourceBuildType)
 	assert.Equal("snapshot_dependency", actual.Type)
 	require.NotEmpty(actual.Properties)
 	props := actual.Properties.Map()
@@ -36,21 +30,15 @@ func TestNewSnapshotDependencyWithOptions(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	bt := &teamcity.BuildTypeReference{
-		ID:   "someBuildID",
-		Name: "someBuildName",
-	}
-
 	opt := &teamcity.SnapshotDependencyOptions{
 		OnFailedDependency:       "RUN",
 		RunSameAgent:             true,
 		TakeSuccessfulBuildsOnly: false,
 	}
 
-	actual := teamcity.NewSnapshotDependencyWithOptions(bt, opt)
+	actual := teamcity.NewSnapshotDependencyWithOptions("someBuildID", opt)
 
 	require.NotNil(actual)
-	assert.Equal(actual.SourceBuildType, bt)
 	assert.Equal("snapshot_dependency", actual.Type)
 
 	require.NotEmpty(actual.Properties)

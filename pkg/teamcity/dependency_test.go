@@ -17,7 +17,7 @@ func TestAddSnapshotDependency(t *testing.T) {
 
 	sut := client.DependencyService(buildType.ID)
 
-	dep := teamcity.NewSnapshotDependency(buildTypeDep.Reference())
+	dep := teamcity.NewSnapshotDependency(buildTypeDep.ID)
 	_, err := sut.AddSnapshotDependency(dep)
 
 	require.Nil(t, err)
@@ -40,7 +40,7 @@ func TestGetSnapshotDependency(t *testing.T) {
 
 	sut := client.DependencyService(buildType.ID)
 
-	dep := teamcity.NewSnapshotDependency(buildTypeDep.Reference())
+	dep := teamcity.NewSnapshotDependency(buildTypeDep.ID)
 	created, err := sut.AddSnapshotDependency(dep)
 
 	require.Nil(t, err)
