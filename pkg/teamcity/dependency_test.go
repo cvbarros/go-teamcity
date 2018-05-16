@@ -51,6 +51,7 @@ func TestGetSnapshotDependency(t *testing.T) {
 	assert.Equal(created.ID, actual.ID)
 	assert.Equal(created.BuildTypeID, actual.BuildTypeID)
 	assert.Equal(created.Type, actual.Type)
+	assert.Equal(created.SourceBuildType.ID, actual.SourceBuildType.ID)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
