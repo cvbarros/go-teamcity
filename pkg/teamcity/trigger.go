@@ -85,16 +85,19 @@ func newTriggerService(buildTypeId string, c *http.Client, base *sling.Sling) *T
 }
 
 //AddTrigger adds a new build trigger to a build type
-func (s *TriggerService) AddTrigger(t *Trigger) error {
+func (s *TriggerService) AddTrigger(t *Trigger) (*Trigger, error) {
 	var out Trigger
 	if t == nil {
-		return errors.New("t can't be nil")
+		return nil, errors.New("t can't be nil")
 	}
 
-	_, err := s.base.New().Post("").BodyJSON(t).ReceiveSuccess(&out)
+	resp, err := s.base.New().Post("").BodyJSON(t).ReceiveSuccess(&out)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("error creating trigger for build type (id: %s)", s.BuildTypeID)
 	}
 
-	return nil
+	return &out, nil
 }

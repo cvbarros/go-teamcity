@@ -35,7 +35,7 @@ func TestNewTrigger_ForBuildConfiguration(t *testing.T) {
 	sut := client.TriggerService(bt.ID)
 	nt := teamcity.NewVcsTrigger("+:*", "")
 
-	err := sut.AddTrigger(nt)
+	_, err := sut.AddTrigger(nt)
 
 	require.Nil(err)
 
