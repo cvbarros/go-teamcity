@@ -3,6 +3,7 @@ package teamcity
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -18,6 +19,7 @@ type Triggers struct {
 
 // Trigger represents a build trigger to be associated with a build configuration. Use the constructor methods to create new instances.
 type Trigger struct {
+	BuildTypeID string `json:"-"`
 
 	// disabled
 	Disabled *bool `json:"disabled,omitempty" xml:"disabled"`
@@ -98,6 +100,46 @@ func (s *TriggerService) AddTrigger(t *Trigger) (*Trigger, error) {
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("error creating trigger for build type (id: %s)", s.BuildTypeID)
 	}
-
+	out.BuildTypeID = s.BuildTypeID
 	return &out, nil
+}
+
+//GetById returns a dependency by its id
+func (s *TriggerService) GetById(id string) (*Trigger, error) {
+	var out Trigger
+	resp, err := s.base.New().Get(id).ReceiveSuccess(&out)
+
+	if resp.StatusCode == 404 {
+		return nil, fmt.Errorf("404 Not Found - Trigger (id: %s) for buildTypeId (id: %s) was not found", id, s.BuildTypeID)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	out.BuildTypeID = s.BuildTypeID
+	return &out, nil
+}
+
+//Delete removes a snapshot dependency from the build configuration by its id
+func (s *TriggerService) Delete(id string) error {
+	request, _ := s.base.New().Delete(id).Request()
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode == 204 {
+		return nil
+	}
+
+	if response.StatusCode != 200 && response.StatusCode != 204 {
+		respData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting trigger: %s", response.StatusCode, string(respData))
+	}
+
+	return nil
 }
