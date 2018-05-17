@@ -40,23 +40,6 @@ type Trigger struct {
 	Type string `json:"type,omitempty" xml:"type"`
 }
 
-//SetBranchFilter is s setter for branchFilter property
-func (t *Trigger) SetBranchFilter(value string) {
-	if t.Properties == nil {
-		t.Properties = &Properties{Count: 0, Items: make([]*Property, 0)}
-	}
-
-	t.Properties.AddOrReplaceValue("branchFilter", value)
-}
-
-//GetBranchFilterOk is a getter for branchFilter property. Returns false if propery doesnt exist
-func (t *Trigger) GetBranchFilterOk() (string, bool) {
-	if t.Properties == nil {
-		return "", false
-	}
-	return t.Properties.GetOk("branchFilter")
-}
-
 // NewVcsTrigger returns a VCS trigger type with the triggerRules specified. triggerRules is required, but branchFilter can be optional if the VCS root uses multiple branches.
 func NewVcsTrigger(triggerRules string, branchFilter string) *Trigger {
 	props := NewProperties(
@@ -86,6 +69,29 @@ func NewVcsTrigger(triggerRules string, branchFilter string) *Trigger {
 		Type:       TriggerTypes.Vcs,
 		Properties: props,
 	}
+}
+
+//Rules is a getter for triggerRules read-only property. No check performed since it's a required property.
+func (t *Trigger) Rules() string {
+	v, _ := t.Properties.GetOk("triggerRules")
+	return v
+}
+
+//BranchFilterOk is a getter for branchFilter property. Returns false if propery doesnt exist
+func (t *Trigger) BranchFilterOk() (string, bool) {
+	if t.Properties == nil {
+		return "", false
+	}
+	return t.Properties.GetOk("branchFilter")
+}
+
+//SetBranchFilter is s setter for branchFilter property
+func (t *Trigger) SetBranchFilter(value string) {
+	if t.Properties == nil {
+		t.Properties = &Properties{Count: 0, Items: make([]*Property, 0)}
+	}
+
+	t.Properties.AddOrReplaceValue("branchFilter", value)
 }
 
 // TriggerService provides operations for managing build triggers for a buildType
