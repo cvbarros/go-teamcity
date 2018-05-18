@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateBuildTypeForProject(t *testing.T) {
+func TestBuildType_CreateBasicProject(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testBuildTypeProjectId)
 	_, err := client.Projects.Create(newProject)
@@ -34,7 +34,7 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 	assert.Equal(t, newBuildType.Name, actual.Name)
 }
 
-func TestAttachVcsRoot(t *testing.T) {
+func TestBuildType_AttachVcsRoot(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testBuildTypeProjectId)
 
@@ -74,7 +74,7 @@ func TestAttachVcsRoot(t *testing.T) {
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
 
-func TestAddBuildStep(t *testing.T) {
+func TestBuildType_AddStep(t *testing.T) {
 	client := setup()
 	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
 
@@ -85,7 +85,7 @@ func TestAddBuildStep(t *testing.T) {
 	assert.NotEmpty(t, actual)
 }
 
-func TestDeleteBuildStep(t *testing.T) {
+func TestBuildType_DeleteStep(t *testing.T) {
 	client := setup()
 	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
 
@@ -102,7 +102,7 @@ func TestDeleteBuildStep(t *testing.T) {
 	assert.Empty(t, actual)
 }
 
-func TestSettings(t *testing.T) {
+func TestBuildType_UpdateSettings(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 

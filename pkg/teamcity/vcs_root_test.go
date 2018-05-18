@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateVcsRoot(t *testing.T) {
+func TestVcsRoot_Create(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testVcsRootProjectId)
 	newVcsRoot := getTestVcsRootData(testVcsRootProjectId)
@@ -38,7 +38,7 @@ func TestCreateVcsRoot(t *testing.T) {
 	assert.Equal(t, newVcsRoot.Name, actual.Name)
 }
 
-func TestValidateVcsRootRequiredProperties(t *testing.T) {
+func TestVcsRoot_ValidateRequiredProperties(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testVcsRootProjectId)
 

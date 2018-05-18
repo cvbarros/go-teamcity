@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddSnapshotDependency(t *testing.T) {
+func TestSnapshotDependency_Create(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
@@ -32,7 +32,7 @@ func TestAddSnapshotDependency(t *testing.T) {
 	assert.NotEmpty(actual[0].Properties)
 }
 
-func TestGetSnapshotDependency(t *testing.T) {
+func TestSnapshotDependency_Get(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
@@ -56,7 +56,7 @@ func TestGetSnapshotDependency(t *testing.T) {
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
 
-func TestDeleteSnapshotDependency(t *testing.T) {
+func TestSnapshotDependency_Delete(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 	buildType := createTestBuildType(t, client, testBuildTypeProjectId)

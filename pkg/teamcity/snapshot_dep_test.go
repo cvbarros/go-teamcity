@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewSnapshotDependency(t *testing.T) {
+func TestSnapshotDependency_Constructor(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
@@ -26,7 +26,7 @@ func TestNewSnapshotDependency(t *testing.T) {
 	assert.Contains(props, "take-successful-builds-only")
 }
 
-func TestNewSnapshotDependencyWithOptions(t *testing.T) {
+func TestSnapshotDependency_ConstructorWithOptions(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 

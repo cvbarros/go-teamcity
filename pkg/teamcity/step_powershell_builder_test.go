@@ -15,7 +15,7 @@ type PropertyAssertions struct {
 
 const testStepName = "stepName"
 
-func TestPowershellBuilderWithScriptFile(t *testing.T) {
+func TestPowershellStepBuilder_ScriptFile(t *testing.T) {
 	assert := newPropertyAssertions(t)
 
 	psBuilder := teamcity.StepPowershellBuilder
@@ -29,7 +29,7 @@ func TestPowershellBuilderWithScriptFile(t *testing.T) {
 	assert.assertPropertyValue(actual.Properties, "jetbrains_powershell_script_mode", "FILE")
 }
 
-func TestPowershellBuilderWithArgs(t *testing.T) {
+func TestPowershellStepBuilder_Args(t *testing.T) {
 	assert := newPropertyAssertions(t)
 	expected := "-Target pullrequest"
 
@@ -40,7 +40,7 @@ func TestPowershellBuilderWithArgs(t *testing.T) {
 	assert.assertPropertyValue(actual.Properties, "jetbrains_powershell_scriptArguments", expected)
 }
 
-func TestPowershellScriptAsCode(t *testing.T) {
+func TestPowershellStepBuilder_Code(t *testing.T) {
 	assert := newPropertyAssertions(t)
 	expected := "Some script code"
 

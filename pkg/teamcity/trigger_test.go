@@ -25,7 +25,7 @@ func TestTrigger_Constructor(t *testing.T) {
 	assert.Equal(props["enableQueueOptimization"], "true")
 }
 
-func TestCreateTrigger(t *testing.T) {
+func TestTrigger_Create(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 	client := setup()
@@ -51,7 +51,7 @@ func TestCreateTrigger(t *testing.T) {
 	cleanUpProject(t, client, bt.ProjectID)
 }
 
-func TestGetTrigger(t *testing.T) {
+func TestTrigger_Get(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 	client := setup()
@@ -75,7 +75,7 @@ func TestGetTrigger(t *testing.T) {
 	cleanUpProject(t, client, bt.ProjectID)
 }
 
-func TestDeleteTrigger(t *testing.T) {
+func TestTrigger_Delete(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 	client := setup()
