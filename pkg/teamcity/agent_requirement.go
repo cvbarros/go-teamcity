@@ -3,6 +3,7 @@ package teamcity
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -70,6 +71,8 @@ var Conditions = struct {
 
 // AgentRequirement is a condition evaluated per agent to see if a build type is compatible or not
 type AgentRequirement struct {
+	// build type id
+	BuildTypeID string `json:"-"`
 
 	// id
 	ID string `json:"id,omitempty" xml:"id"`
@@ -170,12 +173,53 @@ func newAgentRequirementService(buildTypeID string, c *http.Client, base *sling.
 }
 
 //Create a new agent requirement for build type
-func (s *AgentRequirementService) Create(req *AgentRequirement) error {
+func (s *AgentRequirementService) Create(req *AgentRequirement) (*AgentRequirement, error) {
 	var created AgentRequirement
 	_, err := s.base.New().Post("").BodyJSON(req).ReceiveSuccess(&created)
 
 	if err != nil {
+		return nil, err
+	}
+
+	created.BuildTypeID = s.BuildTypeID
+	return &created, nil
+}
+
+//GetByID returns an agent requirement by its id
+func (s *AgentRequirementService) GetByID(id string) (*AgentRequirement, error) {
+	var out AgentRequirement
+	resp, err := s.base.New().Get(id).ReceiveSuccess(&out)
+
+	if resp.StatusCode == 404 {
+		return nil, fmt.Errorf("404 Not Found - Trigger (id: %s) for buildTypeId (id: %s) was not found", id, s.BuildTypeID)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	out.BuildTypeID = s.BuildTypeID
+	return &out, nil
+}
+
+//Delete removes an agent requirement from the build configuration by its id
+func (s *AgentRequirementService) Delete(id string) error {
+	request, _ := s.base.New().Delete(id).Request()
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
 		return err
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode == 204 {
+		return nil
+	}
+
+	if response.StatusCode != 200 && response.StatusCode != 204 {
+		respData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting agent requirement: %s", response.StatusCode, string(respData))
 	}
 
 	return nil
