@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateBuildTypeForProject(t *testing.T) {
+func TestBuildType_CreateBasicProject(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testBuildTypeProjectId)
 	_, err := client.Projects.Create(newProject)
@@ -34,7 +34,7 @@ func TestCreateBuildTypeForProject(t *testing.T) {
 	assert.Equal(t, newBuildType.Name, actual.Name)
 }
 
-func TestAttachVcsRoot(t *testing.T) {
+func TestBuildType_AttachVcsRoot(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testBuildTypeProjectId)
 
@@ -74,7 +74,7 @@ func TestAttachVcsRoot(t *testing.T) {
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
 
-func TestAddBuildStep(t *testing.T) {
+func TestBuildType_AddStep(t *testing.T) {
 	client := setup()
 	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
 
@@ -85,7 +85,7 @@ func TestAddBuildStep(t *testing.T) {
 	assert.NotEmpty(t, actual)
 }
 
-func TestDeleteBuildStep(t *testing.T) {
+func TestBuildType_DeleteStep(t *testing.T) {
 	client := setup()
 	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
 
@@ -102,28 +102,7 @@ func TestDeleteBuildStep(t *testing.T) {
 	assert.Empty(t, actual)
 }
 
-func TestAddAgentRequirement(t *testing.T) {
-	client := setup()
-	assert := assert.New(t)
-	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
-	req, _ := teamcity.NewAgentRequirement(teamcity.Conditions.Equals, "param", "value")
-
-	client.BuildTypes.AddAgentRequirement(buildType.ID, req)
-	buildType, _ = client.BuildTypes.GetById(buildType.ID) //refresh
-
-	actual := buildType.AgentRequirements
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-	assert.NotEmpty(actual.Items)
-	assert.Equal(teamcity.Conditions.Equals, actual.Items[0].Condition)
-
-	assert.Equal("property-name", actual.Items[0].Properties.Items[0].Name)
-	assert.Equal("param", actual.Items[0].Properties.Items[0].Value)
-	assert.Equal("property-value", actual.Items[0].Properties.Items[1].Name)
-	assert.Equal("value", actual.Items[0].Properties.Items[1].Value)
-}
-
-func TestSettings(t *testing.T) {
+func TestBuildType_UpdateSettings(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 

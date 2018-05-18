@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateProjectParameters(t *testing.T) {
+func TestParameters_CreateForProject(t *testing.T) {
 	newProject := getTestProjectData(testParameterProjectId)
 	client := setup()
 
@@ -45,7 +45,7 @@ func TestCreateProjectParameters(t *testing.T) {
 	}
 }
 
-func TestCreateBuildTypeParameters(t *testing.T) {
+func TestParameters_CreateForBuildType(t *testing.T) {
 	newProject := getTestProjectData(testParameterProjectId)
 	newBuildType := getTestBuildTypeData("PullRequest", "Description", testParameterProjectId)
 	client := setup()

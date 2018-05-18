@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetServer(t *testing.T) {
+func TestServer_Get(t *testing.T) {
 	client := setup()
 	server, err := client.Server.Get()
 	if err != nil {

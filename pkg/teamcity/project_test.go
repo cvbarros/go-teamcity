@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateProject(t *testing.T) {
+func TestProject_Create(t *testing.T) {
 	newProject := getTestProjectData(testProjectId)
 	client := setup()
 	actual, err := client.Projects.Create(newProject)
@@ -27,7 +27,7 @@ func TestCreateProject(t *testing.T) {
 	assert.Equal(t, newProject.Name, actual.Name)
 }
 
-func TestCreateProjectWithNoName(t *testing.T) {
+func TestProject_ValidateName(t *testing.T) {
 	newProject := teamcity.Project{}
 	client := setup()
 	_, err := client.Projects.Create(&newProject)

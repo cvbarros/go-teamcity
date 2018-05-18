@@ -19,7 +19,7 @@ func setup() (client *teamcity.Client) {
 	return teamcity.New("admin", "admin")
 }
 
-func TestBasicAuth(t *testing.T) {
+func TestClient_BasicAuth(t *testing.T) {
 	t.Run("Basic auth works against local instance", func(t *testing.T) {
 		client := setup()
 		success, err := client.Validate()
