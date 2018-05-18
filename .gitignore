@@ -15,3 +15,6 @@
 
 #VSCode
 .vscode/
+
+# Data Dir For TeamCity
+integration_tests/data_dir/
