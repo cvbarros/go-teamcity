@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewTrigger_Constructor(t *testing.T) {
+func TestTrigger_Constructor(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
@@ -25,7 +25,7 @@ func TestNewTrigger_Constructor(t *testing.T) {
 	assert.Equal(props["enableQueueOptimization"], "true")
 }
 
-func TestNewTrigger_ForBuildConfiguration(t *testing.T) {
+func TestCreateTrigger(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 	client := setup()
