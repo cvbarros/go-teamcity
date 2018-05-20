@@ -48,7 +48,7 @@ func TestFeatureCommitPublisher_GithubAuthenticationPassword(t *testing.T) {
 		assert.Equal("https://api.github.com", actual["github_host"])
 		assert.Equal("password", actual["github_authentication_type"])
 		assert.Equal("bob", actual["github_username"])
-		assert.Equal("1234", actual["github_password"])
+		assert.Equal("1234", actual["secure:github_password"])
 	})
 }
 
@@ -68,6 +68,6 @@ func TestFeatureCommitPublisher_GithubAuthenticationToken(t *testing.T) {
 		assert.Equal("githubStatusPublisher", actual["publisherId"])
 		assert.Equal("https://api.github.com", actual["github_host"])
 		assert.Equal("token", actual["github_authentication_type"])
-		assert.Equal("1234", actual["github_access_token"])
+		assert.Equal("1234", actual["secure:github_access_token"])
 	})
 }

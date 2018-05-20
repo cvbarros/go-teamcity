@@ -61,11 +61,12 @@ func NewFeatureCommitStatusPublisherGithub(opt StatusPublisherGithubOptions) (*F
 		}
 	}
 
-	return &FeatureCommitStatusPublisher{
+	out := &FeatureCommitStatusPublisher{
 		Options:    opt,
-		Type:       "commit-status-publisher",
 		properties: opt.Properties(),
-	}, nil
+	}
+
+	return out, nil
 }
 
 //Properties returns a *Properties collection with properties filled related to this commit publisher parameters to be used in build features
@@ -78,11 +79,11 @@ func (s StatusPublisherGithubOptions) Properties() *Properties {
 
 	if s.AuthenticationType == "password" {
 		props.AddOrReplaceValue("github_username", s.Username)
-		props.AddOrReplaceValue("github_password", s.Password)
+		props.AddOrReplaceValue("secure:github_password", s.Password)
 	}
 
 	if s.AuthenticationType == "token" {
-		props.AddOrReplaceValue("github_access_token", s.AccessToken)
+		props.AddOrReplaceValue("secure:github_access_token", s.AccessToken)
 	}
 
 	return props

@@ -1,37 +1,90 @@
 package teamcity
 
+import (
+	"encoding/json"
+)
+
+//FeatureCommitStatusPublisherOptions represents options needed to create a commit status publisher build feature
 type FeatureCommitStatusPublisherOptions interface {
 	Properties() *Properties
 }
 
+//FeatureCommitStatusPublisher represents a commit status publisher build feature. Implements BuildFeature interface
 type FeatureCommitStatusPublisher struct {
-	ID        string
-	Type      string
-	VcsRootID string
-	Options   FeatureCommitStatusPublisherOptions
+	id          string
+	vcsRootID   string
+	disabled    bool
+	Options     FeatureCommitStatusPublisherOptions
+	buildTypeID string
 
 	properties *Properties
 }
 
-type buildFeatureJson struct {
-	// disabled
-	Disabled *bool `json:"disabled,omitempty" xml:"disabled"`
+func (f *FeatureCommitStatusPublisher) ID() string {
+	return f.id
+}
 
-	// href
-	Href string `json:"href,omitempty" xml:"href"`
+func (f *FeatureCommitStatusPublisher) SetID(value string) {
+	f.id = value
+}
 
-	// id
-	ID string `json:"id,omitempty" xml:"id"`
+func (f *FeatureCommitStatusPublisher) Type() string {
+	return "commit-status-publisher"
+}
 
-	// inherited
-	Inherited *bool `json:"inherited,omitempty" xml:"inherited"`
+func (f *FeatureCommitStatusPublisher) VcsRootID() string {
+	return f.vcsRootID
+}
 
-	// name
-	Name string `json:"name,omitempty" xml:"name"`
+func (f *FeatureCommitStatusPublisher) SetVcsRootID(value string) {
+	f.vcsRootID = value
+}
 
-	// properties
-	Properties *Properties `json:"properties,omitempty"`
+func (f *FeatureCommitStatusPublisher) Disabled() bool {
+	return f.disabled
+}
 
-	// type
-	Type string `json:"type,omitempty" xml:"type"`
+func (f *FeatureCommitStatusPublisher) SetDisabled(value bool) {
+	f.disabled = value
+}
+
+func (f *FeatureCommitStatusPublisher) BuildTypeID() string {
+	return f.buildTypeID
+}
+
+func (f *FeatureCommitStatusPublisher) SetBuildTypeID(value string) {
+	f.buildTypeID = value
+}
+
+func (f *FeatureCommitStatusPublisher) Properties() *Properties {
+	return f.properties
+}
+
+func (f *FeatureCommitStatusPublisher) MarshalJSON() ([]byte, error) {
+	out := &buildFeatureJSON{
+		ID:         f.id,
+		Disabled:   NewBool(f.disabled),
+		Properties: f.properties,
+		Inherited:  NewFalse(),
+		Type:       f.Type(),
+	}
+
+	return json.Marshal(out)
+}
+
+func (f *FeatureCommitStatusPublisher) UnmarshalJSON(data []byte) error {
+	var aux buildFeatureJSON
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	f.id = aux.ID
+
+	disabled := aux.Disabled
+	if disabled == nil {
+		disabled = NewFalse()
+	}
+	f.disabled = *disabled
+	f.properties = NewProperties(aux.Properties.Items...)
+
+	return nil
 }
