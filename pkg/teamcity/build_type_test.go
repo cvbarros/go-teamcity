@@ -76,7 +76,18 @@ func TestBuildType_AttachVcsRoot(t *testing.T) {
 
 func TestBuildType_AddStep(t *testing.T) {
 	client := setup()
-	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
+	updatedBuildType := createTestBuildStep(t, client, "step1", testBuildTypeProjectId)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	actual := updatedBuildType.Steps.Items
+
+	assert.NotEmpty(t, actual)
+}
+
+func TestBuildType_AddStepNoName(t *testing.T) {
+	client := setup()
+	updatedBuildType := createTestBuildStep(t, client, "", testBuildTypeProjectId)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
@@ -87,7 +98,7 @@ func TestBuildType_AddStep(t *testing.T) {
 
 func TestBuildType_DeleteStep(t *testing.T) {
 	client := setup()
-	updatedBuildType := createTestBuildStep(t, client, testBuildTypeProjectId)
+	updatedBuildType := createTestBuildStep(t, client, "step1", testBuildTypeProjectId)
 
 	deleteStep := updatedBuildType.Steps.Items[0]
 
@@ -160,11 +171,10 @@ func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTyp
 	return detailed
 }
 
-func createTestBuildStep(t *testing.T, client *teamcity.Client, buildTypeProjectId string) *teamcity.BuildType {
+func createTestBuildStep(t *testing.T, client *teamcity.Client, stepName string, buildTypeProjectId string) *teamcity.BuildType {
 	createdBuildType := createTestBuildType(t, client, buildTypeProjectId)
 
-	builder := teamcity.StepPowershellBuilder
-	step := builder.ScriptFile("build.ps1").Build("step1")
+	step := teamcity.StepPowershellBuilder.ScriptFile("build.ps1").Build(stepName)
 
 	if err := client.BuildTypes.AddStep(createdBuildType.ID, step); err != nil {
 		t.Fatalf("Failed to add step to buildType '%s'", createdBuildType.ID)

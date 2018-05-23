@@ -27,6 +27,8 @@ func TestPowershellStepBuilder_ScriptFile(t *testing.T) {
 	assert.a.NotNilf(actual.Properties, "Properties expected to be defined")
 
 	assert.assertPropertyValue(actual.Properties, "jetbrains_powershell_script_mode", "FILE")
+	assert.assertPropertyValue(actual.Properties, "jetbrains_powershell_script_file", "build.ps1")
+	assert.assertPropertyDoesNotExist(actual.Properties, "jetbrains_powershell_scriptArguments")
 }
 
 func TestPowershellStepBuilder_Args(t *testing.T) {
@@ -52,6 +54,27 @@ func TestPowershellStepBuilder_Code(t *testing.T) {
 	assert.assertPropertyValue(actual.Properties, "jetbrains_powershell_script_mode", "CODE")
 }
 
+func TestPowershellStepBuilder_MultipleTimes(t *testing.T) {
+	assert := newPropertyAssertions(t)
+	expected := "Some script code"
+
+	psBuilder := teamcity.StepPowershellBuilder.ScriptFile("script.ps1")
+	psBuilder = psBuilder.Args("someargs")
+
+	actual1 := psBuilder.Build("step1")
+
+	assert.assertPropertyValue(actual1.Properties, "jetbrains_powershell_script_mode", "FILE")
+	assert.assertPropertyValue(actual1.Properties, "jetbrains_powershell_script_file", "script.ps1")
+	assert.assertPropertyValue(actual1.Properties, "jetbrains_powershell_scriptArguments", "someargs")
+
+	actual2 := teamcity.StepPowershellBuilder.Code(expected).Build("step2")
+
+	assert.assertPropertyValue(actual2.Properties, "jetbrains_powershell_script_code", expected)
+	assert.assertPropertyValue(actual2.Properties, "jetbrains_powershell_script_mode", "CODE")
+	assert.assertPropertyDoesNotExist(actual2.Properties, "jetbrains_powershell_scriptArguments")
+	assert.assertPropertyDoesNotExist(actual2.Properties, "jetbrains_powershell_script_file")
+}
+
 func newPropertyAssertions(t *testing.T) *PropertyAssertions {
 	return &PropertyAssertions{a: assert.New(t), t: t}
 }
@@ -63,4 +86,12 @@ func (p *PropertyAssertions) assertPropertyValue(props *teamcity.Properties, nam
 
 	p.a.Contains(propMap, name)
 	p.a.Equal(value, propMap[name])
+}
+
+func (p *PropertyAssertions) assertPropertyDoesNotExist(props *teamcity.Properties, name string) {
+	require.NotNil(p.t, props)
+
+	propMap := props.Map()
+
+	p.a.NotContains(propMap, name)
 }
