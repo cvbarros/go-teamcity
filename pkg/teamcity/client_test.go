@@ -1,10 +1,12 @@
 package teamcity_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -15,13 +17,28 @@ const (
 	testParameterProjectId = "ParameterProjectId"
 )
 
-func setup() (client *teamcity.Client) {
-	return teamcity.New("admin", "admin")
+func setup() *teamcity.Client {
+	client, _ := teamcity.New("admin", "admin")
+	return client
 }
 
 func TestClient_BasicAuth(t *testing.T) {
 	t.Run("Basic auth works against local instance", func(t *testing.T) {
 		client := setup()
+		success, err := client.Validate()
+		if err != nil {
+			t.Fatalf("Error when validating client: %s", err)
+		}
+
+		assert.Equal(t, true, success)
+	})
+}
+
+func TestClient_Address(t *testing.T) {
+	t.Run("Specify address from alternate constructor", func(t *testing.T) {
+		address := os.Getenv("TEAMCITY_ADDR")
+		client, err := teamcity.NewWithAddress("admin", "admin", address)
+		require.NoError(t, err)
 		success, err := client.Validate()
 		if err != nil {
 			t.Fatalf("Error when validating client: %s", err)
