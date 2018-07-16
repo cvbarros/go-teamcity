@@ -7,8 +7,3 @@ services:
     volumes:
       - ./data_dir:/data/teamcity_server/datadir
       - ./log_dir:/opt/teamcity/logs
-  # teamcity-agent:
-  #   image: jetbrains/teamcity-agent:latest
-  #   environment:
-  #     - SERVER_URL=http://server:8111
-  #     - AGENT_NAME=regular_agent

@@ -66,7 +66,7 @@ func (s *DependencyService) GetById(depId string) (*SnapshotDependency, error) {
 //Delete removes a snapshot dependency from the build configuration by its id
 func (s *DependencyService) Delete(depId string) error {
 	request, _ := s.snapshotSling.New().Delete(depId).Request()
-	response, err := http.DefaultClient.Do(request)
+	response, err := s.httpClient.Do(request)
 	if err != nil {
 		return err
 	}
