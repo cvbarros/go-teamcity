@@ -1,6 +1,7 @@
 package teamcity_test
 
 import (
+	"net/http"
 	"os"
 	"testing"
 
@@ -18,7 +19,7 @@ const (
 )
 
 func setup() *teamcity.Client {
-	client, _ := teamcity.New("admin", "admin")
+	client, _ := teamcity.New("admin", "admin", http.DefaultClient)
 	return client
 }
 
@@ -37,7 +38,7 @@ func TestClient_BasicAuth(t *testing.T) {
 func TestClient_Address(t *testing.T) {
 	t.Run("Specify address from alternate constructor", func(t *testing.T) {
 		address := os.Getenv("TEAMCITY_ADDR")
-		client, err := teamcity.NewWithAddress("admin", "admin", address)
+		client, err := teamcity.NewWithAddress("admin", "admin", address, http.DefaultClient)
 		require.NoError(t, err)
 		success, err := client.Validate()
 		if err != nil {

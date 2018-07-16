@@ -93,12 +93,14 @@ type ProjectReference struct {
 
 // ProjectService has operations for handling projects
 type ProjectService struct {
-	sling *sling.Sling
+	sling      *sling.Sling
+	httpClient *http.Client
 }
 
-func newProjectService(base *sling.Sling) *ProjectService {
+func newProjectService(base *sling.Sling, client *http.Client) *ProjectService {
 	return &ProjectService{
-		sling: base.Path("projects/"),
+		sling:      base.Path("projects/"),
+		httpClient: client,
 	}
 }
 

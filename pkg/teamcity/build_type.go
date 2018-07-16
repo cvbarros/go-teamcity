@@ -116,12 +116,14 @@ func (b *BuildType) Reference() *BuildTypeReference {
 
 // BuildTypeService has operations for handling build configurations and templates
 type BuildTypeService struct {
-	sling *sling.Sling
+	sling      *sling.Sling
+	httpClient *http.Client
 }
 
-func newBuildTypeService(base *sling.Sling) *BuildTypeService {
+func newBuildTypeService(base *sling.Sling, httpClient *http.Client) *BuildTypeService {
 	return &BuildTypeService{
-		sling: base.Path("buildTypes/"),
+		httpClient: httpClient,
+		sling:      base.Path("buildTypes/"),
 	}
 }
 
@@ -158,7 +160,7 @@ func (s *BuildTypeService) GetById(id string) (*BuildType, error) {
 //Delete a build type resource
 func (s *BuildTypeService) Delete(id string) error {
 	request, _ := s.sling.New().Delete(id).Request()
-	response, err := http.DefaultClient.Do(request)
+	response, err := s.httpClient.Do(request)
 	if err != nil {
 		return err
 	}
@@ -215,7 +217,7 @@ func (s *BuildTypeService) UpdateSettings(id string, settings *Properties) error
 	for _, item := range settings.Items {
 		bodyProvider := textPlainBodyProvider{payload: item.Value}
 		req, err := s.sling.New().Put(fmt.Sprintf("%s/settings/%s", LocatorId(id), item.Name)).BodyProvider(bodyProvider).Add("Accept", "text/plain").Request()
-		response, err := http.DefaultClient.Do(req)
+		response, err := s.httpClient.Do(req)
 		response.Body.Close()
 		if err != nil {
 			return fmt.Errorf("error updating buildType id: '%s' setting '%s': %s", id, item.Name, err)

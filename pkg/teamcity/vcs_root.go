@@ -64,12 +64,14 @@ type VcsRootReference struct {
 
 // VcsRootService has operations for handling vcs roots
 type VcsRootService struct {
-	sling *sling.Sling
+	sling      *sling.Sling
+	httpClient *http.Client
 }
 
-func newVcsRootService(base *sling.Sling) *VcsRootService {
+func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootService {
 	return &VcsRootService{
-		sling: base.Path("vcs-roots/"),
+		sling:      base.Path("vcs-roots/"),
+		httpClient: httpClient,
 	}
 }
 
@@ -113,7 +115,7 @@ func (s *VcsRootService) Delete(id string) error {
 	request, _ := s.sling.New().Delete(id).Request()
 
 	//TODO: Expose the same httpClient used by sling
-	response, err := http.DefaultClient.Do(request)
+	response, err := s.httpClient.Do(request)
 	if err != nil {
 		return err
 	}

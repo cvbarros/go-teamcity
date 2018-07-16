@@ -147,7 +147,7 @@ func (s *TriggerService) GetById(id string) (*Trigger, error) {
 //Delete removes a snapshot dependency from the build configuration by its id
 func (s *TriggerService) Delete(id string) error {
 	request, _ := s.base.New().Delete(id).Request()
-	response, err := http.DefaultClient.Do(request)
+	response, err := s.httpClient.Do(request)
 	if err != nil {
 		return err
 	}
