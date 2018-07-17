@@ -16,5 +16,6 @@
 #VSCode
 .vscode/
 
-# Data Dir For TeamCity
+# Integration test container dirs
 integration_tests/data_dir/
+integration_tests/log_dir/

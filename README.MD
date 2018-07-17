@@ -40,4 +40,4 @@ The development and design of this library is based on the [go-github](https://g
 
 ## License ##
 
-This library is distributed under the MIT 2.0 license fully described in the [LICENSE](./LICENSE) file.
+This library is distributed under the MPL-2.0 license fully described in the [LICENSE](./LICENSE) file.
