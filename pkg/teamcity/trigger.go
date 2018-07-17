@@ -9,6 +9,7 @@ import (
 	"github.com/dghubble/sling"
 )
 
+//Triggers represents a typed, serializable collection of Trigger
 type Triggers struct {
 	// count
 	Count int32 `json:"count,omitempty" xml:"count"`
@@ -110,11 +111,11 @@ type TriggerService struct {
 	base        *sling.Sling
 }
 
-func newTriggerService(buildTypeId string, c *http.Client, base *sling.Sling) *TriggerService {
+func newTriggerService(buildTypeID string, c *http.Client, base *sling.Sling) *TriggerService {
 	return &TriggerService{
-		BuildTypeID: buildTypeId,
+		BuildTypeID: buildTypeID,
 		httpClient:  c,
-		base:        base.Path(fmt.Sprintf("buildTypes/%s/triggers/", Locator(buildTypeId).String())),
+		base:        base.Path(fmt.Sprintf("buildTypes/%s/triggers/", Locator(buildTypeID).String())),
 	}
 }
 
@@ -136,8 +137,8 @@ func (s *TriggerService) AddTrigger(t *Trigger) (*Trigger, error) {
 	return &out, nil
 }
 
-//GetById returns a dependency by its id
-func (s *TriggerService) GetById(id string) (*Trigger, error) {
+//GetByID returns a dependency by its id
+func (s *TriggerService) GetByID(id string) (*Trigger, error) {
 	var out Trigger
 	resp, err := s.base.New().Get(id).ReceiveSuccess(&out)
 

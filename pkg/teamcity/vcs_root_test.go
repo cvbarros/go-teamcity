@@ -129,7 +129,7 @@ func cleanUpVcsRoot(t *testing.T, c *teamcity.Client, id string) {
 		return
 	}
 
-	deleted, err := c.VcsRoots.GetById(id)
+	deleted, err := c.VcsRoots.GetByID(id)
 
 	if deleted != nil {
 		t.Errorf("Vcs root not deleted during cleanup.")

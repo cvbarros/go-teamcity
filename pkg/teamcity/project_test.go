@@ -49,7 +49,7 @@ func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
 		t.Fatalf("Unable to delete project with id = '%s', err: %s", id, err)
 	}
 
-	deletedProject, err := c.Projects.GetById(id)
+	deletedProject, err := c.Projects.GetByID(id)
 
 	if deletedProject != nil {
 		t.Fatalf("Project not deleted during cleanup.")

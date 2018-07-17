@@ -62,7 +62,7 @@ func TestBuildType_AttachVcsRoot(t *testing.T) {
 		t.Fatalf("Failed to attach vcsRoot '%s' to buildType '%s': %s", createdBuildType.ID, vcsRootCreated.ID, err)
 	}
 
-	actual, err := client.BuildTypes.GetById(createdBuildType.ID)
+	actual, err := client.BuildTypes.GetByID(createdBuildType.ID)
 	if err != nil {
 		t.Fatalf("Failed to get buildType '%s' for asserting: %s", createdBuildType.ID, err)
 	}
@@ -104,7 +104,7 @@ func TestBuildType_DeleteStep(t *testing.T) {
 
 	client.BuildTypes.DeleteStep(updatedBuildType.ID, deleteStep.ID)
 
-	updatedBuildType, _ = client.BuildTypes.GetById(updatedBuildType.ID)
+	updatedBuildType, _ = client.BuildTypes.GetByID(updatedBuildType.ID)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
@@ -128,7 +128,7 @@ func TestBuildType_UpdateSettings(t *testing.T) {
 	err := client.BuildTypes.UpdateSettings(buildType.ID, settings)
 	assert.Nil(err)
 
-	buildType, _ = client.BuildTypes.GetById(buildType.ID) //refresh
+	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
 	actual := buildType.Settings.Map()
@@ -141,7 +141,7 @@ func TestBuildType_UpdateSettings(t *testing.T) {
 func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
 	out := make(map[string]string)
 	for _, item := range v.Items {
-		out[item.VcsRoot.ID] = item.Id
+		out[item.VcsRoot.ID] = item.ID
 	}
 
 	return out
@@ -167,7 +167,7 @@ func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTyp
 		t.Fatalf("Failed to CreateBuildType: %s", err)
 	}
 
-	detailed, _ := client.BuildTypes.GetById(createdBuildType.ID)
+	detailed, _ := client.BuildTypes.GetByID(createdBuildType.ID)
 	return detailed
 }
 
@@ -180,7 +180,7 @@ func createTestBuildStep(t *testing.T, client *teamcity.Client, stepName string,
 		t.Fatalf("Failed to add step to buildType '%s'", createdBuildType.ID)
 	}
 
-	updated, _ := client.BuildTypes.GetById(createdBuildType.ID)
+	updated, _ := client.BuildTypes.GetByID(createdBuildType.ID)
 	return updated
 }
 
@@ -199,7 +199,7 @@ func cleanUpBuildType(t *testing.T, c *teamcity.Client, id string) {
 		return
 	}
 
-	deleted, err := c.BuildTypes.GetById(id)
+	deleted, err := c.BuildTypes.GetByID(id)
 
 	if deleted != nil {
 		t.Errorf("Build type not deleted during cleanup.")

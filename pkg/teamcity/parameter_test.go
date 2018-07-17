@@ -27,7 +27,7 @@ func TestParameters_CreateForProject(t *testing.T) {
 		t.Fatalf("Failed to create parameters: %s", err)
 	}
 
-	actual, err := client.Projects.GetById(testParameterProjectId)
+	actual, err := client.Projects.GetByID(testParameterProjectId)
 	cleanUpProject(t, client, testParameterProjectId)
 
 	if err != nil || actual == nil {
@@ -71,7 +71,7 @@ func TestParameters_CreateForBuildType(t *testing.T) {
 		t.Fatalf("Failed to create parameters: %s", err)
 	}
 
-	actual, err := client.BuildTypes.GetById(created.ID)
+	actual, err := client.BuildTypes.GetByID(created.ID)
 	cleanUpProject(t, client, testParameterProjectId)
 
 	if err != nil || actual == nil {

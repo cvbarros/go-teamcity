@@ -39,7 +39,7 @@ func TestTrigger_Create(t *testing.T) {
 
 	require.Nil(err)
 
-	bt, _ = client.BuildTypes.GetById(bt.ID)
+	bt, _ = client.BuildTypes.GetByID(bt.ID)
 
 	assert.Equal(int32(1), bt.Triggers.Count)
 	actual := bt.Triggers.Items[0]
@@ -65,7 +65,7 @@ func TestTrigger_Get(t *testing.T) {
 
 	require.Nil(err)
 
-	actual, err := sut.GetById(created.ID)
+	actual, err := sut.GetByID(created.ID)
 
 	require.NoError(err)
 	assert.Equal(created.ID, actual.ID)
@@ -90,7 +90,7 @@ func TestTrigger_Delete(t *testing.T) {
 	require.Nil(err)
 
 	sut.Delete(created.ID)
-	_, err = sut.GetById(created.ID) // refresh
+	_, err = sut.GetByID(created.ID) // refresh
 
 	require.Error(err)
 	assert.Contains(err.Error(), "404")

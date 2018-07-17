@@ -22,7 +22,7 @@ func TestSnapshotDependency_Create(t *testing.T) {
 
 	require.Nil(t, err)
 
-	buildType, _ = client.BuildTypes.GetById(buildType.ID) //refresh
+	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
 	actual := buildType.SnapshotDependencies.Items
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
@@ -45,7 +45,7 @@ func TestSnapshotDependency_Get(t *testing.T) {
 
 	require.Nil(t, err)
 
-	actual, err := sut.GetById(created.ID) // refresh
+	actual, err := sut.GetByID(created.ID) // refresh
 
 	require.Nil(t, err)
 	assert.Equal(created.ID, actual.ID)
@@ -70,7 +70,7 @@ func TestSnapshotDependency_Delete(t *testing.T) {
 	require.Nil(t, err)
 
 	sut.Delete(created.ID)
-	_, err = sut.GetById(created.ID) // refresh
+	_, err = sut.GetByID(created.ID) // refresh
 
 	require.Error(t, err)
 	assert.Contains(err.Error(), "404")

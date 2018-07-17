@@ -16,7 +16,7 @@ func TestAgentRequirement_Create(t *testing.T) {
 
 	sut := client.AgentRequirementService(buildType.ID)
 	sut.Create(req)
-	buildType, _ = client.BuildTypes.GetById(buildType.ID) //refresh
+	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
 
 	actual := buildType.AgentRequirements
 
