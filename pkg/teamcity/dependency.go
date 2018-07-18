@@ -3,7 +3,6 @@ package teamcity
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -15,6 +14,8 @@ type DependencyService struct {
 	httpClient    *http.Client
 	artifactSling *sling.Sling
 	snapshotSling *sling.Sling
+
+	restHelper *restHelper
 }
 
 //NewDependencyService constructs and instance of DependencyService scoped to a given buildTypeId
@@ -24,6 +25,7 @@ func NewDependencyService(buildTypeID string, c *http.Client, base *sling.Sling)
 		httpClient:    c,
 		artifactSling: base.New().Path(fmt.Sprintf("buildTypes/%s/artifact-dependencies/", buildTypeID)),
 		snapshotSling: base.New().Path(fmt.Sprintf("buildTypes/%s/snapshot-dependencies/", buildTypeID)),
+		restHelper:    newRestHelper(c),
 	}
 }
 
@@ -102,48 +104,10 @@ func (s *DependencyService) GetArtifactByID(depID string) (*ArtifactDependency, 
 
 //DeleteSnapshot removes a snapshot dependency from the build configuration by its id
 func (s *DependencyService) DeleteSnapshot(depID string) error {
-	request, _ := s.snapshotSling.New().Delete(depID).Request()
-	response, err := s.httpClient.Do(request)
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-	if response.StatusCode == 204 {
-		return nil
-	}
-
-	if response.StatusCode != 200 && response.StatusCode != 204 {
-		respData, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("Error '%d' when deleting snapshot dependency: %s", response.StatusCode, string(respData))
-	}
-
-	return nil
+	return s.restHelper.deleteByIDWithSling(s.snapshotSling, depID, "snapshot dependency")
 }
 
 //DeleteArtifact removes an artifact dependency from the build configuration by its id
 func (s *DependencyService) DeleteArtifact(depID string) error {
-	request, _ := s.artifactSling.New().Delete(depID).Request()
-	response, err := s.httpClient.Do(request)
-	if err != nil {
-		return err
-	}
-
-	defer response.Body.Close()
-	if response.StatusCode == 204 {
-		return nil
-	}
-
-	if response.StatusCode != 200 && response.StatusCode != 204 {
-		respData, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("Error '%d' when deleting artifact dependency: %s", response.StatusCode, string(respData))
-	}
-
-	return nil
+	return s.restHelper.deleteByIDWithSling(s.artifactSling, depID, "snapshot dependency")
 }

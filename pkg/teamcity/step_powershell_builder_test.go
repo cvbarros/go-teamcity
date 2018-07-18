@@ -4,14 +4,7 @@ import (
 	"testing"
 
 	"github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-type PropertyAssertions struct {
-	a *assert.Assertions
-	t *testing.T
-}
 
 const testStepName = "stepName"
 
@@ -73,33 +66,4 @@ func TestPowershellStepBuilder_MultipleTimes(t *testing.T) {
 	assert.assertPropertyValue(actual2.Properties, "jetbrains_powershell_script_mode", "CODE")
 	assert.assertPropertyDoesNotExist(actual2.Properties, "jetbrains_powershell_scriptArguments")
 	assert.assertPropertyDoesNotExist(actual2.Properties, "jetbrains_powershell_script_file")
-}
-
-func newPropertyAssertions(t *testing.T) *PropertyAssertions {
-	return &PropertyAssertions{a: assert.New(t), t: t}
-}
-
-func (p *PropertyAssertions) assertPropertyValue(props *teamcity.Properties, name string, value string) {
-	require.NotNil(p.t, props)
-
-	propMap := props.Map()
-
-	p.a.Contains(propMap, name)
-	p.a.Equal(value, propMap[name])
-}
-
-func (p *PropertyAssertions) assertPropertyDoesNotExist(props *teamcity.Properties, name string) {
-	require.NotNil(p.t, props)
-
-	propMap := props.Map()
-
-	p.a.NotContains(propMap, name)
-}
-
-func (p *PropertyAssertions) assertPropertyExists(props *teamcity.Properties, name string) {
-	require.NotNil(p.t, props)
-
-	propMap := props.Map()
-
-	p.a.Contains(propMap, name)
 }
