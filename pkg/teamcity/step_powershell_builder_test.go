@@ -95,3 +95,11 @@ func (p *PropertyAssertions) assertPropertyDoesNotExist(props *teamcity.Properti
 
 	p.a.NotContains(propMap, name)
 }
+
+func (p *PropertyAssertions) assertPropertyExists(props *teamcity.Properties, name string) {
+	require.NotNil(p.t, props)
+
+	propMap := props.Map()
+
+	p.a.Contains(propMap, name)
+}

@@ -47,8 +47,29 @@ func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*Sna
 	return &out, nil
 }
 
-//GetByID returns a dependency by its id
-func (s *DependencyService) GetByID(depID string) (*SnapshotDependency, error) {
+//AddArtifactDependency adds a new artifact dependency to build type
+func (s *DependencyService) AddArtifactDependency(dep *ArtifactDependency) (*ArtifactDependency, error) {
+	var out ArtifactDependency
+	if dep == nil {
+		return nil, errors.New("dep can't be nil")
+	}
+
+	resp, err := s.artifactSling.New().Post("").BodyJSON(dep).ReceiveSuccess(&out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Unknown error when adding artifact dependency, statusCode: %d", resp.StatusCode)
+	}
+
+	out.BuildTypeID = s.BuildTypeID
+	return &out, nil
+}
+
+//GetSnapshotByID returns a snapshot dependency by its id
+func (s *DependencyService) GetSnapshotByID(depID string) (*SnapshotDependency, error) {
 	var out SnapshotDependency
 	resp, err := s.snapshotSling.New().Get(depID).ReceiveSuccess(&out)
 
@@ -63,8 +84,24 @@ func (s *DependencyService) GetByID(depID string) (*SnapshotDependency, error) {
 	return &out, nil
 }
 
-//Delete removes a snapshot dependency from the build configuration by its id
-func (s *DependencyService) Delete(depID string) error {
+//GetArtifactByID returns an artifact dependency by its id
+func (s *DependencyService) GetArtifactByID(depID string) (*ArtifactDependency, error) {
+	var out ArtifactDependency
+	resp, err := s.artifactSling.New().Get(depID).ReceiveSuccess(&out)
+
+	if resp.StatusCode == 404 {
+		return nil, fmt.Errorf("404 Not Found - Artifact dependency (id: %s) for buildTypeId (id: %s) was not found", depID, s.BuildTypeID)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	out.BuildTypeID = s.BuildTypeID
+	return &out, nil
+}
+
+//DeleteSnapshot removes a snapshot dependency from the build configuration by its id
+func (s *DependencyService) DeleteSnapshot(depID string) error {
 	request, _ := s.snapshotSling.New().Delete(depID).Request()
 	response, err := s.httpClient.Do(request)
 	if err != nil {
@@ -82,6 +119,30 @@ func (s *DependencyService) Delete(depID string) error {
 			return err
 		}
 		return fmt.Errorf("Error '%d' when deleting snapshot dependency: %s", response.StatusCode, string(respData))
+	}
+
+	return nil
+}
+
+//DeleteArtifact removes an artifact dependency from the build configuration by its id
+func (s *DependencyService) DeleteArtifact(depID string) error {
+	request, _ := s.artifactSling.New().Delete(depID).Request()
+	response, err := s.httpClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+	if response.StatusCode == 204 {
+		return nil
+	}
+
+	if response.StatusCode != 200 && response.StatusCode != 204 {
+		respData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting artifact dependency: %s", response.StatusCode, string(respData))
 	}
 
 	return nil
