@@ -5,6 +5,7 @@ import (
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestVcsRoot_Create(t *testing.T) {
@@ -38,9 +39,10 @@ func TestVcsRoot_Create(t *testing.T) {
 	assert.Equal(t, newVcsRoot.Name, actual.Name)
 }
 
-func TestVcsRoot_ValidateRequiredProperties(t *testing.T) {
+func TestVcsRoot_CreateWithUsernamePassword(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testVcsRootProjectId)
+	opts, _ := teamcity.NewGitVcsRootOptions("refs/head/master", "https://github.com/cvbarros/go-teamcity-sdk/", "", teamcity.GitAuthMethodPassword, "admin", "admin")
 
 	createdProject, err := client.Projects.Create(newProject)
 
@@ -48,79 +50,53 @@ func TestVcsRoot_ValidateRequiredProperties(t *testing.T) {
 		t.Fatalf("Failed to create project for VCS root: %s", err)
 	}
 
-	t.Run("VcsRoot must not be nil", func(t *testing.T) {
-		var sut *teamcity.VcsRoot = nil
+	newVcsRoot, _ := teamcity.NewGitVcsRoot(createdProject.ID, "Application", opts)
 
-		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+	actual, err := client.VcsRoots.Create(createdProject.ID, newVcsRoot)
 
-		assert.NotNilf(t, err, "Expected error to be returned when vcsRoot is nil")
-	})
+	if err != nil {
+		t.Fatalf("Failed to create VCS Root: %s", err)
+	}
 
-	t.Run("Project must be specified", func(t *testing.T) {
-		sut := getTestVcsRootData(testVcsRootProjectId)
-		sut.Project = nil
+	if actual == nil {
+		t.Fatalf("Create did not return a valid VCS root instance")
+	}
 
-		_, err := client.VcsRoots.Create(createdProject.ID, sut)
+	created, err := client.VcsRoots.GetByID(actual.ID)
 
-		assert.NotNilf(t, err, "Expected error to be returned when VcsRoot.Project property is not defined.")
-	})
+	require.NoError(t, err)
 
-	t.Run("VcsName must be specified", func(t *testing.T) {
-		sut := getTestVcsRootData(testVcsRootProjectId)
-		sut.VcsName = ""
-
-		_, err := client.VcsRoots.Create(createdProject.ID, sut)
-
-		assert.NotNilf(t, err, "Expected error to be returned when VcsRoot.VcsName property is not defined.")
-	})
-
-	t.Run("Properties must have 'url' specified", func(t *testing.T) {
-		sut := getTestVcsRootData(testVcsRootProjectId)
-		sut.Properties = teamcity.NewProperties(
-			&teamcity.Property{
-				Name:  "someprop",
-				Value: "empty",
-			})
-
-		_, err := client.VcsRoots.Create(createdProject.ID, sut)
-
-		assert.EqualError(t, err, "'url' property must be defined in VcsRoot.Properties")
-	})
-
-	t.Run("Properties must have 'branch' specified", func(t *testing.T) {
-		sut := getTestVcsRootData(testVcsRootProjectId)
-		sut.Properties = teamcity.NewProperties(
-			&teamcity.Property{
-				Name:  "url",
-				Value: "anything",
-			})
-
-		_, err := client.VcsRoots.Create(createdProject.ID, sut)
-
-		assert.EqualError(t, err, "'branch' property must be defined in VcsRoot.Properties")
-	})
-
+	cleanUpVcsRoot(t, client, actual.ID)
 	cleanUpProject(t, client, createdProject.ID)
+
+	props := created.Properties
+	propAssert := newPropertyAssertions(t)
+
+	propAssert.assertPropertyValue(props, "authMethod", string(teamcity.GitAuthMethodPassword))
+	propAssert.assertPropertyValue(props, "username", "admin")
+	propAssert.assertPropertyExists(props, "secure:password")
+}
+
+func TestVcsRoot_Invariants(t *testing.T) {
+	gitOpt, _ := teamcity.NewGitVcsRootOptionsDefaults("master", "https://github.com/cvbarros/go-teamcity-sdk/")
+	t.Run("projectID is required", func(t *testing.T) {
+		_, err := teamcity.NewGitVcsRoot("", "name", gitOpt)
+		require.EqualError(t, err, "projectID is required")
+	})
+	t.Run("name is required", func(t *testing.T) {
+		_, err := teamcity.NewGitVcsRoot("project1", "", gitOpt)
+		require.EqualError(t, err, "name is required")
+	})
+	t.Run("opts is required", func(t *testing.T) {
+		_, err := teamcity.NewGitVcsRoot("project1", "name", nil)
+		require.EqualError(t, err, "opts is required")
+	})
 }
 
 func getTestVcsRootData(projectId string) *teamcity.VcsRoot {
-
-	return &teamcity.VcsRoot{
-		Name:    "Application",
-		VcsName: teamcity.VcsNames.Git,
-		Project: &teamcity.ProjectReference{
-			ID: projectId,
-		},
-		Properties: teamcity.NewProperties(
-			&teamcity.Property{
-				Name:  "url",
-				Value: "https://github.com/kelseyhightower/nocode",
-			},
-			&teamcity.Property{
-				Name:  "branch",
-				Value: "refs/head/master",
-			}),
-	}
+	opts, _ := teamcity.NewGitVcsRootOptionsDefaults("refs/head/master", "https://github.com/cvbarros/go-teamcity-sdk")
+	v, _ := teamcity.NewGitVcsRoot(projectId, "Application", opts)
+	return v
 }
 
 func cleanUpVcsRoot(t *testing.T, c *teamcity.Client, id string) {

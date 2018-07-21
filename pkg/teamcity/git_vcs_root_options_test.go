@@ -29,7 +29,7 @@ func Test_GitVcsRootOptionsConstructor(t *testing.T) {
 		propAssert.assertPropertyValue(props, "push_url", actual.PushURL)
 		propAssert.assertPropertyValue(props, "url", actual.FetchURL)
 		propAssert.assertPropertyValue(props, "username", actual.Username)
-		propAssert.assertPropertyValue(props, "password", actual.Password)
+		propAssert.assertPropertyValue(props, "secure:password", actual.Password)
 
 		propAssert.assertPropertyValue(props, "agentCleanFilesPolicy", "ALL_UNTRACKED")
 		propAssert.assertPropertyValue(props, "agentCleanPolicy", "ON_BRANCH_CHANGE")
@@ -66,7 +66,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_AnonymousAuth(t *testing.T) {
 	// If using anonymous, don't consider username/password properties
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthMethodAnonymous))
 	propAssert.assertPropertyDoesNotExist(props, "username")
-	propAssert.assertPropertyDoesNotExist(props, "password")
+	propAssert.assertPropertyDoesNotExist(props, "secure:password")
 }
 
 func Test_GitVcsRootOptionsVcsRootProperties_UsernamePasswordAuth(t *testing.T) {
@@ -77,7 +77,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_UsernamePasswordAuth(t *testing.T) 
 
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthMethodPassword))
 	propAssert.assertPropertyValue(props, "username", actual.Username)
-	propAssert.assertPropertyValue(props, "password", actual.Password)
+	propAssert.assertPropertyValue(props, "secure:password", actual.Password)
 }
 
 func Test_GitVcsRootOptionsVcsRootProperties_UploadedKeyAuth(t *testing.T) {
@@ -90,7 +90,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_UploadedKeyAuth(t *testing.T) {
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthSSHUploadedKey))
 	propAssert.assertPropertyValue(props, "username", actual.Username)
 	propAssert.assertPropertyValue(props, "teamcitySshKey", actual.PrivateKeySource)
-	propAssert.assertPropertyValue(props, "passphrase", actual.Password)
+	propAssert.assertPropertyValue(props, "secure:passphrase", actual.Password)
 }
 
 func Test_GitVcsRootOptionsVcsRootProperties_CustomKeyAuth(t *testing.T) {
@@ -103,7 +103,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_CustomKeyAuth(t *testing.T) {
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthSSHCustomKey))
 	propAssert.assertPropertyValue(props, "username", actual.Username)
 	propAssert.assertPropertyValue(props, "privateKeyPath", actual.PrivateKeySource)
-	propAssert.assertPropertyValue(props, "passphrase", actual.Password)
+	propAssert.assertPropertyValue(props, "secure:passphrase", actual.Password)
 }
 
 func Test_GitVcsRootOptionsVcsRootProperties_BranchSpec(t *testing.T) {

@@ -138,6 +138,13 @@ func NewGitVcsRootOptions(defaultBranch string, fetchURL string, pushURL string,
 	return NewGitVcsRootOptionsWithAgentSettings(defaultBranch, fetchURL, pushURL, auth, username, password, nil)
 }
 
+//NewGitVcsRootOptionsDefaults returns a new instance of GitVcsRootOptions with default values
+//Anonymous auth method
+//Default AgentSettings
+func NewGitVcsRootOptionsDefaults(defaultBranch string, fetchURL string) (*GitVcsRootOptions, error) {
+	return NewGitVcsRootOptions(defaultBranch, fetchURL, "", GitAuthMethodAnonymous, "", "")
+}
+
 //NewGitVcsRootOptionsWithAgentSettings returns a new instance of GitVcsRootOptions with specified GitAgentSettings
 func NewGitVcsRootOptionsWithAgentSettings(defaultBranch string, fetchURL string, pushURL string, auth GitAuthMethod, username string, password string, agentSettings *GitAgentSettings) (*GitVcsRootOptions, error) {
 	if auth == "" {
@@ -192,14 +199,14 @@ func (o *GitVcsRootOptions) gitVcsRootProperties() *Properties {
 	switch o.AuthMethod {
 	case GitAuthMethodPassword:
 		p.AddOrReplaceValue("username", o.Username)
-		p.AddOrReplaceValue("password", o.Password)
+		p.AddOrReplaceValue("secure:password", o.Password)
 	case GitAuthSSHUploadedKey:
 		p.AddOrReplaceValue("username", o.Username)
-		p.AddOrReplaceValue("passphrase", o.Password)
+		p.AddOrReplaceValue("secure:passphrase", o.Password)
 		p.AddOrReplaceValue("teamcitySshKey", o.PrivateKeySource)
 	case GitAuthSSHCustomKey:
 		p.AddOrReplaceValue("username", o.Username)
-		p.AddOrReplaceValue("passphrase", o.Password)
+		p.AddOrReplaceValue("secure:passphrase", o.Password)
 		p.AddOrReplaceValue("privateKeyPath", o.PrivateKeySource)
 	case GitAuthSSHDefaultKey:
 		p.AddOrReplaceValue("username", o.Username)

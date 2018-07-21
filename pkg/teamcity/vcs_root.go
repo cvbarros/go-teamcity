@@ -11,20 +11,13 @@ import (
 
 // VcsRoot represents a detailed VCS Root entity
 type VcsRoot struct {
-
-	// href
-	Href string `json:"href,omitempty" xml:"href"`
-
 	// id
 	ID string `json:"id,omitempty" xml:"id"`
 
 	// internal Id
 	InternalID string `json:"internalId,omitempty" xml:"internalId"`
 
-	// locator
-	Locator string `json:"locator,omitempty" xml:"locator"`
-
-	// modification check interval
+	// ModificationCheckInterval value in seconds to override the global server setting.
 	ModificationCheckInterval int32 `json:"modificationCheckInterval,omitempty" xml:"modificationCheckInterval"`
 
 	// name
@@ -33,16 +26,11 @@ type VcsRoot struct {
 	// project
 	Project *ProjectReference `json:"project,omitempty"`
 
-	// project locator
-	ProjectLocator string `json:"projectLocator,omitempty" xml:"projectLocator"`
-
-	// properties
+	// Properties for the VCS Root. Do not set directly, instead use NewVcsRoot... constructors.
 	Properties *Properties `json:"properties,omitempty"`
 
-	// uuid
-	UUID string `json:"uuid,omitempty" xml:"uuid"`
-
-	// vcs name
+	// VcsName is the VCS Type used for this VCS Root. See VcsNames for allowed values.
+	// Use NewVcsRoot... constructors to avoid setting this directly.
 	VcsName string `json:"vcsName,omitempty" xml:"vcsName"`
 }
 
@@ -68,6 +56,27 @@ type VcsRootService struct {
 	httpClient *http.Client
 }
 
+//NewGitVcsRoot returns a VCS Root instance that connects to Git VCS.
+func NewGitVcsRoot(projectID string, name string, opts *GitVcsRootOptions) (*VcsRoot, error) {
+	if projectID == "" {
+		return nil, errors.New("projectID is required")
+	}
+	if name == "" {
+		return nil, errors.New("name is required")
+	}
+	if opts == nil {
+		return nil, errors.New("opts is required")
+	}
+	return &VcsRoot{
+		Name: name,
+		Project: &ProjectReference{
+			ID: projectID,
+		},
+		VcsName:    string(VcsNames.Git),
+		Properties: opts.gitVcsRootProperties(),
+	}, nil
+}
+
 func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootService {
 	return &VcsRootService{
 		sling:      base.Path("vcs-roots/"),
@@ -79,12 +88,7 @@ func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootServi
 func (s *VcsRootService) Create(projectID string, vcsRoot *VcsRoot) (*VcsRootReference, error) {
 	var created VcsRootReference
 
-	success, err := s.Validate(projectID, vcsRoot)
-	if success == false {
-		return nil, err
-	}
-
-	_, err = s.sling.New().Post("").BodyJSON(vcsRoot).ReceiveSuccess(&created)
+	_, err := s.sling.New().Post("").BodyJSON(vcsRoot).ReceiveSuccess(&created)
 
 	if err != nil {
 		return nil, err
@@ -134,27 +138,4 @@ func (s *VcsRootService) Delete(id string) error {
 	}
 
 	return nil
-}
-
-// Validate verifies if a VcsRoot model is valid for updating/creation before sending to upstream API.
-func (s *VcsRootService) Validate(projectID string, vcsRoot *VcsRoot) (bool, error) {
-	if vcsRoot == nil {
-		return false, errors.New("vcsRoot must not be nil")
-	}
-	if vcsRoot.Project == nil {
-		return false, errors.New("vcsRoot.Project must not be nil")
-	}
-	if vcsRoot.VcsName == "" {
-		return false, errors.New("vcsRoot.VcsName must be defined")
-	}
-
-	props := vcsRoot.Properties.Map()
-	if _, ok := props["url"]; !ok {
-		return false, errors.New("'url' property must be defined in VcsRoot.Properties")
-	}
-
-	if _, ok := props["branch"]; !ok {
-		return false, errors.New("'branch' property must be defined in VcsRoot.Properties")
-	}
-	return true, nil
 }
