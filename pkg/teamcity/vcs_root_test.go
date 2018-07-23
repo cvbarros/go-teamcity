@@ -11,7 +11,7 @@ import (
 func TestVcsRoot_Create(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testVcsRootProjectId)
-	newVcsRoot := getTestVcsRootData(testVcsRootProjectId)
+	newVcsRoot := getTestVcsRootData(testVcsRootProjectId).(*teamcity.GitVcsRoot)
 
 	createdProject, err := client.Projects.Create(newProject)
 
@@ -69,7 +69,7 @@ func TestVcsRoot_CreateWithUsernamePassword(t *testing.T) {
 	cleanUpVcsRoot(t, client, actual.ID)
 	cleanUpProject(t, client, createdProject.ID)
 
-	props := created.Properties
+	props := created.Properties()
 	propAssert := newPropertyAssertions(t)
 
 	propAssert.assertPropertyValue(props, "authMethod", string(teamcity.GitAuthMethodPassword))
@@ -93,7 +93,7 @@ func TestVcsRoot_Invariants(t *testing.T) {
 	})
 }
 
-func getTestVcsRootData(projectId string) *teamcity.VcsRoot {
+func getTestVcsRootData(projectId string) teamcity.VcsRoot {
 	opts, _ := teamcity.NewGitVcsRootOptionsDefaults("refs/head/master", "https://github.com/cvbarros/go-teamcity-sdk")
 	v, _ := teamcity.NewGitVcsRoot(projectId, "Application", opts)
 	return v
@@ -114,5 +114,17 @@ func cleanUpVcsRoot(t *testing.T, c *teamcity.Client, id string) {
 
 	if err == nil {
 		t.Errorf("Expected 404 Not Found error when getting Deleted VCS Root, but no error returned.")
+	}
+}
+
+func ExampleVcsRoot_VcsName() {
+	var vcsRoot teamcity.VcsRoot
+	//Retrieve vcsRoot from API, for instance
+	//Check for its type
+	switch vcsRoot.VcsName() {
+	case teamcity.VcsNames.Git:
+		git := vcsRoot.(*teamcity.GitVcsRoot)
+		//Use it strongly-typed
+		println(git.Options.FetchURL)
 	}
 }
