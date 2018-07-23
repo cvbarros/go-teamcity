@@ -1,7 +1,7 @@
 package teamcity
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,8 +9,20 @@ import (
 	"github.com/dghubble/sling"
 )
 
-// VcsRoot represents a detailed VCS Root entity
-type VcsRoot struct {
+//VcsRoot interface represents a base type of VCSRoot
+type VcsRoot interface {
+	//GetID returns the ID of this VCS Root
+	GetID() string
+
+	//VcsName returns the type of VCS Root. See VcsNames for possible values returned.
+	//In addition, this can be used to type assert to the appropriate concrete VCS Root type.
+	VcsName() string
+
+	//Properties returns the Properties collection for this VCS Root. This should be used for querying only.
+	Properties() *Properties
+}
+
+type vcsRootJSON struct {
 	// id
 	ID string `json:"id,omitempty" xml:"id"`
 
@@ -56,27 +68,6 @@ type VcsRootService struct {
 	httpClient *http.Client
 }
 
-//NewGitVcsRoot returns a VCS Root instance that connects to Git VCS.
-func NewGitVcsRoot(projectID string, name string, opts *GitVcsRootOptions) (*VcsRoot, error) {
-	if projectID == "" {
-		return nil, errors.New("projectID is required")
-	}
-	if name == "" {
-		return nil, errors.New("name is required")
-	}
-	if opts == nil {
-		return nil, errors.New("opts is required")
-	}
-	return &VcsRoot{
-		Name: name,
-		Project: &ProjectReference{
-			ID: projectID,
-		},
-		VcsName:    string(VcsNames.Git),
-		Properties: opts.gitVcsRootProperties(),
-	}, nil
-}
-
 func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootService {
 	return &VcsRootService{
 		sling:      base.Path("vcs-roots/"),
@@ -85,7 +76,7 @@ func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootServi
 }
 
 // Create creates a new vcs root
-func (s *VcsRootService) Create(projectID string, vcsRoot *VcsRoot) (*VcsRootReference, error) {
+func (s *VcsRootService) Create(projectID string, vcsRoot VcsRoot) (*VcsRootReference, error) {
 	var created VcsRootReference
 
 	_, err := s.sling.New().Post("").BodyJSON(vcsRoot).ReceiveSuccess(&created)
@@ -98,20 +89,26 @@ func (s *VcsRootService) Create(projectID string, vcsRoot *VcsRoot) (*VcsRootRef
 }
 
 // GetByID Retrieves a vcs root by id using the id: locator
-func (s *VcsRootService) GetByID(id string) (*VcsRoot, error) {
-	var out VcsRoot
-
-	resp, err := s.sling.New().Get(id).ReceiveSuccess(&out)
+func (s *VcsRootService) GetByID(id string) (VcsRoot, error) {
+	req, err := s.sling.New().Get(id).Request()
 
 	if err != nil {
 		return nil, err
 	}
 
+	resp, err := s.httpClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("Error when retrieving VcsRoot id = '%s', status: %d", id, resp.StatusCode)
 	}
 
-	return &out, err
+	return s.readVcsRootResponse(resp)
 }
 
 //Delete a VCS Root resource using id: locator
@@ -138,4 +135,30 @@ func (s *VcsRootService) Delete(id string) error {
 	}
 
 	return nil
+}
+
+func (s *VcsRootService) readVcsRootResponse(resp *http.Response) (VcsRoot, error) {
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload vcsRootJSON
+	if err := json.Unmarshal(bodyBytes, &payload); err != nil {
+		return nil, err
+	}
+
+	var out VcsRoot
+	switch payload.VcsName {
+	case VcsNames.Git:
+		var git GitVcsRoot
+		if err := git.UnmarshalJSON(bodyBytes); err != nil {
+			return nil, err
+		}
+		out = &git
+	default:
+		return nil, fmt.Errorf("Unsupported VCS Root type: '%s' (id:'%s') for projectID: %s", payload.VcsName, payload.ID, payload.Project.ID)
+	}
+
+	return out, nil
 }
