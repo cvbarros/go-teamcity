@@ -2,6 +2,7 @@ package teamcity
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -59,16 +60,16 @@ const (
 type GitAgentSettings struct {
 
 	//GitPath is the path to a git executable on the agent. If blank, the location set up in TEAMCITY_GIT_PATH environment variable is used.
-	GitPath string
+	GitPath string `prop:"agentGitPath"`
 
 	//CleanPolicy specifies when the "git clean" command is run on the agent. Defaults to 'CleanPolicyBranchChange'
-	CleanPolicy GitAgentCleanPolicy
+	CleanPolicy GitAgentCleanPolicy `prop:"agentCleanPolicy"`
 
 	//CleanFilesPolicy specifies which files will be removed when "git clean" command is run on agent.
-	CleanFilesPolicy GitAgentCleanFilesPolicy
+	CleanFilesPolicy GitAgentCleanFilesPolicy `prop:"agentCleanFilesPolicy"`
 
 	//UseMirrors when enabled, TeamCity creates a separate clone of the repository on each agent and uses it in the checkout directory via git alternates.
-	UseMirrors bool
+	UseMirrors bool `prop:"useAlternates"`
 }
 
 // GitVcsUsernameStyle defines a way TeamCity binds VCS changes to the user.
@@ -92,45 +93,45 @@ const (
 // GitVcsRootOptions represents parameters used when manipulating VCS Roots of type "Git"
 type GitVcsRootOptions struct {
 	//DefaultBranch indicates which main branch or tag to be monitored by the VCS Root. Requied.
-	DefaultBranch string
+	DefaultBranch string `prop:"branch"`
 
 	//BrancSpec are monitor besides the default one as a newline-delimited set of rules in the form of +|-:branch name (with the optional * placeholder)
 	//Set separately, outside constructor.
-	BranchSpec []string
+	BranchSpec []string `prop:"teamcity:branchSpec" separator:"\\n"`
 
 	//FetchURL is used for fetching data from the repository. Required.
-	FetchURL string
+	FetchURL string `prop:"url"`
 
 	//PushURL is used for pushing tags to the remote repository. If blank, the fetch url is used.
-	PushURL string
+	PushURL string `prop:"push_url"`
 
 	//EnableTagsInBranchSpec enable/disable use tags in branch specification. Defaults to false. Set separately, outside constructor.
-	EnableTagsInBranchSpec bool
+	EnableTagsInBranchSpec bool `prop:"reportTagRevisions"`
 
 	//AuthMethod controls how the TeamCity server will authenticate against the VCS Git provider. Required.
-	AuthMethod GitAuthMethod
+	AuthMethod GitAuthMethod `prop:"authMethod"`
 
 	//Username is used for methods other than "GitAuthMethodAnonymous". For SSH, it overrides the username used in the Fetch/Push URLs.
-	Username string
+	Username string `prop:"username"`
 
 	//Password represents the user password when "GitAuthMethodPassword" auth method is used.
 	//Password is the key passphrase when "GitAuthSSHUploadedKey" or "GitAuthSSHCustomKey" with auth methods are used.
-	Password string
+	Password string `prop:"secure:password"`
 
 	//PrivateKeySource is used for "GitAuthSSHCustomKey" as the key path on disk.
 	//PrivateKeySource is used for "GitAuthSSHUploadedKey" as the name of the SSH Key uploaded for the project in "SSH Keys"
-	PrivateKeySource string
+	PrivateKeySource string `prop:"secure:passphrase"`
 
 	//AgentSettings control agent-specific settings that are used in case of agent checkout
 	AgentSettings *GitAgentSettings
 
 	//SubModuleCheckout specifies whether checkout Git submodules or ignore.
 	//Possible values are 'CHECKOUT' or 'IGNORE'. Defaults to 'CHECKOUT'. Set separately, outside constructor.
-	SubModuleCheckout string
+	SubModuleCheckout string `prop:"submoduleCheckout"`
 
 	// UsernameStyle defines a way TeamCity binds VCS changes to the user.
 	// Defaults to 'GitVcsUsernameStyleUserID'. Set separately, outside constructor.
-	UsernameStyle GitVcsUsernameStyle
+	UsernameStyle GitVcsUsernameStyle `prop:"usernameStyle"`
 }
 
 //NewGitVcsRootOptions returns a new instance of GitVcsRootOptions with default GitAgentSettings
@@ -241,4 +242,48 @@ func (s *GitAgentSettings) gitVcsRootProperties() *Properties {
 	p.AddOrReplaceValue("useAlternates", strconv.FormatBool(s.UseMirrors))
 
 	return p
+}
+
+func (p *Properties) gitVcsOptions() *GitVcsRootOptions {
+	var out GitVcsRootOptions
+	var agt GitAgentSettings
+
+	fillStructFromProperties(&out, p)
+	fillStructFromProperties(&agt, p)
+
+	out.AgentSettings = &agt
+
+	return &out
+}
+
+func (p *Properties) gitAgentSettings() *GitAgentSettings {
+	var out GitAgentSettings
+	fillStructFromProperties(&out, p)
+	return &out
+}
+
+func fillStructFromProperties(data interface{}, p *Properties) {
+	t := reflect.TypeOf(data).Elem()
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		if v, ok := f.Tag.Lookup("prop"); ok {
+			sf := reflect.ValueOf(data).Elem().Field(i)
+			if pv, pok := p.GetOk(v); pok {
+				switch sf.Kind() {
+				case reflect.Bool:
+					bv, _ := strconv.ParseBool(pv)
+					sf.SetBool(bv)
+				case reflect.String:
+					sf.SetString(pv)
+				case reflect.Slice:
+					sep := "\\r\\n" // Use default
+					sep, _ = f.Tag.Lookup("separator")
+					sVal := reflect.ValueOf(strings.Split(pv, sep))
+					sf.Set(sVal)
+				default:
+					continue
+				}
+			}
+		}
+	}
 }

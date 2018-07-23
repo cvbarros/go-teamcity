@@ -147,3 +147,40 @@ func Test_GitVcsRootOptionsVcsRootProperties_DefaultAgentSettings(t *testing.T) 
 
 	propAssert.assertPropertyDoesNotExist(props, "agentGitPath")
 }
+
+func Test_PropertiesToGitVcsRootOptions(t *testing.T) {
+	assert := assert.New(t)
+
+	sut := NewProperties([]*Property{
+		NewProperty("branch", "refs/head/master"),
+		NewProperty("reportTagRevisions", "true"),
+		NewProperty("teamcity:branchSpec", "+:refs/(pull/*)/head\\n+:refs/heads/develop"),
+		NewProperty("authMethod", string(GitAuthMethodPassword)),
+		NewProperty("username", "admin"),
+		NewProperty("submoduleCheckout", "CHECKOUT"),
+		NewProperty("usernameStyle", string(GitVcsUsernameStyleUserID)),
+		NewProperty("agentGitPath", "gitPath"),
+		NewProperty("agentCleanPolicy", string(CleanPolicyBranchChange)),
+		NewProperty("agentCleanFilesPolicy", string(CleanFilesPolicyAllUntracked)),
+		NewProperty("useAlternates", "true"),
+	}...)
+
+	actual := sut.gitVcsOptions()
+	require.NotNil(t, actual)
+
+	assert.Equal("refs/head/master", actual.DefaultBranch)
+	assert.ElementsMatch([]string{"+:refs/(pull/*)/head", "+:refs/heads/develop"}, actual.BranchSpec)
+	assert.Equal(true, actual.EnableTagsInBranchSpec)
+	assert.Equal(GitAuthMethodPassword, actual.AuthMethod)
+	assert.Equal("admin", actual.Username)
+	assert.Equal("CHECKOUT", actual.SubModuleCheckout)
+	assert.Equal(GitVcsUsernameStyleUserID, actual.UsernameStyle)
+
+	agentSettings := sut.gitAgentSettings()
+
+	require.NotNil(t, agentSettings)
+	assert.Equal("gitPath", agentSettings.GitPath)
+	assert.Equal(CleanPolicyBranchChange, agentSettings.CleanPolicy)
+	assert.Equal(CleanFilesPolicyAllUntracked, agentSettings.CleanFilesPolicy)
+	assert.Equal(true, agentSettings.UseMirrors)
+}
