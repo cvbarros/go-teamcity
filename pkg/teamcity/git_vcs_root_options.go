@@ -2,6 +2,7 @@ package teamcity
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -158,6 +159,11 @@ func NewGitVcsRootOptionsWithAgentSettings(defaultBranch string, fetchURL string
 		return nil, errors.New("fetchURL is required")
 	}
 
+	if auth == GitAuthMethodPassword {
+		if username == "" {
+			return nil, fmt.Errorf("username is required if using auth method '%s'", auth)
+		}
+	}
 	if agentSettings == nil {
 		agentSettings = &GitAgentSettings{
 			UseMirrors:       true,

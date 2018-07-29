@@ -66,12 +66,14 @@ type VcsRootReference struct {
 type VcsRootService struct {
 	sling      *sling.Sling
 	httpClient *http.Client
+	restHelper *restHelper
 }
 
 func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootService {
 	return &VcsRootService{
 		sling:      base.Path("vcs-roots/"),
 		httpClient: httpClient,
+		restHelper: newRestHelper(httpClient),
 	}
 }
 
@@ -79,7 +81,7 @@ func newVcsRootService(base *sling.Sling, httpClient *http.Client) *VcsRootServi
 func (s *VcsRootService) Create(projectID string, vcsRoot VcsRoot) (*VcsRootReference, error) {
 	var created VcsRootReference
 
-	_, err := s.sling.New().Post("").BodyJSON(vcsRoot).ReceiveSuccess(&created)
+	err := s.restHelper.postJSONWithSling("", s.sling, vcsRoot, &created, "VcsRoot")
 
 	if err != nil {
 		return nil, err

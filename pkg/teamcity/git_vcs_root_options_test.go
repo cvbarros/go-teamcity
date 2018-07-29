@@ -80,6 +80,12 @@ func Test_GitVcsRootOptionsVcsRootProperties_UsernamePasswordAuth(t *testing.T) 
 	propAssert.assertPropertyValue(props, "secure:password", actual.Password)
 }
 
+func Test_GitVcsRootOptionsVcsRootProperties_UsernamePasswordAuth_UsernameRequired(t *testing.T) {
+	_, err := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthMethodPassword, "", "admin")
+
+	assert.Errorf(t, err, "username is required if using auth method '%s'", GitAuthMethodPassword)
+}
+
 func Test_GitVcsRootOptionsVcsRootProperties_UploadedKeyAuth(t *testing.T) {
 	propAssert := newPropertyAssertions(t)
 
