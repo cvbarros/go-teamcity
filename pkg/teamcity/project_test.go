@@ -59,3 +59,14 @@ func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
 		t.Fatalf("Expected 404 Not Found error when getting Deleted Project, but no error returned.")
 	}
 }
+
+func createTestProject(t *testing.T, c *teamcity.Client, name string) *teamcity.ProjectReference {
+	newProject := getTestProjectData(name)
+	createdProject, err := c.Projects.Create(newProject)
+
+	if err != nil {
+		t.Fatalf("Failed to create project for VCS root: %s", err)
+	}
+
+	return createdProject
+}

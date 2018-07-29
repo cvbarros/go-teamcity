@@ -8,38 +8,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVcsRoot_Create(t *testing.T) {
+func TestGitVcsRoot_Get(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
 	client := setup()
-	newProject := getTestProjectData(testVcsRootProjectId)
+	newProject := createTestProject(t, client, testVcsRootProjectId)
 	newVcsRoot := getTestVcsRootData(testVcsRootProjectId).(*teamcity.GitVcsRoot)
+	sut := client.VcsRoots
 
-	createdProject, err := client.Projects.Create(newProject)
+	created, err := sut.Create(newProject.ID, newVcsRoot)
 
-	if err != nil {
-		t.Fatalf("Failed to create project for VCS root: %s", err)
-	}
+	require.NoError(err)
+	require.NotNil(created)
 
-	newVcsRoot.Project.ID = createdProject.ID
+	data, err := sut.GetByID(created.ID)
+	require.NoError(err)
+	require.NotNil(data)
+	require.IsType(&teamcity.GitVcsRoot{}, data)
 
-	actual, err := client.VcsRoots.Create(createdProject.ID, newVcsRoot)
+	actual := data.(*teamcity.GitVcsRoot)
+	cleanUpProject(t, client, newProject.ID)
 
-	if err != nil {
-		t.Fatalf("Failed to create VCS Root: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("Create did not return a valid VCS root instance")
-	}
-
-	cleanUpVcsRoot(t, client, actual.ID)
-	cleanUpProject(t, client, createdProject.ID)
-
-	assert.NotEmpty(t, actual.ID)
-	assert.Equal(t, newVcsRoot.Project.ID, actual.Project.ID)
-	assert.Equal(t, newVcsRoot.Name, actual.Name)
+	require.NotNil(actual.Project)
+	assert.Equal(actual.Project.ID, actual.Project.ID)
+	assert.Equal(actual.Name, actual.Name)
 }
 
-func TestVcsRoot_CreateWithUsernamePassword(t *testing.T) {
+func TestGitVcsRoot_CreateWithUsernamePassword(t *testing.T) {
 	client := setup()
 	newProject := getTestProjectData(testVcsRootProjectId)
 	opts, _ := teamcity.NewGitVcsRootOptions("refs/head/master", "https://github.com/cvbarros/go-teamcity-sdk/", "", teamcity.GitAuthMethodPassword, "admin", "admin")
@@ -66,7 +61,6 @@ func TestVcsRoot_CreateWithUsernamePassword(t *testing.T) {
 
 	require.NoError(t, err)
 
-	cleanUpVcsRoot(t, client, actual.ID)
 	cleanUpProject(t, client, createdProject.ID)
 
 	props := created.Properties()
@@ -77,7 +71,7 @@ func TestVcsRoot_CreateWithUsernamePassword(t *testing.T) {
 	propAssert.assertPropertyExists(props, "secure:password")
 }
 
-func TestVcsRoot_Invariants(t *testing.T) {
+func TestGitVcsRoot_Invariants(t *testing.T) {
 	gitOpt, _ := teamcity.NewGitVcsRootOptionsDefaults("master", "https://github.com/cvbarros/go-teamcity-sdk/")
 	t.Run("projectID is required", func(t *testing.T) {
 		_, err := teamcity.NewGitVcsRoot("", "name", gitOpt)
@@ -97,34 +91,4 @@ func getTestVcsRootData(projectId string) teamcity.VcsRoot {
 	opts, _ := teamcity.NewGitVcsRootOptionsDefaults("refs/head/master", "https://github.com/cvbarros/go-teamcity-sdk")
 	v, _ := teamcity.NewGitVcsRoot(projectId, "Application", opts)
 	return v
-}
-
-func cleanUpVcsRoot(t *testing.T, c *teamcity.Client, id string) {
-	if err := c.VcsRoots.Delete(id); err != nil {
-		t.Errorf("Unable to delete vcs root with id = '%s', err: %s", id, err)
-		return
-	}
-
-	deleted, err := c.VcsRoots.GetByID(id)
-
-	if deleted != nil {
-		t.Errorf("Vcs root not deleted during cleanup.")
-		return
-	}
-
-	if err == nil {
-		t.Errorf("Expected 404 Not Found error when getting Deleted VCS Root, but no error returned.")
-	}
-}
-
-func ExampleVcsRoot_VcsName() {
-	var vcsRoot teamcity.VcsRoot
-	//Retrieve vcsRoot from API, for instance
-	//Check for its type
-	switch vcsRoot.VcsName() {
-	case teamcity.VcsNames.Git:
-		git := vcsRoot.(*teamcity.GitVcsRoot)
-		//Use it strongly-typed
-		println(git.Options.FetchURL)
-	}
 }

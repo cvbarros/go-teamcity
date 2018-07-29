@@ -88,9 +88,11 @@ func (d *GitVcsRoot) UnmarshalJSON(data []byte) error {
 	if aux.VcsName != VcsNames.Git {
 		return fmt.Errorf("invalid VcsName %s trying to deserialize into GitVcsRoot entity", aux.VcsName)
 	}
-
+	d.Name = aux.Name
+	d.Project = aux.Project
+	d.ModificationCheckInterval = aux.ModificationCheckInterval
+	d.ID = aux.ID
 	d.properties = NewProperties(aux.Properties.Items...)
-
 	d.Options = d.properties.gitVcsOptions()
 
 	return nil
