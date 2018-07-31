@@ -5,6 +5,7 @@ import (
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBuildType_CreateBasicProject(t *testing.T) {
@@ -74,38 +75,75 @@ func TestBuildType_AttachVcsRoot(t *testing.T) {
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
 
-func TestBuildType_AddStep(t *testing.T) {
+func TestBuildType_AddStepPowerShell(t *testing.T) {
 	client := setup()
-	_, step := createTestBuildStep(t, client, "step1", testBuildTypeProjectId)
+	step, _ := teamcity.NewStepPowershellScriptFile("step1", "build.ps1", "")
+	_, created := createTestBuildStep(t, client, step, testBuildTypeProjectId)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
-	assert.NotNil(t, step)
+	assert.NotNil(t, created)
 }
 
-func TestBuildType_AddStepNoName(t *testing.T) {
+func TestBuildType_AddStepCommandLineExecutable(t *testing.T) {
+	assert := assert.New(t)
 	client := setup()
-	_, step := createTestBuildStep(t, client, "", testBuildTypeProjectId)
+	step, _ := teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
+	_, actual := createTestBuildStep(t, client, step, testBuildTypeProjectId)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
-	assert.NotNil(t, step)
+	require.NotNil(t, actual)
+	assert.Equal(teamcity.StepTypeCommandLine, actual.Type())
 }
 
-// func TestBuildType_DeleteStep(t *testing.T) {
-// 	client := setup()
-// 	updatedBuildType, step := createTestBuildStep(t, client, "step1", testBuildTypeProjectId)
+func TestBuildType_AddStepCommandLineScript(t *testing.T) {
+	assert := assert.New(t)
+	client := setup()
+	script := `echo "Hello World
+	echo "World, Hello!
+	export HELLO_WORLD=1
+	`
+	step, _ := teamcity.NewStepCommandLineScript("step_exe", script)
+	_, actual := createTestBuildStep(t, client, step, testBuildTypeProjectId)
 
-// 	client.BuildTypes.DeleteStep(updatedBuildType.ID, step.ID())
+	cleanUpProject(t, client, testBuildTypeProjectId)
 
-// 	updatedBuildType, _ = client.BuildTypes.GetByID(updatedBuildType.ID)
+	require.NotNil(t, actual)
+	assert.Equal(teamcity.StepTypeCommandLine, actual.Type())
+}
 
-// 	cleanUpProject(t, client, testBuildTypeProjectId)
+func TestBuildType_GetSteps(t *testing.T) {
+	client := setup()
+	step1, _ := teamcity.NewStepCommandLineExecutable("step1", "./script.sh", "hello")
+	step2, _ := teamcity.NewStepCommandLineExecutable("step2", "./script.sh", "hello")
 
-// 	actual := updatedBuildType.Steps.Items
+	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
 
-// 	assert.Empty(t, actual)
-// }
+	created1, _ := client.BuildTypes.AddStep(buildType.ID, step1)
+	created2, _ := client.BuildTypes.AddStep(buildType.ID, step2)
+
+	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	assert.Contains(t, steps, created1)
+	assert.Contains(t, steps, created2)
+}
+
+func TestBuildType_DeleteStep(t *testing.T) {
+	client := setup()
+	step, _ := teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
+	buildType, created := createTestBuildStep(t, client, step, testBuildTypeProjectId)
+
+	client.BuildTypes.DeleteStep(buildType.ID, created.ID())
+
+	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	assert.Empty(t, steps)
+}
 
 func TestBuildType_UpdateSettings(t *testing.T) {
 	client := setup()
@@ -165,10 +203,8 @@ func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTyp
 	return detailed
 }
 
-func createTestBuildStep(t *testing.T, client *teamcity.Client, stepName string, buildTypeProjectId string) (*teamcity.BuildType, teamcity.Step) {
+func createTestBuildStep(t *testing.T, client *teamcity.Client, step teamcity.Step, buildTypeProjectId string) (*teamcity.BuildType, teamcity.Step) {
 	createdBuildType := createTestBuildType(t, client, buildTypeProjectId)
-
-	step, _ := teamcity.NewStepPowershellScriptFile(stepName, "build.ps1", "")
 
 	created, err := client.BuildTypes.AddStep(createdBuildType.ID, step)
 	if err != nil {
