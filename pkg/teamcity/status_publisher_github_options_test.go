@@ -10,7 +10,7 @@ import (
 
 const githubHost = "https://api.github.com"
 
-func TestFeatureCommitPublisher_GithubRequiredProperties(t *testing.T) {
+func TestFeatureCommitPublisher_Invariants(t *testing.T) {
 	t.Run("AuthenticationType Required", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{}
 		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
