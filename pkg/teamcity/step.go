@@ -3,8 +3,6 @@ package teamcity
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"reflect"
 )
 
@@ -55,14 +53,9 @@ type stepsJSON struct {
 	Items []*stepJSON `json:"step"`
 }
 
-var stepReadingFunc = func(r *http.Response, out interface{}) error {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
-
+var stepReadingFunc = func(dt []byte, out interface{}) error {
 	var payload stepJSON
-	if err := json.Unmarshal(bodyBytes, &payload); err != nil {
+	if err := json.Unmarshal(dt, &payload); err != nil {
 		return err
 	}
 
@@ -70,13 +63,13 @@ var stepReadingFunc = func(r *http.Response, out interface{}) error {
 	switch payload.Type {
 	case string(StepTypePowershell):
 		var ps StepPowershell
-		if err := ps.UnmarshalJSON(bodyBytes); err != nil {
+		if err := ps.UnmarshalJSON(dt); err != nil {
 			return err
 		}
 		step = &ps
 	case string(StepTypeCommandLine):
 		var cmd StepCommandLine
-		if err := cmd.UnmarshalJSON(bodyBytes); err != nil {
+		if err := cmd.UnmarshalJSON(dt); err != nil {
 			return err
 		}
 		step = &cmd
@@ -91,17 +84,13 @@ var stepReadingFunc = func(r *http.Response, out interface{}) error {
 func replaceValue(i, v interface{}) {
 	val := reflect.ValueOf(i)
 	if val.Kind() != reflect.Ptr {
-		fmt.Println(`panic("not a pointer")`)
-		return
+		panic("not a pointer")
 	}
-	fmt.Printf("valKind(%s)\n", val.Kind())
 	val = val.Elem()
 
 	newVal := reflect.Indirect(reflect.ValueOf(v))
-	fmt.Printf("newVal(%s)\n", newVal)
 	if !val.Type().AssignableTo(newVal.Type()) {
-		fmt.Println(`panic("mismatched types")`)
-		return
+		panic("mismatched types")
 	}
 
 	val.Set(newVal)

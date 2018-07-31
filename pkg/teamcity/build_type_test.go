@@ -113,20 +113,37 @@ func TestBuildType_AddStepCommandLineScript(t *testing.T) {
 	assert.Equal(teamcity.StepTypeCommandLine, actual.Type())
 }
 
-// func TestBuildType_DeleteStep(t *testing.T) {
-// 	client := setup()
-// 	updatedBuildType, step := createTestBuildStep(t, client, "step1", testBuildTypeProjectId)
+func TestBuildType_GetSteps(t *testing.T) {
+	client := setup()
+	step1, _ := teamcity.NewStepCommandLineExecutable("step1", "./script.sh", "hello")
+	step2, _ := teamcity.NewStepCommandLineExecutable("step2", "./script.sh", "hello")
 
-// 	client.BuildTypes.DeleteStep(updatedBuildType.ID, step.ID())
+	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
 
-// 	updatedBuildType, _ = client.BuildTypes.GetByID(updatedBuildType.ID)
+	created1, _ := client.BuildTypes.AddStep(buildType.ID, step1)
+	created2, _ := client.BuildTypes.AddStep(buildType.ID, step2)
 
-// 	cleanUpProject(t, client, testBuildTypeProjectId)
+	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
 
-// 	actual := updatedBuildType.Steps.Items
+	cleanUpProject(t, client, testBuildTypeProjectId)
 
-// 	assert.Empty(t, actual)
-// }
+	assert.Contains(t, steps, created1)
+	assert.Contains(t, steps, created2)
+}
+
+func TestBuildType_DeleteStep(t *testing.T) {
+	client := setup()
+	step, _ := teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
+	buildType, created := createTestBuildStep(t, client, step, testBuildTypeProjectId)
+
+	client.BuildTypes.DeleteStep(buildType.ID, created.ID())
+
+	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	assert.Empty(t, steps)
+}
 
 func TestBuildType_UpdateSettings(t *testing.T) {
 	client := setup()

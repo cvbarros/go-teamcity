@@ -1,6 +1,7 @@
 package teamcity
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -87,9 +88,6 @@ type BuildType struct {
 // BuildTypeReference represents a subset detail of a Build Type
 type BuildTypeReference struct {
 
-	// href
-	Href string `json:"href,omitempty" xml:"href"`
-
 	// id
 	ID string `json:"id,omitempty" xml:"id"`
 
@@ -109,7 +107,6 @@ func (b *BuildType) Reference() *BuildTypeReference {
 		ID:          b.ID,
 		Name:        b.Name,
 		ProjectID:   b.ProjectID,
-		Href:        b.Href,
 		ProjectName: b.ProjectName,
 	}
 }
@@ -202,7 +199,7 @@ func (s *BuildTypeService) AttachVcsRootEntry(id string, entry *VcsRootEntry) er
 	return nil
 }
 
-// AddStep creates a new build step for this build type
+// AddStep creates a new build step for the build configuration with given id.
 func (s *BuildTypeService) AddStep(id string, step Step) (Step, error) {
 	var created Step
 	path := fmt.Sprintf("%s/steps/", LocatorID(id))
@@ -213,6 +210,26 @@ func (s *BuildTypeService) AddStep(id string, step Step) (Step, error) {
 	}
 
 	return created, nil
+}
+
+//GetSteps return the list of steps for a Build configuration with given id.
+func (s *BuildTypeService) GetSteps(id string) ([]Step, error) {
+	var aux stepsJSON
+	path := fmt.Sprintf("%s/steps/", LocatorID(id))
+	err := s.restHelper.get(path, &aux, "build steps")
+	if err != nil {
+		return nil, err
+	}
+	steps := make([]Step, aux.Count)
+	for i := range aux.Items {
+		dt, err := json.Marshal(aux.Items[i])
+		if err != nil {
+			return nil, err
+		}
+		stepReadingFunc(dt, &steps[i])
+	}
+
+	return steps, nil
 }
 
 // UpdateSettings will do a remote call for each setting being updated. Operation is not atomic, and the list of settings is processed in the order sent.
