@@ -74,7 +74,12 @@ var stepReadingFunc = func(r *http.Response, out interface{}) error {
 			return err
 		}
 		step = &ps
-
+	case string(StepTypeCommandLine):
+		var cmd StepCommandLine
+		if err := cmd.UnmarshalJSON(bodyBytes); err != nil {
+			return err
+		}
+		step = &cmd
 	default:
 		return fmt.Errorf("Unsupported step type: '%s' (id:'%s')", payload.Type, payload.ID)
 	}
