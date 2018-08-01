@@ -1,10 +1,12 @@
 package teamcity_test
 
 import (
+	"net/http"
 	"testing"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProject_Create(t *testing.T) {
@@ -32,7 +34,16 @@ func TestProject_ValidateName(t *testing.T) {
 	client := setup()
 	_, err := client.Projects.Create(&newProject)
 
-	assert.Equal(t, error.Error(err), "Project must have a name")
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Project name cannot be empty")
+}
+
+func TestProject_GetUnauthorizedHandled(t *testing.T) {
+	client, _ := teamcity.New("admin", "error", http.DefaultClient)
+	_, err := client.Projects.Create(getTestProjectData(testProjectId))
+
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "401")
 }
 
 func getTestProjectData(name string) *teamcity.Project {
