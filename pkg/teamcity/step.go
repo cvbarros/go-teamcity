@@ -36,6 +36,7 @@ const (
 type Step interface {
 	ID() string
 	Type() string
+	Name() string
 }
 
 type stepJSON struct {
