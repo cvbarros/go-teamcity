@@ -24,22 +24,13 @@ func Test_ArtifactDependency_Invariants(t *testing.T) {
 
 func Test_ArtifactDependency_Constructor(t *testing.T) {
 	assert := assert.New(t)
-	propAssert := newPropertyAssertions(t)
 
 	actual, _ := teamcity.NewArtifactDependency("sourceBuild", createDefaultTestingArtifactDependencyOptions())
 	require.NotNil(t, actual)
 
-	assert.Equal("sourceBuild", actual.SourceBuildType.ID)
-	assert.Equal("artifact_dependency", actual.Type)
-	assert.EqualValues(teamcity.NewFalse(), actual.Disabled)
-
-	props := actual.Properties
-
-	// No need to assert property values. This is done in artifact_dep_options_test.go
-	propAssert.assertPropertyExists(props, "cleanDestinationDirectory")
-	propAssert.assertPropertyExists(props, "pathRules")
-	propAssert.assertPropertyExists(props, "revisionName")
-	propAssert.assertPropertyExists(props, "revisionValue")
+	assert.Equal("sourceBuild", actual.SourceBuildTypeID())
+	assert.Equal("artifact_dependency", actual.Type())
+	assert.EqualValues(false, actual.Disabled())
 }
 
 func testPathRules() []string {

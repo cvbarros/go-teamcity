@@ -41,7 +41,7 @@ func Test_ArtifactDependencyOptions_ConstructorDefault(t *testing.T) {
 	artifactProps := actual.artifactDependencyProperties()
 
 	props.assertPropertyValue(artifactProps, "cleanDestinationDirectory", "false")
-	props.assertPropertyValue(artifactProps, "pathRules", "rule1\\r\\nrule2")
+	props.assertPropertyValue(artifactProps, "pathRules", "rule1\r\nrule2")
 	props.assertPropertyValue(artifactProps, "revisionValue", "latest.lastSuccessful")
 	props.assertPropertyValue(artifactProps, "revisionName", "lastSuccessful")
 }

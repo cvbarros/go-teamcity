@@ -220,7 +220,7 @@ func (o *GitVcsRootOptions) gitVcsRootProperties() *Properties {
 	}
 
 	if len(o.BranchSpec) > 0 {
-		// Some properties use \\r\\n to split. But this one only uses \\n, con
+		// Some properties use \\r\\n to split. But this one only uses \\n, conversely
 		p.AddOrReplaceValue("teamcity:branchSpec", strings.Join(o.BranchSpec, "\\n"))
 	}
 
