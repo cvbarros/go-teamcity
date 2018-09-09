@@ -15,9 +15,6 @@ type BuildType struct {
 	// agent requirements
 	AgentRequirements *AgentRequirements `json:"agent-requirements,omitempty"`
 
-	// // artifact dependencies
-	// ArtifactDependencies *ArtifactDependencies `json:"artifact-dependencies,omitempty"`
-
 	// description
 	Description string `json:"description,omitempty" xml:"description"`
 
@@ -62,9 +59,6 @@ type BuildType struct {
 
 	// snapshot dependencies
 	SnapshotDependencies *SnapshotDependencies `json:"snapshot-dependencies,omitempty"`
-
-	// artifact dependencies
-	ArtifactDependencies *ArtifactDependencies `json:"artifact-dependencies,omitempty"`
 
 	// template flag
 	TemplateFlag *bool `json:"templateFlag,omitempty" xml:"templateFlag"`
