@@ -12,7 +12,7 @@ func Test_FinishTriggerOptionsConstructor(t *testing.T) {
 	require := require.New(t)
 	props := newPropertyAssertions(t)
 
-	actual := NewFinishBuildTriggerOptions(false, nil)
+	actual := NewTriggerBuildFinishOptions(false, nil)
 
 	require.NotNil(actual)
 
@@ -30,7 +30,7 @@ func Test_FinishTriggerOptionsConvertToProperties(t *testing.T) {
 	require := require.New(t)
 	props := newPropertyAssertions(t)
 
-	actual := NewFinishBuildTriggerOptions(true, []string{"+:<default>", "-:/refs/(pull/*)/head"})
+	actual := NewTriggerBuildFinishOptions(true, []string{"+:<default>", "-:/refs/(pull/*)/head"})
 
 	require.NotNil(actual)
 

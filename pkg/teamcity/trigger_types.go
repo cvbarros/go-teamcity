@@ -8,10 +8,10 @@ import (
 type triggerType = string
 
 const (
-	//Vcs trigger type
-	Vcs triggerType = "vcsTrigger"
-	//Finish build trigger type
-	Finish triggerType = "buildDependencyTrigger"
+	//BuildTriggerVcs trigger type
+	BuildTriggerVcs triggerType = "vcsTrigger"
+	//BuildTriggerBuildFinish build trigger type
+	BuildTriggerBuildFinish triggerType = "buildDependencyTrigger"
 )
 
 // TriggerTypes represents possible types for build triggers
@@ -20,8 +20,8 @@ var TriggerTypes = struct {
 	BuildFinish triggerType
 	Schedule    triggerType
 }{
-	Vcs:         Vcs,
-	BuildFinish: Finish,
+	Vcs:         BuildTriggerVcs,
+	BuildFinish: BuildTriggerBuildFinish,
 }
 
 type triggerJSON struct {
@@ -56,12 +56,12 @@ var triggerReadingFunc = func(dt []byte, out interface{}) error {
 			return err
 		}
 		obj = &vcs
-	// case string(TriggerTypes.BuildFinish):
-	// 	var finish TriggerBuildFinish
-	// 	if err := finish.UnmarshalJSON(dt); err != nil {
-	// 		return err
-	// 	}
-	// 	finish = &finish
+	case string(TriggerTypes.BuildFinish):
+		var finish TriggerBuildFinish
+		if err := finish.UnmarshalJSON(dt); err != nil {
+			return err
+		}
+		obj = &finish
 	default:
 		return fmt.Errorf("Unsupported trigger type: '%s' (id:'%s')", payload.Type, payload.ID)
 	}
