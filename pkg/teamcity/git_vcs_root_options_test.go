@@ -23,7 +23,7 @@ func Test_GitVcsRootOptionsConstructor(t *testing.T) {
 		assert.Equal("admin", actual.Username)
 		assert.Equal("admin", actual.Password)
 
-		props := actual.gitVcsRootProperties()
+		props := actual.properties()
 		propAssert.assertPropertyValue(props, "authMethod", string(actual.AuthMethod))
 		propAssert.assertPropertyValue(props, "branch", actual.DefaultBranch)
 		propAssert.assertPropertyValue(props, "push_url", actual.PushURL)
@@ -61,7 +61,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_AnonymousAuth(t *testing.T) {
 	propAssert := newPropertyAssertions(t)
 
 	actual, _ := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthMethodAnonymous, "", "")
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	// If using anonymous, don't consider username/password properties
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthMethodAnonymous))
@@ -73,7 +73,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_UsernamePasswordAuth(t *testing.T) 
 	propAssert := newPropertyAssertions(t)
 
 	actual, _ := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthMethodPassword, "admin", "admin")
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthMethodPassword))
 	propAssert.assertPropertyValue(props, "username", actual.Username)
@@ -91,7 +91,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_UploadedKeyAuth(t *testing.T) {
 
 	actual, _ := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthSSHUploadedKey, "admin", "admin")
 	actual.PrivateKeySource = "MyUploadedKey"
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthSSHUploadedKey))
 	propAssert.assertPropertyValue(props, "username", actual.Username)
@@ -104,7 +104,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_CustomKeyAuth(t *testing.T) {
 
 	actual, _ := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthSSHCustomKey, "admin", "admin")
 	actual.PrivateKeySource = "~/.ssh/id_rsa"
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	propAssert.assertPropertyValue(props, "authMethod", string(GitAuthSSHCustomKey))
 	propAssert.assertPropertyValue(props, "username", actual.Username)
@@ -117,7 +117,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_BranchSpec(t *testing.T) {
 
 	actual, _ := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthMethodAnonymous, "", "")
 	actual.BranchSpec = []string{"+:refs/(pull/*)/head", "+:refs/heads/develop"}
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	propAssert.assertPropertyValue(props, "teamcity:branchSpec", "+:refs/(pull/*)/head\\n+:refs/heads/develop")
 }
@@ -127,7 +127,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_EnableTagsInBranchSpec(t *testing.T
 
 	actual, _ := NewGitVcsRootOptions("refs/heads/master", "fetch", "", GitAuthMethodAnonymous, "", "")
 	actual.EnableTagsInBranchSpec = true
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	propAssert.assertPropertyValue(props, "reportTagRevisions", "true")
 }
@@ -145,7 +145,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_DefaultAgentSettings(t *testing.T) 
 	assert.Equal("", s.GitPath)
 	assert.Equal(true, s.UseMirrors)
 
-	props := actual.gitVcsRootProperties()
+	props := actual.properties()
 
 	propAssert.assertPropertyValue(props, "agentCleanPolicy", string(s.CleanPolicy))
 	propAssert.assertPropertyValue(props, "agentCleanFilesPolicy", string(s.CleanFilesPolicy))

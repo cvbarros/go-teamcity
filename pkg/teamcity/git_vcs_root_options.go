@@ -191,7 +191,7 @@ func NewGitVcsRootOptionsWithAgentSettings(defaultBranch string, fetchURL string
 
 	return opt, nil
 }
-func (o *GitVcsRootOptions) gitVcsRootProperties() *Properties {
+func (o *GitVcsRootOptions) properties() *Properties {
 	p := NewPropertiesEmpty()
 
 	p.AddOrReplaceValue("branch", o.DefaultBranch)
@@ -228,7 +228,7 @@ func (o *GitVcsRootOptions) gitVcsRootProperties() *Properties {
 		p.AddOrReplaceValue("reportTagRevisions", "true")
 	}
 
-	agentP := o.AgentSettings.gitVcsRootProperties()
+	agentP := o.AgentSettings.properties()
 	for _, ap := range agentP.Items {
 		p.AddOrReplaceProperty(ap)
 	}
@@ -236,7 +236,7 @@ func (o *GitVcsRootOptions) gitVcsRootProperties() *Properties {
 	return p
 }
 
-func (s *GitAgentSettings) gitVcsRootProperties() *Properties {
+func (s *GitAgentSettings) properties() *Properties {
 	p := NewPropertiesEmpty()
 
 	if s.GitPath != "" {
