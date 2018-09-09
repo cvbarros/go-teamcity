@@ -8,24 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTrigger_Constructor(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-
-	actual := teamcity.NewVcsTrigger("+:*", "")
-
-	require.NotNil(actual)
-	assert.Equal("vcsTrigger", actual.Type)
-	require.NotEmpty(actual.Properties)
-	props := actual.Properties.Map()
-
-	assert.Contains(props, "triggerRules")
-	assert.NotContains(props, "branchFilter")
-	assert.Equal(props["quietPeriodMode"], "DO_NOT_USE")
-	assert.Equal(props["enableQueueOptimization"], "true")
-}
-
-func TestTrigger_Create(t *testing.T) {
+func TestTrigger_CreateTriggerVcs(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 	client := setup()
@@ -33,49 +16,89 @@ func TestTrigger_Create(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt := teamcity.NewVcsTrigger("+:*", "")
-
-	_, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	bt, _ = client.BuildTypes.GetByID(bt.ID)
-
-	assert.Equal(int32(1), bt.Triggers.Count)
-	actual := bt.Triggers.Items[0]
-
-	assert.NotEmpty(actual.ID)
-	assert.Equal("vcsTrigger", actual.Type)
-	assert.NotEmpty(actual.Properties)
-
-	cleanUpProject(t, client, bt.ProjectID)
-}
-
-func TestTrigger_Get(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt := teamcity.NewVcsTrigger("+:*", "")
+	nt, _ := teamcity.NewTriggerVcs("+:*", "")
 
 	created, err := sut.AddTrigger(nt)
 
 	require.Nil(err)
 
-	actual, err := sut.GetByID(created.ID)
+	assert.Equal(created.BuildTypeID(), bt.ID)
+	cleanUpProject(t, client, bt.ProjectID)
+}
+
+func TestTrigger_CreateTriggerBuildFinish(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	client := setup()
+
+	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
+	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
+
+	sut := client.TriggerService(bt.ID)
+	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
+
+	created, err := sut.AddTrigger(nt)
+
+	require.Nil(err)
+
+	assert.Equal(created.BuildTypeID(), bt.ID)
+	cleanUpProject(t, client, bt.ProjectID)
+}
+
+func TestTrigger_GetTriggerVcs(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	client := setup()
+
+	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
+
+	sut := client.TriggerService(bt.ID)
+	nt, _ := teamcity.NewTriggerVcs("+:*", "")
+
+	created, err := sut.AddTrigger(nt)
+
+	require.Nil(err)
+
+	actual, err := sut.GetByID(created.ID())
 
 	require.NoError(err)
-	assert.Equal(created.ID, actual.ID)
-	assert.Equal(created.BuildTypeID, actual.BuildTypeID)
-	assert.Equal(created.Type, actual.Type)
+	assert.Equal(created.ID(), actual.ID())
+	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
+	assert.Equal(created.Type(), actual.Type())
 
 	cleanUpProject(t, client, bt.ProjectID)
 }
 
-func TestTrigger_Delete(t *testing.T) {
+func TestTrigger_GetTriggerBuildFinish(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	client := setup()
+
+	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
+	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
+
+	sut := client.TriggerService(bt.ID)
+	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
+
+	created, err := sut.AddTrigger(nt)
+
+	require.Nil(err)
+
+	actual, err := sut.GetByID(created.ID())
+
+	require.NoError(err)
+	require.IsType(&teamcity.TriggerBuildFinish{}, actual)
+	actualT := actual.(*teamcity.TriggerBuildFinish)
+
+	assert.Equal(st.ID, actualT.SourceBuildID)
+	assert.Equal(created.ID(), actual.ID())
+	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
+	assert.Equal(created.Type(), actual.Type())
+
+	cleanUpProject(t, client, bt.ProjectID)
+}
+
+func TestTrigger_DeleteTriggerVcs(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 	client := setup()
@@ -83,14 +106,37 @@ func TestTrigger_Delete(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt := teamcity.NewVcsTrigger("+:*", "")
+	nt, _ := teamcity.NewTriggerVcs("+:*", "")
 
 	created, err := sut.AddTrigger(nt)
 
 	require.Nil(err)
 
-	sut.Delete(created.ID)
-	_, err = sut.GetByID(created.ID) // refresh
+	sut.Delete(created.ID())
+	_, err = sut.GetByID(created.ID()) // refresh
+
+	require.Error(err)
+	assert.Contains(err.Error(), "404")
+	cleanUpProject(t, client, bt.ProjectID)
+}
+
+func TestTrigger_DeleteTriggerBuildFinish(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	client := setup()
+
+	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
+	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
+
+	sut := client.TriggerService(bt.ID)
+	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
+
+	created, err := sut.AddTrigger(nt)
+
+	require.Nil(err)
+
+	sut.Delete(created.ID())
+	_, err = sut.GetByID(created.ID()) // refresh
 
 	require.Error(err)
 	assert.Contains(err.Error(), "404")
