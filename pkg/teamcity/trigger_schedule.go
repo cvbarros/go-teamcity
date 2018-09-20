@@ -65,7 +65,7 @@ func (t *TriggerSchedule) SetBuildTypeID(id string) {
 }
 
 //NewDailyTriggerSchedule returns a TriggaerSchedule that fires daily on the hour/minute specified
-func NewDailyTriggerSchedule(hour uint, minute uint, timezone string, rules []string) (*TriggerSchedule, error) {
+func NewDailyTriggerSchedule(sourceBuildID string, hour uint, minute uint, timezone string, rules []string) (*TriggerSchedule, error) {
 	if hour > 23 {
 		return nil, fmt.Errorf("Invalid hour: %d, must be between 0-23", hour)
 	}
@@ -81,6 +81,12 @@ func NewDailyTriggerSchedule(hour uint, minute uint, timezone string, rules []st
 		Hour:             hour,
 		Minute:           minute,
 		Second:           0,
+		buildTypeID:      sourceBuildID,
+
+		triggerJSON: &triggerJSON{
+			Disabled: NewFalse(),
+			Type:     TriggerTypes.Schedule,
+		},
 	}, nil
 }
 
@@ -140,7 +146,7 @@ func (t *TriggerSchedule) properties() *Properties {
 	return props
 }
 
-//MarshalJSON implements JSON serialization for TriggerVcs
+//MarshalJSON implements JSON serialization for TriggerSchedule
 func (t *TriggerSchedule) MarshalJSON() ([]byte, error) {
 	out := &triggerJSON{
 		ID:         t.ID(),

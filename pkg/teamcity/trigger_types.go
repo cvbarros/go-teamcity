@@ -65,6 +65,12 @@ var triggerReadingFunc = func(dt []byte, out interface{}) error {
 			return err
 		}
 		obj = &finish
+	case string(TriggerTypes.Schedule):
+		var sch TriggerSchedule
+		if err := sch.UnmarshalJSON(dt); err != nil {
+			return err
+		}
+		obj = &sch
 	default:
 		return fmt.Errorf("Unsupported trigger type: '%s' (id:'%s')", payload.Type, payload.ID)
 	}
