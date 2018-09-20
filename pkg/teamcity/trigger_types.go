@@ -12,6 +12,8 @@ const (
 	BuildTriggerVcs triggerType = "vcsTrigger"
 	//BuildTriggerBuildFinish build trigger type
 	BuildTriggerBuildFinish triggerType = "buildDependencyTrigger"
+	//BuildTriggerSchedule build trigger tyope
+	BuildTriggerSchedule triggerType = "schedulingTrigger"
 )
 
 // TriggerTypes represents possible types for build triggers
@@ -22,6 +24,7 @@ var TriggerTypes = struct {
 }{
 	Vcs:         BuildTriggerVcs,
 	BuildFinish: BuildTriggerBuildFinish,
+	Schedule:    BuildTriggerSchedule,
 }
 
 type triggerJSON struct {

@@ -18,7 +18,7 @@ func (t *TriggerBuildFinish) ID() string {
 	return t.triggerJSON.ID
 }
 
-//Type returns TriggerTypes.Vcs ("vcsTrigger")
+//Type returns TriggerTypes.BuildFinish ("buildDependencyTrigger")
 func (t *TriggerBuildFinish) Type() string {
 	return TriggerTypes.BuildFinish
 }
@@ -80,7 +80,7 @@ func (t *TriggerBuildFinish) MarshalJSON() ([]byte, error) {
 	return json.Marshal(out)
 }
 
-//UnmarshalJSON implements JSON deserialization for TriggerVcs
+//UnmarshalJSON implements JSON deserialization for TriggerBuildFinish
 func (t *TriggerBuildFinish) UnmarshalJSON(data []byte) error {
 	var aux triggerJSON
 	if err := json.Unmarshal(data, &aux); err != nil {
@@ -88,7 +88,7 @@ func (t *TriggerBuildFinish) UnmarshalJSON(data []byte) error {
 	}
 
 	if aux.Type != TriggerTypes.BuildFinish {
-		return fmt.Errorf("invalid type %s trying to deserialize into TriggerVcs entity", aux.Type)
+		return fmt.Errorf("invalid type %s trying to deserialize into TriggerBuildFinish entity", aux.Type)
 	}
 
 	if aux.Disabled != nil {
