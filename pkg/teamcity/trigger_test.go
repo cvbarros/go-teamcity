@@ -53,7 +53,7 @@ func TestTrigger_CreateTriggerScheduleDaily(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewDailyTriggerSchedule(bt.ID, 12, 0, "SERVER", []string{"+:*"})
+	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 0, "SERVER", []string{"+:*"})
 
 	created, err := sut.AddTrigger(nt)
 
@@ -124,7 +124,7 @@ func TestTrigger_GetTriggerScheduleDaily(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewDailyTriggerSchedule(bt.ID, 12, 0, "SERVER", []string{"+:*"})
+	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 0, "SERVER", []string{"+:*"})
 
 	created, err := sut.AddTrigger(nt)
 
@@ -193,7 +193,7 @@ func TestTrigger_DeleteTriggerScheduleDaily(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewDailyTriggerSchedule(bt.ID, 12, 0, "SERVER", []string{"+:*"})
+	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 0, "SERVER", []string{"+:*"})
 
 	created, err := sut.AddTrigger(nt)
 

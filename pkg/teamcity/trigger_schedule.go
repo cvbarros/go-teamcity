@@ -25,13 +25,13 @@ type TriggerSchedule struct {
 	triggerJSON *triggerJSON
 	buildTypeID string
 
-	SchedulingPolicy TriggerSchedulingPolicy
-	Rules            []string
-	Timezone         string
+	SchedulingPolicy TriggerSchedulingPolicy `prop:"schedulingPolicy"`
+	Rules            []string                `prop:"triggerRules" separator:"\n"`
+	Timezone         string                  `prop:"timezone"`
+	Hour             uint                    `prop:"hour"`
+	Minute           uint                    `prop:"minute"`
 	Weekday          time.Weekday
-	Hour             uint
-	Minute           uint
-	Second           uint
+	Options          *TriggerScheduleOptions
 }
 
 //ID for this entity
@@ -64,8 +64,8 @@ func (t *TriggerSchedule) SetBuildTypeID(id string) {
 	t.buildTypeID = id
 }
 
-//NewDailyTriggerSchedule returns a TriggaerSchedule that fires daily on the hour/minute specified
-func NewDailyTriggerSchedule(sourceBuildID string, hour uint, minute uint, timezone string, rules []string) (*TriggerSchedule, error) {
+//NewTriggerScheduleDaily returns a TriggerSchedule that fires daily on the hour/minute specified
+func NewTriggerScheduleDaily(sourceBuildID string, hour uint, minute uint, timezone string, rules []string) (*TriggerSchedule, error) {
 	if hour > 23 {
 		return nil, fmt.Errorf("Invalid hour: %d, must be between 0-23", hour)
 	}
@@ -80,13 +80,14 @@ func NewDailyTriggerSchedule(sourceBuildID string, hour uint, minute uint, timez
 		Weekday:          time.Sunday,
 		Hour:             hour,
 		Minute:           minute,
-		Second:           0,
 		buildTypeID:      sourceBuildID,
 
 		triggerJSON: &triggerJSON{
 			Disabled: NewFalse(),
 			Type:     TriggerTypes.Schedule,
 		},
+
+		Options: NewTriggerScheduleOptions(),
 	}, nil
 }
 
@@ -110,10 +111,13 @@ func (t *TriggerSchedule) read(dt *triggerJSON) error {
 		t.Timezone = v
 	}
 
+	t.Options = t.triggerJSON.Properties.triggerScheduleOptions()
+
 	switch t.SchedulingPolicy {
 	case TriggerSchedulingDaily:
 		return t.readDaily(dt)
 	}
+
 	return nil
 }
 
@@ -135,24 +139,32 @@ func (t *TriggerSchedule) readDaily(dt *triggerJSON) error {
 }
 
 func (t *TriggerSchedule) properties() *Properties {
-	props := NewProperties()
+	props := serializeToProperties(t)
+	optProps := t.Options.properties()
 
-	props.AddOrReplaceValue("timezone", t.Timezone)
-	props.AddOrReplaceValue("schedulingPolicy", t.SchedulingPolicy)
-	props.AddOrReplaceValue("triggerRules", strings.Join(t.Rules, "\n"))
-	props.AddOrReplaceValue("hour", fmt.Sprint(t.Hour))
-	props.AddOrReplaceValue("minute", fmt.Sprint(t.Minute))
+	props = props.Concat(optProps)
+	// props.AddOrReplaceValue("timezone", t.Timezone)
+	// props.AddOrReplaceValue("schedulingPolicy", t.SchedulingPolicy)
+	// props.AddOrReplaceValue("triggerRules", strings.Join(t.Rules, "\n"))
+	// props.AddOrReplaceValue("hour", fmt.Sprint(t.Hour))
+	// props.AddOrReplaceValue("minute", fmt.Sprint(t.Minute))
 
 	return props
 }
 
 //MarshalJSON implements JSON serialization for TriggerSchedule
 func (t *TriggerSchedule) MarshalJSON() ([]byte, error) {
+	props := t.properties()
+	optProps := t.Options.properties()
+	for _, p := range optProps.Items {
+		props.AddOrReplaceProperty(p)
+	}
+
 	out := &triggerJSON{
 		ID:         t.ID(),
 		Type:       t.Type(),
 		Disabled:   NewBool(t.Disabled()),
-		Properties: t.properties(),
+		Properties: props,
 	}
 
 	return json.Marshal(out)

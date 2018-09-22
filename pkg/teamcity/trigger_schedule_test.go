@@ -2,6 +2,7 @@ package teamcity
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -30,13 +31,47 @@ func Test_TriggerScheduleDeserializeDaily(t *testing.T) {
 	assert.Equal("+:*", sut.Rules[1])
 }
 
-func Test_TriggerScheduleDefaultOptions(t *testing.T) {
+func Test_TriggerScheduleSerializeDaily(t *testing.T) {
+	require := require.New(t)
+	pa := newPropertyAssertions(t)
+
+	var dt, _ = NewTriggerScheduleDaily("someBuild", 12, 0, "SERVER", []string{"+:*", "-:*.md"})
+	jsonBytes, err := dt.MarshalJSON()
+
+	require.NoError(err)
+
+	var actual triggerJSON
+	if err := json.Unmarshal([]byte(jsonBytes), &actual); err != nil {
+		t.Error(err)
+	}
+
+	props := actual.Properties
+
+	pa.assertPropertyValue(props, "schedulingPolicy", dt.SchedulingPolicy)
+	pa.assertPropertyValue(props, "timezone", dt.Timezone)
+	pa.assertPropertyValue(props, "hour", fmt.Sprint(dt.Hour))
+	pa.assertPropertyValue(props, "minute", fmt.Sprint(dt.Minute))
+	pa.assertPropertyValue(props, "triggerRules", "+:*\n-:*.md")
+
+	//Default Options
+	pa.assertPropertyValue(props, "enableQueueOptimization", "true")
+	pa.assertPropertyValue(props, "promoteWatchedBuild", "true")
+	pa.assertPropertyValue(props, "triggerBuildWithPendingChangesOnly", "true")
+	pa.assertPropertyValue(props, "revisionRuleBuildBranch", "<default>")
+	//Unset options must not be exported to properties
+	pa.assertPropertyDoesNotExist(props, "triggerBuildIfWatchedBuildChanges")
+	pa.assertPropertyDoesNotExist(props, "triggerBuildOnAllCompatibleAgents")
+	pa.assertPropertyDoesNotExist(props, "enforceCleanCheckout")
+	pa.assertPropertyDoesNotExist(props, "enforceCleanCheckoutForDependencies")
+}
+
+func Test_TriggerDeserializeScheduleOptions(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
 	var dt triggerJSON
 	var sut TriggerSchedule
-	if err := json.Unmarshal([]byte(triggerDailyJSON), &dt); err != nil {
+	if err := json.Unmarshal([]byte(triggerScheduleOptions), &dt); err != nil {
 		t.Error(err)
 	}
 
@@ -44,9 +79,18 @@ func Test_TriggerScheduleDefaultOptions(t *testing.T) {
 	require.NoError(err)
 
 	assert.Equal(TriggerSchedulingDaily, sut.SchedulingPolicy)
-	assert.Equal(uint(12), sut.Hour)
-	assert.Equal(uint(0), sut.Minute)
-	assert.Equal("-:*.md", sut.Rules[0])
+	require.NotNil(sut.Options)
+
+	opt := sut.Options
+	assert.Equal(true, opt.QueueOptimization)
+	assert.Equal(true, opt.EnforceCleanCheckout)
+	assert.Equal(true, opt.EnforceCleanCheckoutForDependencies)
+	assert.Equal(true, opt.PromoteWatchedBuild)
+	assert.Equal(LatestFinishedBuild, opt.RevisionRule)
+	assert.Equal("Project1_ReleasetoTesting", opt.RevisionRuleSourceBuildID)
+	assert.Equal(true, opt.TriggerIfWatchedBuildChanges)
+	assert.Equal(true, opt.BuildOnAllCompatibleAgents)
+	assert.Equal(true, opt.BuildWithPendingChangesOnly)
 }
 
 const triggerDailyJSON = `
@@ -54,42 +98,48 @@ const triggerDailyJSON = `
 	"id": "TRIGGER_1",
 	"type": "schedulingTrigger",
 	"properties": {
-		"count": 18,
+		"count": 5,
 		"property": [
 			{
-				"name": "cronExpression_dm",
-				"value": "*"
+				"name": "hour",
+				"value": "12"
 			},
 			{
-				"name": "cronExpression_dw",
-				"value": "?"
-			},
-			{
-				"name": "cronExpression_hour",
-				"value": "*"
-			},
-			{
-				"name": "cronExpression_min",
+				"name": "minute",
 				"value": "0"
 			},
 			{
-				"name": "cronExpression_month",
-				"value": "*"
+				"name": "schedulingPolicy",
+				"value": "daily"
 			},
 			{
-				"name": "cronExpression_sec",
-				"value": "0"
+				"name": "timezone",
+				"value": "SERVER"
 			},
 			{
-				"name": "cronExpression_year",
-				"value": "*"
-			},
-			{
-				"name": "dayOfWeek",
-				"value": "Sunday"
-			},
+				"name": "triggerRules",
+				"value": "-:*.md\n+:*"
+			}
+		]
+	}
+}
+`
+const triggerScheduleOptions = `
+{
+	"id": "TRIGGER_12",
+	"type": "schedulingTrigger",
+	"properties": {
+		"property": [
 			{
 				"name": "enableQueueOptimization",
+				"value": "true"
+			},
+			{
+				"name": "enforceCleanCheckout",
+				"value": "true"
+			},
+			{
+				"name": "enforceCleanCheckoutForDependencies",
 				"value": "true"
 			},
 			{
@@ -113,6 +163,10 @@ const triggerDailyJSON = `
 				"value": "<default>"
 			},
 			{
+				"name": "revisionRuleDependsOn",
+				"value": "Project1_ReleasetoTesting"
+			},
+			{
 				"name": "schedulingPolicy",
 				"value": "daily"
 			},
@@ -121,12 +175,20 @@ const triggerDailyJSON = `
 				"value": "SERVER"
 			},
 			{
+				"name": "triggerBuildIfWatchedBuildChanges",
+				"value": "true"
+			},
+			{
+				"name": "triggerBuildOnAllCompatibleAgents",
+				"value": "true"
+			},
+			{
 				"name": "triggerBuildWithPendingChangesOnly",
 				"value": "true"
 			},
 			{
 				"name": "triggerRules",
-				"value": "-:*.md\n+:*"
+				"value": "+:*\n-:*.md"
 			}
 		]
 	}
