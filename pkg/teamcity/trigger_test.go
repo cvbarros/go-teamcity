@@ -125,7 +125,7 @@ func TestTrigger_GetTriggerBuildFinish(t *testing.T) {
 	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
+	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"master", "feature"}))
 
 	created, err := sut.AddTrigger(nt)
 
@@ -133,6 +133,7 @@ func TestTrigger_GetTriggerBuildFinish(t *testing.T) {
 
 	actual, err := sut.GetByID(created.ID())
 
+	cleanUpProject(t, client, bt.ProjectID)
 	require.NoError(err)
 	require.IsType(&teamcity.TriggerBuildFinish{}, actual)
 	actualT := actual.(*teamcity.TriggerBuildFinish)
@@ -141,8 +142,7 @@ func TestTrigger_GetTriggerBuildFinish(t *testing.T) {
 	assert.Equal(created.ID(), actual.ID())
 	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
 	assert.Equal(created.Type(), actual.Type())
-
-	cleanUpProject(t, client, bt.ProjectID)
+	assert.Equal([]string{"master", "feature"}, actualT.Options.BranchFilter)
 }
 
 func TestTrigger_GetTriggerScheduleDaily(t *testing.T) {
