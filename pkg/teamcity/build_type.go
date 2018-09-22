@@ -63,9 +63,6 @@ type BuildType struct {
 	// template flag
 	TemplateFlag *bool `json:"templateFlag,omitempty" xml:"templateFlag"`
 
-	// triggers
-	Triggers *Triggers `json:"triggers,omitempty"`
-
 	// type
 	Type string `json:"type,omitempty" xml:"type"`
 
