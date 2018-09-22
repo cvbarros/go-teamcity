@@ -83,6 +83,7 @@ func Test_TriggerScheduleSerializeDaily(t *testing.T) {
 	pa.assertPropertyValue(props, "triggerBuildWithPendingChangesOnly", "true")
 	pa.assertPropertyValue(props, "revisionRuleBuildBranch", "<default>")
 	//Unset options must not be exported to properties
+	pa.assertPropertyDoesNotExist(props, "revisionRuleDependsOn")
 	pa.assertPropertyDoesNotExist(props, "triggerBuildIfWatchedBuildChanges")
 	pa.assertPropertyDoesNotExist(props, "triggerBuildOnAllCompatibleAgents")
 	pa.assertPropertyDoesNotExist(props, "enforceCleanCheckout")

@@ -167,17 +167,20 @@ func serializeToProperties(data interface{}) *Properties {
 			case reflect.Slice:
 				sep := "\\r\\n" // Use default
 				sep, _ = f.Tag.Lookup("separator")
-				sVal := strings.Join(pv.Interface().([]string), sep)
-				props.AddOrReplaceValue(v, sVal)
+				pVal := strings.Join(pv.Interface().([]string), sep)
+				props.AddOrReplaceValue(v, pVal)
 			case reflect.Bool:
-				sVal := pv.Bool()
-				if sVal { // Only output to properties if bool is set. TODO: Add Tag to control this
-					props.AddOrReplaceValue(v, strconv.FormatBool(sVal))
+				pVal := pv.Bool()
+				if pVal { // Only output to properties if bool is set. TODO: Add Tag to control this
+					props.AddOrReplaceValue(v, strconv.FormatBool(pVal))
 				}
 			case reflect.Uint:
 				props.AddOrReplaceValue(v, fmt.Sprint(pv.Uint()))
 			default:
-				props.AddOrReplaceValue(v, pv.String())
+				pVal := pv.String()
+				if pVal != "" {
+					props.AddOrReplaceValue(v, pVal)
+				}
 			}
 		}
 	}

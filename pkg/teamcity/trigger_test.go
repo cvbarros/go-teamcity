@@ -2,6 +2,7 @@ package teamcity_test
 
 import (
 	"testing"
+	"time"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
@@ -53,14 +54,42 @@ func TestTrigger_CreateTriggerScheduleDaily(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 0, "SERVER", []string{"+:*"})
+	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 30, "SERVER", []string{"+:*"})
 
 	created, err := sut.AddTrigger(nt)
 
 	require.Nil(err)
 
+	assert.IsType(&teamcity.TriggerSchedule{}, created)
 	assert.Equal(created.BuildTypeID(), bt.ID)
 	cleanUpProject(t, client, bt.ProjectID)
+
+	actual := created.(*teamcity.TriggerSchedule)
+	assert.Equal(actual.SchedulingPolicy, teamcity.TriggerSchedulingDaily)
+	assert.Equal(actual.Hour, uint(12))
+	assert.Equal(actual.Minute, uint(30))
+}
+
+func TestTrigger_CreateTriggerScheduleWeekly(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	client := setup()
+
+	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
+
+	sut := client.TriggerService(bt.ID)
+	nt, _ := teamcity.NewTriggerScheduleWeekly(bt.ID, time.Thursday, 12, 0, "SERVER", []string{"+:*"})
+
+	created, err := sut.AddTrigger(nt)
+
+	require.Nil(err)
+	assert.IsType(&teamcity.TriggerSchedule{}, created)
+	assert.Equal(created.BuildTypeID(), bt.ID)
+	cleanUpProject(t, client, bt.ProjectID)
+
+	actual := created.(*teamcity.TriggerSchedule)
+	assert.Equal(actual.SchedulingPolicy, teamcity.TriggerSchedulingWeekly)
+	assert.Equal(actual.Weekday, time.Thursday)
 }
 
 func TestTrigger_GetTriggerVcs(t *testing.T) {
