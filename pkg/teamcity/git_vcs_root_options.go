@@ -3,7 +3,6 @@ package teamcity
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -266,30 +265,4 @@ func (p *Properties) gitAgentSettings() *GitAgentSettings {
 	var out GitAgentSettings
 	fillStructFromProperties(&out, p)
 	return &out
-}
-
-func fillStructFromProperties(data interface{}, p *Properties) {
-	t := reflect.TypeOf(data).Elem()
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		if v, ok := f.Tag.Lookup("prop"); ok {
-			sf := reflect.ValueOf(data).Elem().Field(i)
-			if pv, pok := p.GetOk(v); pok {
-				switch sf.Kind() {
-				case reflect.Bool:
-					bv, _ := strconv.ParseBool(pv)
-					sf.SetBool(bv)
-				case reflect.String:
-					sf.SetString(pv)
-				case reflect.Slice:
-					sep := "\\r\\n" // Use default
-					sep, _ = f.Tag.Lookup("separator")
-					sVal := reflect.ValueOf(strings.Split(pv, sep))
-					sf.Set(sVal)
-				default:
-					continue
-				}
-			}
-		}
-	}
 }
