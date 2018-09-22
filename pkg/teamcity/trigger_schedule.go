@@ -66,18 +66,31 @@ func (t *TriggerSchedule) SetBuildTypeID(id string) {
 
 //NewTriggerScheduleDaily returns a TriggerSchedule that fires daily on the hour/minute specified
 func NewTriggerScheduleDaily(sourceBuildID string, hour uint, minute uint, timezone string, rules []string) (*TriggerSchedule, error) {
+	return NewTriggerSchedule(TriggerSchedulingDaily, sourceBuildID, time.Sunday, hour, minute, timezone, rules, NewTriggerScheduleOptions())
+}
+
+//NewTriggerScheduleWeekly returns a TriggerSchedule that fires weekly on the weekday and hour/minute specified
+func NewTriggerScheduleWeekly(sourceBuildID string, weekday time.Weekday, hour uint, minute uint, timezone string, rules []string) (*TriggerSchedule, error) {
+	return NewTriggerSchedule(TriggerSchedulingWeekly, sourceBuildID, weekday, hour, minute, timezone, rules, NewTriggerScheduleOptions())
+}
+
+//NewTriggerSchedule returns a TriggerSchedule with the scheduling policy and options specified
+func NewTriggerSchedule(schedulingPolicy TriggerSchedulingPolicy, sourceBuildID string, weekday time.Weekday, hour uint, minute uint, timezone string, rules []string, opt *TriggerScheduleOptions) (*TriggerSchedule, error) {
 	if hour > 23 {
-		return nil, fmt.Errorf("Invalid hour: %d, must be between 0-23", hour)
+		return nil, fmt.Errorf("invalid hour: %d, must be between 0-23", hour)
 	}
 	if minute > 59 {
-		return nil, fmt.Errorf("Invalid minute: %d, must be between 0-59", minute)
+		return nil, fmt.Errorf("invalid minute: %d, must be between 0-59", minute)
+	}
+	if weekday < time.Sunday || weekday > time.Saturday {
+		return nil, fmt.Errorf("invalid weekday: %d, must be between time.Sunday and time.Saturday", weekday)
 	}
 
 	return &TriggerSchedule{
-		SchedulingPolicy: TriggerSchedulingDaily,
+		SchedulingPolicy: schedulingPolicy,
 		Timezone:         timezone,
 		Rules:            rules,
-		Weekday:          time.Sunday,
+		Weekday:          weekday,
 		Hour:             hour,
 		Minute:           minute,
 		buildTypeID:      sourceBuildID,
@@ -87,7 +100,7 @@ func NewTriggerScheduleDaily(sourceBuildID string, hour uint, minute uint, timez
 			Type:     TriggerTypes.Schedule,
 		},
 
-		Options: NewTriggerScheduleOptions(),
+		Options: opt,
 	}, nil
 }
 
@@ -114,14 +127,14 @@ func (t *TriggerSchedule) read(dt *triggerJSON) error {
 	t.Options = t.triggerJSON.Properties.triggerScheduleOptions()
 
 	switch t.SchedulingPolicy {
-	case TriggerSchedulingDaily:
-		return t.readDaily(dt)
+	case TriggerSchedulingDaily, TriggerSchedulingWeekly:
+		return t.readDailyOrWeekly(dt)
 	}
 
 	return nil
 }
 
-func (t *TriggerSchedule) readDaily(dt *triggerJSON) error {
+func (t *TriggerSchedule) readDailyOrWeekly(dt *triggerJSON) error {
 	if v, ok := dt.Properties.GetOk("hour"); ok {
 		p, _ := strconv.ParseUint(v, 10, 0)
 		t.Hour = uint(p)
@@ -135,20 +148,46 @@ func (t *TriggerSchedule) readDaily(dt *triggerJSON) error {
 		return fmt.Errorf("invalid 'minute' property")
 	}
 
+	if t.SchedulingPolicy == TriggerSchedulingWeekly {
+		if v, ok := dt.Properties.GetOk("dayOfWeek"); ok {
+			w, err := parseWeekday(v)
+			if err != nil {
+				return fmt.Errorf("invalid 'dayOfWeek' property")
+			}
+			t.Weekday = w
+		}
+	}
+
 	return nil
+}
+
+var daysOfWeek = [...]string{
+	"Sunday",
+	"Monday",
+	"Tuesday",
+	"Wednesday",
+	"Thursday",
+	"Friday",
+	"Saturday",
+}
+
+func parseWeekday(v string) (time.Weekday, error) {
+	for i := range daysOfWeek {
+		if daysOfWeek[i] == v {
+			return time.Weekday(i), nil
+		}
+	}
+
+	return time.Sunday, fmt.Errorf("invalid weekday '%s'", v)
 }
 
 func (t *TriggerSchedule) properties() *Properties {
 	props := serializeToProperties(t)
 	optProps := t.Options.properties()
-
+	if t.SchedulingPolicy == TriggerSchedulingWeekly {
+		props.AddOrReplaceValue("dayOfWeek", t.Weekday.String())
+	}
 	props = props.Concat(optProps)
-	// props.AddOrReplaceValue("timezone", t.Timezone)
-	// props.AddOrReplaceValue("schedulingPolicy", t.SchedulingPolicy)
-	// props.AddOrReplaceValue("triggerRules", strings.Join(t.Rules, "\n"))
-	// props.AddOrReplaceValue("hour", fmt.Sprint(t.Hour))
-	// props.AddOrReplaceValue("minute", fmt.Sprint(t.Minute))
-
 	return props
 }
 

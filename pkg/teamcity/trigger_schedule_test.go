@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -31,6 +32,28 @@ func Test_TriggerScheduleDeserializeDaily(t *testing.T) {
 	assert.Equal("+:*", sut.Rules[1])
 }
 
+func Test_TriggerScheduleDeserializeWeekly(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	var dt triggerJSON
+	var sut TriggerSchedule
+	if err := json.Unmarshal([]byte(triggerWeeklyJSON), &dt); err != nil {
+		t.Error(err)
+	}
+
+	err := sut.read(&dt)
+	require.NoError(err)
+
+	assert.Equal(TriggerSchedulingWeekly, sut.SchedulingPolicy)
+	assert.Equal(uint(7), sut.Hour)
+	assert.Equal(uint(45), sut.Minute)
+	assert.Equal(time.Tuesday, sut.Weekday)
+	assert.Equal("SERVER", sut.Timezone)
+	assert.Equal("-:*.md", sut.Rules[0])
+	assert.Equal("+:*", sut.Rules[1])
+}
+
 func Test_TriggerScheduleSerializeDaily(t *testing.T) {
 	require := require.New(t)
 	pa := newPropertyAssertions(t)
@@ -52,6 +75,7 @@ func Test_TriggerScheduleSerializeDaily(t *testing.T) {
 	pa.assertPropertyValue(props, "hour", fmt.Sprint(dt.Hour))
 	pa.assertPropertyValue(props, "minute", fmt.Sprint(dt.Minute))
 	pa.assertPropertyValue(props, "triggerRules", "+:*\n-:*.md")
+	pa.assertPropertyDoesNotExist(props, "dayOfWeek")
 
 	//Default Options
 	pa.assertPropertyValue(props, "enableQueueOptimization", "true")
@@ -63,6 +87,30 @@ func Test_TriggerScheduleSerializeDaily(t *testing.T) {
 	pa.assertPropertyDoesNotExist(props, "triggerBuildOnAllCompatibleAgents")
 	pa.assertPropertyDoesNotExist(props, "enforceCleanCheckout")
 	pa.assertPropertyDoesNotExist(props, "enforceCleanCheckoutForDependencies")
+}
+
+func Test_TriggerScheduleSerializeWeekly(t *testing.T) {
+	require := require.New(t)
+	pa := newPropertyAssertions(t)
+
+	var dt, _ = NewTriggerScheduleWeekly("someBuild", time.Wednesday, 12, 0, "SERVER", []string{"+:*", "-:*.md"})
+	jsonBytes, err := dt.MarshalJSON()
+
+	require.NoError(err)
+
+	var actual triggerJSON
+	if err := json.Unmarshal([]byte(jsonBytes), &actual); err != nil {
+		t.Error(err)
+	}
+
+	props := actual.Properties
+
+	pa.assertPropertyValue(props, "schedulingPolicy", dt.SchedulingPolicy)
+	pa.assertPropertyValue(props, "timezone", dt.Timezone)
+	pa.assertPropertyValue(props, "hour", fmt.Sprint(dt.Hour))
+	pa.assertPropertyValue(props, "minute", fmt.Sprint(dt.Minute))
+	pa.assertPropertyValue(props, "dayOfWeek", time.Wednesday.String())
+	pa.assertPropertyValue(props, "triggerRules", "+:*\n-:*.md")
 }
 
 func Test_TriggerDeserializeScheduleOptions(t *testing.T) {
@@ -111,6 +159,41 @@ const triggerDailyJSON = `
 			{
 				"name": "schedulingPolicy",
 				"value": "daily"
+			},
+			{
+				"name": "timezone",
+				"value": "SERVER"
+			},
+			{
+				"name": "triggerRules",
+				"value": "-:*.md\n+:*"
+			}
+		]
+	}
+}
+`
+const triggerWeeklyJSON = `
+{
+	"id": "TRIGGER_1",
+	"type": "schedulingTrigger",
+	"properties": {
+		"count": 5,
+		"property": [
+			{
+				"name": "hour",
+				"value": "7"
+			},
+			{
+				"name": "minute",
+				"value": "45"
+			},
+			{
+				"name": "dayOfWeek",
+				"value": "Tuesday"
+			},
+			{
+				"name": "schedulingPolicy",
+				"value": "weekly"
 			},
 			{
 				"name": "timezone",
