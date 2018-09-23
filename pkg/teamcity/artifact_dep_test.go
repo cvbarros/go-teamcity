@@ -28,7 +28,7 @@ func Test_ArtifactDependency_Constructor(t *testing.T) {
 	actual, _ := teamcity.NewArtifactDependency("sourceBuild", createDefaultTestingArtifactDependencyOptions())
 	require.NotNil(t, actual)
 
-	assert.Equal("sourceBuild", actual.SourceBuildTypeID())
+	assert.Equal("sourceBuild", actual.SourceBuildTypeID)
 	assert.Equal("artifact_dependency", actual.Type())
 	assert.EqualValues(false, actual.Disabled())
 }

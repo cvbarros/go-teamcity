@@ -117,7 +117,7 @@ func TestArtifactDependency_Get(t *testing.T) {
 	assert.Equal(created.ID(), actual.ID())
 	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
 	assert.Equal(created.Type(), actual.Type())
-	assert.Equal(created.SourceBuildTypeID(), actual.SourceBuildTypeID())
+	assert.Equal(created.SourceBuildTypeID, actual.SourceBuildTypeID)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
