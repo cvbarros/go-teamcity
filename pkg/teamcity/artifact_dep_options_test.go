@@ -38,7 +38,7 @@ func Test_ArtifactDependencyOptions_ConstructorDefault(t *testing.T) {
 
 	require.NotNil(actual)
 
-	artifactProps := actual.artifactDependencyProperties()
+	artifactProps := actual.properties()
 
 	props.assertPropertyValue(artifactProps, "cleanDestinationDirectory", "false")
 	props.assertPropertyValue(artifactProps, "pathRules", "rule1\r\nrule2")
@@ -54,7 +54,7 @@ func Test_ArtifactDependencyOptions_ConstructorLatestPinned(t *testing.T) {
 
 	require.NotNil(actual)
 
-	artifactProps := actual.artifactDependencyProperties()
+	artifactProps := actual.properties()
 
 	props.assertPropertyValue(artifactProps, "revisionValue", "latest.lastPinned")
 	props.assertPropertyValue(artifactProps, "revisionName", "lastPinned")
@@ -68,7 +68,7 @@ func Test_ArtifactDependencyOptions_ConstructorLatestFinished(t *testing.T) {
 
 	require.NotNil(actual)
 
-	artifactProps := actual.artifactDependencyProperties()
+	artifactProps := actual.properties()
 
 	props.assertPropertyValue(artifactProps, "revisionValue", "latest.lastFinished")
 	props.assertPropertyValue(artifactProps, "revisionName", "lastFinished")
@@ -82,7 +82,7 @@ func Test_ArtifactDependencyOptions_ConstructorSameChain(t *testing.T) {
 
 	require.NotNil(actual)
 
-	artifactProps := actual.artifactDependencyProperties()
+	artifactProps := actual.properties()
 
 	props.assertPropertyValue(artifactProps, "revisionValue", "latest.sameChainOrLastFinished")
 	props.assertPropertyValue(artifactProps, "revisionName", "sameChainOrLastFinished")
@@ -96,7 +96,7 @@ func Test_ArtifactDependencyOptions_ConstructorSpecificBuildNumber(t *testing.T)
 
 	require.NotNil(actual)
 
-	artifactProps := actual.artifactDependencyProperties()
+	artifactProps := actual.properties()
 
 	props.assertPropertyValue(artifactProps, "revisionValue", "123")
 	props.assertPropertyValue(artifactProps, "revisionName", "buildNumber")
@@ -110,8 +110,22 @@ func Test_ArtifactDependencyOptions_ConstructorLastFinishedWithTag(t *testing.T)
 
 	require.NotNil(actual)
 
-	artifactProps := actual.artifactDependencyProperties()
+	artifactProps := actual.properties()
 
 	props.assertPropertyValue(artifactProps, "revisionValue", "tag1.tcbuildtag") // TC UI appends "tag1" to this suffix when calling API
 	props.assertPropertyValue(artifactProps, "revisionName", "buildTag")
+}
+
+func Test_ArtifactDependencyOptions_BuildTagStrip(t *testing.T) {
+	assert := assert.New(t)
+	pa := newPropertyAssertions(t)
+	sut, _ := NewArtifactDependencyOptions([]string{"rule1"}, LastBuildFinishedWithTag, false, "tag1")
+
+	props := sut.properties()
+
+	pa.assertPropertyValue(props, "revisionValue", "tag1.tcbuildtag")
+
+	actual := props.artifactDependencyOptions()
+
+	assert.Equal("tag1", actual.RevisionNumber)
 }

@@ -62,7 +62,7 @@ func NewArtifactDependency(sourceBuildTypeID string, opt *ArtifactDependencyOpti
 			SourceBuildType: &BuildTypeReference{ID: sourceBuildTypeID},
 			Disabled:        NewFalse(),
 			Type:            "artifact_dependency",
-			Properties:      opt.artifactDependencyProperties(),
+			Properties:      opt.properties(),
 		},
 	}, nil
 }
@@ -74,7 +74,7 @@ func (s *ArtifactDependency) MarshalJSON() ([]byte, error) {
 		Type:            s.Type(),
 		Disabled:        NewBool(s.Disabled()),
 		SourceBuildType: &BuildTypeReference{ID: s.SourceBuildTypeID},
-		Properties:      s.Options.artifactDependencyProperties(),
+		Properties:      s.Options.properties(),
 	}
 
 	return json.Marshal(out)
@@ -96,7 +96,7 @@ func (s *ArtifactDependency) UnmarshalJSON(data []byte) error {
 	}
 	s.dependencyJSON = &aux
 	s.SourceBuildTypeID = aux.SourceBuildType.ID
-	s.Options = aux.Properties.artifactDepencyOptions()
+	s.Options = aux.Properties.artifactDependencyOptions()
 
 	return nil
 }
