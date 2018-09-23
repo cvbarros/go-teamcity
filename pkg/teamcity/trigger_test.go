@@ -55,7 +55,12 @@ func TestTrigger_CreateTriggerScheduleDaily(t *testing.T) {
 
 	sut := client.TriggerService(bt.ID)
 	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 30, "SERVER", []string{"+:*"})
-
+	opt := teamcity.NewTriggerScheduleOptions()
+	opt.QueueOptimization = false
+	opt.BuildOnAllCompatibleAgents = true
+	opt.PromoteWatchedBuild = false
+	opt.BuildWithPendingChangesOnly = false
+	nt.Options = opt
 	created, err := sut.AddTrigger(nt)
 
 	require.Nil(err)
@@ -65,9 +70,13 @@ func TestTrigger_CreateTriggerScheduleDaily(t *testing.T) {
 	cleanUpProject(t, client, bt.ProjectID)
 
 	actual := created.(*teamcity.TriggerSchedule)
-	assert.Equal(actual.SchedulingPolicy, teamcity.TriggerSchedulingDaily)
-	assert.Equal(actual.Hour, uint(12))
-	assert.Equal(actual.Minute, uint(30))
+	assert.Equal(teamcity.TriggerSchedulingDaily, actual.SchedulingPolicy)
+	assert.Equal(uint(12), actual.Hour)
+	assert.Equal(uint(30), actual.Minute)
+	assert.Equal(false, actual.Options.BuildWithPendingChangesOnly)
+	assert.Equal(false, actual.Options.PromoteWatchedBuild)
+	assert.Equal(false, actual.Options.QueueOptimization)
+	assert.Equal(true, actual.Options.BuildOnAllCompatibleAgents)
 }
 
 func TestTrigger_CreateTriggerScheduleWeekly(t *testing.T) {
