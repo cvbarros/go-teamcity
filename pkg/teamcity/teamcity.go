@@ -19,7 +19,7 @@ import (
 )
 
 //DebugRequests toggle to enable tracing requests to stdout
-var DebugRequests = false
+var DebugRequests = true
 
 //DebugResponses tottle to enable tracing responses to stdout
 var DebugResponses = false

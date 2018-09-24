@@ -8,47 +8,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuildType_CreateBasicProject(t *testing.T) {
+func TestBuildType_Create(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData(testBuildTypeProjectId)
-	_, err := client.Projects.Create(newProject)
+	assert := assert.New(t)
+	actual := createTestBuildTypeWithName(t, client, "BuildTypeProject", "BuildRelease", true)
 
-	if err != nil {
-		t.Fatalf("Failed to create project for buildType: %s", err)
-	}
-	newBuildType := getTestBuildTypeData("PullRequest", "Description", testBuildTypeProjectId)
-
-	actual, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
-
-	if err != nil {
-		t.Fatalf("Failed to CreateBuildType: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("CreateBuildType did not return a valid instance")
-	}
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
+	cleanUpProject(t, client, "BuildTypeProject")
 
 	assert.NotEmpty(t, actual.ID)
-	assert.Equal(t, newBuildType.ProjectID, actual.ProjectID)
-	assert.Equal(t, newBuildType.Name, actual.Name)
+	assert.Equal("BuildTypeProject", actual.ProjectID)
+	assert.Equal("BuildRelease", actual.Name)
+}
+
+func TestBuildType_Get(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	created := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, testBuildTypeId, true)
+
+	actual, err := client.BuildTypes.GetByID(created.ID)
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	require.NoError(t, err)
+
+	assert.Equal(created.ProjectID, actual.ProjectID)
+	assert.Equal(created.Name, actual.Name)
 }
 
 func TestBuildType_AttachVcsRoot(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData(testBuildTypeProjectId)
+	assert := assert.New(t)
 
-	if _, err := client.Projects.Create(newProject); err != nil {
-		t.Fatalf("Failed to create project for buildType: %s", err)
-	}
-
-	newBuildType := getTestBuildTypeData("PullRequest", "Description", testBuildTypeProjectId)
-
-	createdBuildType, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
-	if err != nil {
-		t.Fatalf("Failed to CreateBuildType: %s", err)
-	}
+	createdBuildType := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, "BuildRelease", true)
 
 	newVcsRoot := getTestVcsRootData(testBuildTypeProjectId)
 
@@ -68,9 +58,9 @@ func TestBuildType_AttachVcsRoot(t *testing.T) {
 		t.Fatalf("Failed to get buildType '%s' for asserting: %s", createdBuildType.ID, err)
 	}
 
-	assert.NotEqualf(t, actual.VcsRootEntries.Count, 0, "Expected VcsRootEntries to contain at least one element")
+	assert.NotEqualf(actual.VcsRootEntries.Count, 0, "Expected VcsRootEntries to contain at least one element")
 	vcsEntries := idMapVcsRootEntries(actual.VcsRootEntries)
-	assert.Containsf(t, vcsEntries, vcsRootCreated.ID, "Expected VcsRootEntries to contain the VcsRoot with id = %s, but it did not", vcsRootCreated.ID)
+	assert.Containsf(vcsEntries, vcsRootCreated.ID, "Expected VcsRootEntries to contain the VcsRoot with id = %s, but it did not", vcsRootCreated.ID)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
@@ -146,28 +136,7 @@ func TestBuildType_DeleteStep(t *testing.T) {
 }
 
 func TestBuildType_UpdateSettings(t *testing.T) {
-	client := setup()
-	assert := assert.New(t)
-
-	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
-	builder := teamcity.BuildTypeSettingsBuilder
-
-	settings := builder.ConfigurationType("composite").
-		PersonalBuildTrigger(false).
-		ArtifactRules("**/*.zip").
-		Build()
-
-	err := client.BuildTypes.UpdateSettings(buildType.ID, settings)
-	assert.Nil(err)
-
-	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	actual := buildType.Settings.Map()
-
-	assert.Equal("COMPOSITE", actual["buildConfigurationType"])
-	assert.Equal("false", actual["allowPersonalBuildTriggering"])
-	assert.Equal("**/*.zip", actual["artifactRules"])
+	t.Errorf("WIP - Reimplement settings update")
 }
 
 func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
