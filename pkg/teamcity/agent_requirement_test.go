@@ -18,16 +18,17 @@ func TestAgentRequirement_Create(t *testing.T) {
 	sut.Create(req)
 	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
 
-	actual := buildType.AgentRequirements
-
+	all, _ := client.AgentRequirementService(buildType.ID).GetAll()
 	cleanUpProject(t, client, testBuildTypeProjectId)
-	assert.NotEmpty(actual.Items)
-	assert.Equal(teamcity.Conditions.Equals, actual.Items[0].Condition)
 
-	assert.Equal("property-name", actual.Items[0].Properties.Items[0].Name)
-	assert.Equal("param", actual.Items[0].Properties.Items[0].Value)
-	assert.Equal("property-value", actual.Items[0].Properties.Items[1].Name)
-	assert.Equal("value", actual.Items[0].Properties.Items[1].Value)
+	require.NotEmpty(t, all)
+	actual := all[0]
+
+	assert.Equal(teamcity.Conditions.Equals, actual.Condition)
+	assert.Equal("property-name", actual.Properties.Items[0].Name)
+	assert.Equal("param", actual.Properties.Items[0].Value)
+	assert.Equal("property-value", actual.Properties.Items[1].Name)
+	assert.Equal("value", actual.Properties.Items[1].Value)
 }
 
 func TestAgentRequirement_Get(t *testing.T) {
@@ -45,14 +46,43 @@ func TestAgentRequirement_Get(t *testing.T) {
 	require.Nil(err)
 
 	actual, err := sut.GetByID(created.ID)
+	cleanUpProject(t, client, bt.ProjectID)
 
 	require.NoError(err)
 	assert.Equal(created.ID, actual.ID)
 	assert.Equal(created.BuildTypeID, actual.BuildTypeID)
 	assert.Equal(created.Name(), actual.Name())
 	assert.Equal(created.Value(), actual.Value())
+}
 
+func TestAgentRequirement_GetAll(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	client := setup()
+
+	bt := createTestBuildTypeWithName(t, client, "AgentRequirementProject", "BuildRelease", true)
+
+	sut := client.AgentRequirementService(bt.ID)
+	req1, _ := teamcity.NewAgentRequirement(teamcity.Conditions.Equals, "param", "value")
+	req2, _ := teamcity.NewAgentRequirement(teamcity.Conditions.DoesNotEqual, "param2", "value2")
+
+	created1, err := sut.Create(req1)
+	require.NoError(err)
+	created2, err := sut.Create(req2)
+	require.NoError(err)
+
+	actual, err := sut.GetAll()
 	cleanUpProject(t, client, bt.ProjectID)
+
+	require.NoError(err)
+	require.Equal(2, len(actual))
+
+	assert.Equal(created1.ID, actual[0].ID)
+	assert.Equal(created1.BuildTypeID, actual[0].BuildTypeID)
+	assert.Equal(created1.Condition, actual[0].Condition)
+	assert.Equal(created2.ID, actual[1].ID)
+	assert.Equal(created2.BuildTypeID, actual[1].BuildTypeID)
+	assert.Equal(created2.Condition, actual[1].Condition)
 }
 
 func TestAgentRequirement_Delete(t *testing.T) {
@@ -66,6 +96,7 @@ func TestAgentRequirement_Delete(t *testing.T) {
 	nt, _ := teamcity.NewAgentRequirement(teamcity.Conditions.Equals, "param", "value")
 
 	created, err := sut.Create(nt)
+	cleanUpProject(t, client, bt.ProjectID)
 
 	require.Nil(err)
 
@@ -74,5 +105,4 @@ func TestAgentRequirement_Delete(t *testing.T) {
 
 	require.Error(err)
 	assert.Contains(err.Error(), "404")
-	cleanUpProject(t, client, bt.ProjectID)
 }

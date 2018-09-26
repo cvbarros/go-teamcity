@@ -12,7 +12,5 @@ env:
     - TEAMCITY_ADDR=http://localhost:8112
 
 script:
- # run unit tests first before acceptance tests
- # run acceptance tests
  - integration_tests/start_teamcity.sh  # start and wait for TeamCity
- - go test -v -timeout 30s ./...
+ - go test -v -timeout 60s ./...

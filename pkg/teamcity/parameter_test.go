@@ -75,11 +75,11 @@ func TestParameters_CreateForBuildType(t *testing.T) {
 	cleanUpProject(t, client, testParameterProjectId)
 
 	if err != nil || actual == nil {
-		t.Fatalf("Error when getting created project: %s", err)
+		t.Fatalf("Error when getting created build type: %s", err)
 	}
 
-	assert.NotNilf(t, actual.Parameters, "Expected parameters for project, but got nil")
-	assert.NotEmpty(t, actual.Parameters.Items, "Expected parameters for project, but its empty")
+	assert.NotNilf(t, actual.Parameters, "Expected parameters for build type, but got nil")
+	assert.NotEmpty(t, actual.Parameters.Items, "Expected parameters for build type, but its empty")
 
 	params := actual.Parameters.Map()
 	for k, v := range expected {

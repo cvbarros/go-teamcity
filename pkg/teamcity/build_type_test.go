@@ -8,47 +8,115 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuildType_CreateBasicProject(t *testing.T) {
+func TestBuildType_Create(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData(testBuildTypeProjectId)
-	_, err := client.Projects.Create(newProject)
+	assert := assert.New(t)
+	actual := createTestBuildTypeWithName(t, client, "BuildTypeProject", "BuildRelease", true)
 
-	if err != nil {
-		t.Fatalf("Failed to create project for buildType: %s", err)
-	}
-	newBuildType := getTestBuildTypeData("PullRequest", "Description", testBuildTypeProjectId)
-
-	actual, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
-
-	if err != nil {
-		t.Fatalf("Failed to CreateBuildType: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("CreateBuildType did not return a valid instance")
-	}
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
+	cleanUpProject(t, client, "BuildTypeProject")
 
 	assert.NotEmpty(t, actual.ID)
-	assert.Equal(t, newBuildType.ProjectID, actual.ProjectID)
-	assert.Equal(t, newBuildType.Name, actual.Name)
+	assert.Equal("BuildRelease", actual.Name)
+	assert.Equal("BuildTypeProject", actual.ProjectID)
+
+	//Verify some default properties
+	optExpected := teamcity.NewBuildTypeOptionsWithDefaults()
+	optActual := actual.Options
+	require.NotNil(t, optActual)
+	assert.Equal(optExpected.ArtifactRules, optActual.ArtifactRules)
+	assert.Equal(optExpected.BuildCounter, optActual.BuildCounter)
+	assert.Equal(optExpected.BuildNumberFormat, optActual.BuildNumberFormat)
+	assert.Equal(optExpected.AllowPersonalBuildTriggering, optActual.AllowPersonalBuildTriggering)
+}
+
+func TestBuildType_Get(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	created := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, testBuildTypeId, true)
+
+	actual, err := client.BuildTypes.GetByID(created.ID)
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	require.NoError(t, err)
+
+	assert.Equal(created.ProjectID, actual.ProjectID)
+	assert.Equal(created.Name, actual.Name)
+}
+
+func TestBuildType_Update(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	created := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, testBuildTypeId, true)
+	sut := client.BuildTypes
+
+	actual, err := sut.GetByID(created.ID) //Refresh
+
+	//Update some fields
+	actual.Description = "Updated description"
+	actual.Options.ArtifactRules = []string{"rule1", "rule2"}
+	actual.Options.BuildCounter = 10
+
+	updated, err := sut.Update(actual)
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	require.NoError(t, err)
+
+	assert.Equal("Updated description", updated.Description)
+	assert.Equal([]string{"rule1", "rule2"}, updated.Options.ArtifactRules)
+	assert.Equal(10, updated.Options.BuildCounter)
+}
+
+func TestBuildType_UpdateParameters(t *testing.T) {
+	client := setup()
+	pa := newPropertyAssertions(t)
+	created := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, testBuildTypeId, true)
+	sut := client.BuildTypes
+
+	actual, err := sut.GetByID(created.ID) //Refresh
+
+	//Update some fields
+	props := teamcity.NewPropertiesEmpty()
+	props.AddOrReplaceValue("param1", "value1")
+	props.AddOrReplaceValue("param2", "value2")
+	actual.Parameters = props
+
+	updated, err := sut.Update(actual)
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	require.NoError(t, err)
+	pa.assertPropertyValue(updated.Parameters, "param1", "value1")
+	pa.assertPropertyValue(updated.Parameters, "param2", "value2")
+}
+
+func TestBuildType_UpdateParametersWithRemoval(t *testing.T) {
+	client := setup()
+	pa := newPropertyAssertions(t)
+	created := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, testBuildTypeId, true)
+	sut := client.BuildTypes
+
+	actual, err := sut.GetByID(created.ID) //Refresh
+
+	props := teamcity.NewPropertiesEmpty()
+	props.AddOrReplaceValue("param1", "value1")
+	props.AddOrReplaceValue("param2", "value2")
+	actual.Parameters = props
+	actual, err = sut.Update(actual)
+
+	actual.Parameters.Remove("param2")
+	actual, err = sut.Update(actual)
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	require.NoError(t, err)
+
+	pa.assertPropertyValue(actual.Parameters, "param1", "value1")
+	pa.assertPropertyDoesNotExist(actual.Parameters, "param2")
 }
 
 func TestBuildType_AttachVcsRoot(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData(testBuildTypeProjectId)
+	assert := assert.New(t)
 
-	if _, err := client.Projects.Create(newProject); err != nil {
-		t.Fatalf("Failed to create project for buildType: %s", err)
-	}
-
-	newBuildType := getTestBuildTypeData("PullRequest", "Description", testBuildTypeProjectId)
-
-	createdBuildType, err := client.BuildTypes.Create(testBuildTypeProjectId, newBuildType)
-	if err != nil {
-		t.Fatalf("Failed to CreateBuildType: %s", err)
-	}
+	createdBuildType := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, "BuildRelease", true)
 
 	newVcsRoot := getTestVcsRootData(testBuildTypeProjectId)
 
@@ -68,9 +136,9 @@ func TestBuildType_AttachVcsRoot(t *testing.T) {
 		t.Fatalf("Failed to get buildType '%s' for asserting: %s", createdBuildType.ID, err)
 	}
 
-	assert.NotEqualf(t, actual.VcsRootEntries.Count, 0, "Expected VcsRootEntries to contain at least one element")
+	assert.NotEmpty(actual.VcsRootEntries, "Expected VcsRootEntries to contain at least one element")
 	vcsEntries := idMapVcsRootEntries(actual.VcsRootEntries)
-	assert.Containsf(t, vcsEntries, vcsRootCreated.ID, "Expected VcsRootEntries to contain the VcsRoot with id = %s, but it did not", vcsRootCreated.ID)
+	assert.Containsf(vcsEntries, vcsRootCreated.ID, "Expected VcsRootEntries to contain the VcsRoot with id = %s, but it did not", vcsRootCreated.ID)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
@@ -145,34 +213,9 @@ func TestBuildType_DeleteStep(t *testing.T) {
 	assert.Empty(t, steps)
 }
 
-func TestBuildType_UpdateSettings(t *testing.T) {
-	client := setup()
-	assert := assert.New(t)
-
-	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
-	builder := teamcity.BuildTypeSettingsBuilder
-
-	settings := builder.ConfigurationType("composite").
-		PersonalBuildTrigger(false).
-		ArtifactRules("**/*.zip").
-		Build()
-
-	err := client.BuildTypes.UpdateSettings(buildType.ID, settings)
-	assert.Nil(err)
-
-	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	actual := buildType.Settings.Map()
-
-	assert.Equal("COMPOSITE", actual["buildConfigurationType"])
-	assert.Equal("false", actual["allowPersonalBuildTriggering"])
-	assert.Equal("**/*.zip", actual["artifactRules"])
-}
-
-func idMapVcsRootEntries(v *teamcity.VcsRootEntries) map[string]string {
+func idMapVcsRootEntries(v []*teamcity.VcsRootEntry) map[string]string {
 	out := make(map[string]string)
-	for _, item := range v.Items {
+	for _, item := range v {
 		out[item.VcsRoot.ID] = item.ID
 	}
 
@@ -216,12 +259,9 @@ func createTestBuildStep(t *testing.T, client *teamcity.Client, step teamcity.St
 }
 
 func getTestBuildTypeData(name string, description string, projectId string) *teamcity.BuildType {
-
-	return &teamcity.BuildType{
-		Name:        name,
-		Description: description,
-		ProjectID:   projectId,
-	}
+	out, _ := teamcity.NewBuildType(projectId, name)
+	out.Description = description
+	return out
 }
 
 func cleanUpBuildType(t *testing.T, c *teamcity.Client, id string) {

@@ -2,13 +2,10 @@ package teamcity
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/dghubble/sling"
@@ -141,24 +138,4 @@ func (c *Client) Validate() (bool, error) {
 	}
 
 	return true, nil
-}
-
-type textPlainBodyProvider struct {
-	payload interface{}
-}
-
-func (p textPlainBodyProvider) ContentType() string {
-	return "text/plain; charset=utf-8"
-}
-
-func (p textPlainBodyProvider) Body() (io.Reader, error) {
-	return strings.NewReader(p.payload.(string)), nil
-}
-
-func debug(data []byte, err error) {
-	if err == nil {
-		fmt.Printf("%s\n\n", data)
-	} else {
-		log.Printf("[ERROR] %s\n\n", err)
-	}
 }
