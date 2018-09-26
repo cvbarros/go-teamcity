@@ -18,18 +18,18 @@ func TestSnapshotDependency_Create(t *testing.T) {
 	sut := client.DependencyService(buildType.ID)
 
 	dep := teamcity.NewSnapshotDependency(buildTypeDep.ID)
-	_, err := sut.AddSnapshotDependency(dep)
+	created, err := sut.AddSnapshotDependency(dep)
 
 	require.Nil(t, err)
 
 	buildType, _ = client.BuildTypes.GetByID(buildType.ID) //refresh
-	actual := buildType.SnapshotDependencies.Items
+	actual, _ := sut.GetSnapshotByID(created.ID)
 
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
-	assert.Equal(1, len(actual))
-	assert.Equal("snapshot_dependency", actual[0].Type)
-	assert.NotEmpty(actual[0].Properties)
+	assert.Equal("snapshot_dependency", actual.Type)
+	assert.Equal(buildTypeDep.ID, actual.SourceBuildType.ID)
+	assert.Equal(buildType.ID, actual.BuildTypeID)
 }
 
 func TestSnapshotDependency_Get(t *testing.T) {

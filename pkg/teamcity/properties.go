@@ -20,7 +20,7 @@ type Property struct {
 	Type *Type `json:"type,omitempty"`
 
 	// value
-	Value string `json:"value,omitempty" xml:"value"`
+	Value string `json:"value" xml:"value"`
 }
 
 func (p *Property) String() string {
@@ -157,6 +157,9 @@ func fillStructFromProperties(data interface{}, p *Properties) {
 				case reflect.Uint:
 					bv, _ := strconv.ParseUint(pv, 10, 0)
 					sf.SetUint(bv)
+				case reflect.Int:
+					bv, _ := strconv.ParseInt(pv, 10, 0)
+					sf.SetInt(bv)
 				case reflect.Bool:
 					bv, _ := strconv.ParseBool(pv)
 					sf.SetBool(bv)
@@ -171,6 +174,7 @@ func fillStructFromProperties(data interface{}, p *Properties) {
 					sVal := reflect.ValueOf(strings.Split(pv, sep))
 					sf.Set(sVal)
 				default:
+					//TODO: Panic if cannot set value
 					continue
 				}
 			}

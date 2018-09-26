@@ -1,6 +1,10 @@
 package teamcity
 
+//DefaultBuildNumberFormat is TC's default build number format setting for build configurations
 const DefaultBuildNumberFormat = "%build.counter%"
+
+//DefaultBuildConfigurationType is default build configuration type setting for build configurations.
+//Other possible values for this setting would be "DEPLOYMENT" or "COMPOSITE"
 const DefaultBuildConfigurationType = "REGULAR"
 
 //BuildTypeOptions represents settings for a Build Configuration
@@ -18,10 +22,10 @@ type BuildTypeOptions struct {
 }
 
 //NewBuildTypeOptionsWithDefaults returns a new instance of default settings, the same as presented in the TeamCity UI when a new build configuration is created.
-func NewBuildTypeOptionsWithDefaults(artifactRules []string) *BuildTypeOptions {
+func NewBuildTypeOptionsWithDefaults() *BuildTypeOptions {
 	return &BuildTypeOptions{
 		AllowPersonalBuildTriggering: true,
-		ArtifactRules:                artifactRules,
+		ArtifactRules:                []string{},
 		EnableHangingBuildsDetection: true,
 		EnableStatusWidget:           false,
 		MaxSimultaneousBuilds:        0,
@@ -63,16 +67,9 @@ func (o *BuildTypeOptions) properties() *Properties {
 	return props
 }
 
-// func (b buildTypeSettingsBuilder) Build() *Properties {
-// 	var props []*Property
+func (p *Properties) buildTypeOptions() *BuildTypeOptions {
+	out := NewBuildTypeOptionsWithDefaults()
 
-// 	props = appendPropertyIfApplicable(b, props, "buildConfigurationType")
-// 	props = appendPropertyIfApplicable(b, props, "allowPersonalBuildTriggering")
-// 	props = appendPropertyIfApplicable(b, props, "enableHangingBuildsDetection")
-// 	props = appendPropertyIfApplicable(b, props, "artifactRules")
-// 	props = appendPropertyIfApplicable(b, props, "maximumNumberOfBuilds")
-// 	props = appendPropertyIfApplicable(b, props, "buildCounter")
-// 	props = appendPropertyIfApplicable(b, props, "buildNumberPattern")
-
-// 	return NewProperties(props...)
-// }
+	fillStructFromProperties(out, p)
+	return out
+}
