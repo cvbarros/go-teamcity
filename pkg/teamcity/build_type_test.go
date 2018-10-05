@@ -75,17 +75,17 @@ func TestBuildType_UpdateParameters(t *testing.T) {
 	actual, err := sut.GetByID(created.ID) //Refresh
 
 	//Update some fields
-	props := teamcity.NewPropertiesEmpty()
-	props.AddOrReplaceValue("param1", "value1")
-	props.AddOrReplaceValue("param2", "value2")
+	props := teamcity.NewParametersEmpty()
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param2", "value2")
 	actual.Parameters = props
 
 	updated, err := sut.Update(actual)
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
 	require.NoError(t, err)
-	pa.assertPropertyValue(updated.Parameters, "param1", "value1")
-	pa.assertPropertyValue(updated.Parameters, "param2", "value2")
+	pa.assertPropertyValue(updated.Parameters.Properties(), "param1", "value1")
+	pa.assertPropertyValue(updated.Parameters.Properties(), "param2", "value2")
 }
 
 func TestBuildType_UpdateParametersWithRemoval(t *testing.T) {
@@ -96,20 +96,20 @@ func TestBuildType_UpdateParametersWithRemoval(t *testing.T) {
 
 	actual, err := sut.GetByID(created.ID) //Refresh
 
-	props := teamcity.NewPropertiesEmpty()
-	props.AddOrReplaceValue("param1", "value1")
-	props.AddOrReplaceValue("param2", "value2")
+	props := teamcity.NewParametersEmpty()
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param2", "value2")
 	actual.Parameters = props
 	actual, err = sut.Update(actual)
 
-	actual.Parameters.Remove("param2")
+	actual.Parameters.Remove(teamcity.ParameterTypes.Configuration, "param2")
 	actual, err = sut.Update(actual)
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
 	require.NoError(t, err)
 
-	pa.assertPropertyValue(actual.Parameters, "param1", "value1")
-	pa.assertPropertyDoesNotExist(actual.Parameters, "param2")
+	pa.assertPropertyValue(actual.Parameters.Properties(), "param1", "value1")
+	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "param2")
 }
 
 func TestBuildType_AttachVcsRoot(t *testing.T) {

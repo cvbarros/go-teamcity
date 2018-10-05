@@ -32,7 +32,7 @@ type buildTypeJSON struct {
 	Name string `json:"name,omitempty" xml:"name"`
 
 	// Parameters for the build configuration. Read-only, only useful when retrieving project details
-	Parameters *Properties `json:"parameters,omitempty"`
+	Parameters *Parameters `json:"parameters,omitempty"`
 
 	// paused
 	Paused *bool `json:"paused,omitempty" xml:"paused"`
@@ -81,7 +81,7 @@ type BuildType struct {
 	Disabled    bool
 
 	VcsRootEntries []*VcsRootEntry
-	Parameters     *Properties
+	Parameters     *Parameters
 	buildTypeJSON  *buildTypeJSON
 }
 
@@ -96,7 +96,7 @@ func NewBuildType(projectID string, name string) (*BuildType, error) {
 		ProjectID:  projectID,
 		Name:       name,
 		Options:    opt,
-		Parameters: NewPropertiesEmpty(),
+		Parameters: NewParametersEmpty(),
 		buildTypeJSON: &buildTypeJSON{
 			ProjectID: projectID,
 			Settings:  opt.properties(),

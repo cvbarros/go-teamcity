@@ -48,7 +48,6 @@ type Client struct {
 	BuildTypes *BuildTypeService
 	Server     *ServerService
 	VcsRoots   *VcsRootService
-	Parameters *ParameterService
 }
 
 // New creates a new client for server address specified at TEAMCITY_ADDR environment variable
@@ -95,20 +94,6 @@ func (c *Client) AgentRequirementService(id string) *AgentRequirementService {
 //BuildFeatureService returns a service to manage agent requirements for a build configuration with given id
 func (c *Client) BuildFeatureService(id string) *BuildFeatureService {
 	return newBuildFeatureService(id, c.HTTPClient, c.commonBase.New())
-}
-
-//ProjectParameterService returns a parameter service that operates parameters for the project with given id
-func (c *Client) ProjectParameterService(id string) *ParameterService {
-	return &ParameterService{
-		base: c.commonBase.New().Path(fmt.Sprintf("projects/%s/", LocatorID(id))),
-	}
-}
-
-//BuildTypeParameterService returns a parameter service that operates parameters for the build configuration with given id
-func (c *Client) BuildTypeParameterService(id string) *ParameterService {
-	return &ParameterService{
-		base: c.commonBase.New().Path(fmt.Sprintf("buildTypes/%s/", LocatorID(id))),
-	}
 }
 
 //DependencyService returns a service to manage snapshot and artifact dependencies for a build configuration with given id
