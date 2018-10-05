@@ -1,106 +1,64 @@
 package teamcity_test
 
 import (
+	"encoding/json"
 	"testing"
 
-	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
 	"github.com/stretchr/testify/assert"
+
+	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
+	"github.com/stretchr/testify/require"
 )
 
-func TestParameters_CreateForProject(t *testing.T) {
-	newProject := getTestProjectData(testParameterProjectId)
-	client := setup()
+func Test_ParameterConfiguration_Serialization(t *testing.T) {
+	assert := assert.New(t)
+	sut, _ := teamcity.NewParameter(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	jsonBytes, err := sut.MarshalJSON()
 
-	parameters := getTestParameters()
-
-	expected := parameters.Map()
-	_, err := client.Projects.Create(newProject)
-
-	if err != nil {
-		t.Fatalf("Error when creating project: %s", err)
+	require.NoError(t, err)
+	require.Equal(t, string(jsonBytes), `{"name":"param1","value":"value1"}`)
+	actual := &teamcity.Parameter{}
+	if err := json.Unmarshal([]byte(jsonBytes), &actual); err != nil {
+		t.Error(err)
 	}
 
-	err = client.ProjectParameterService(testParameterProjectId).Add(parameters.Items...)
-
-	if err != nil {
-		cleanUpProject(t, client, testParameterProjectId)
-		t.Fatalf("Failed to create parameters: %s", err)
-	}
-
-	actual, err := client.Projects.GetByID(testParameterProjectId)
-	cleanUpProject(t, client, testParameterProjectId)
-
-	if err != nil || actual == nil {
-		t.Fatalf("Error when getting created project: %s", err)
-	}
-
-	assert.NotNilf(t, actual.Parameters, "Expected parameters for project, but got nil")
-	assert.NotEmpty(t, actual.Parameters.Items, "Expected parameters for project, but its empty")
-
-	params := actual.Parameters.Map()
-	for k, v := range expected {
-		if value, ok := params[k]; !ok || value != v {
-			t.Errorf("parameter '%s' was expected but was not defined or had incorrect value (actual: '%s', expected: %s)", k, value, v)
-		}
-	}
+	assert.Equal("param1", actual.Name)
+	assert.Equal("value1", actual.Value)
+	assert.Equal(string(teamcity.ParameterTypes.Configuration), actual.Type)
 }
 
-func TestParameters_CreateForBuildType(t *testing.T) {
-	newProject := getTestProjectData(testParameterProjectId)
-	newBuildType := getTestBuildTypeData("PullRequest", "Description", testParameterProjectId)
-	client := setup()
+func Test_ParameterSystem_Serialization(t *testing.T) {
+	assert := assert.New(t)
+	sut, _ := teamcity.NewParameter(teamcity.ParameterTypes.System, "param1", "value1")
+	jsonBytes, err := sut.MarshalJSON()
 
-	parameters := getTestParameters()
-	expected := parameters.Map()
-	_, err := client.Projects.Create(newProject)
+	require.NoError(t, err)
+	require.Equal(t, string(jsonBytes), `{"name":"system.param1","value":"value1"}`)
 
-	if err != nil {
-		t.Fatalf("Error when creating project: %s", err)
+	actual := &teamcity.Parameter{}
+	if err := json.Unmarshal([]byte(jsonBytes), &actual); err != nil {
+		t.Error(err)
 	}
 
-	created, err := client.BuildTypes.Create(testParameterProjectId, newBuildType)
-
-	if err != nil {
-		t.Fatalf("Error when creating build type: %s", err)
-	}
-
-	err = client.BuildTypeParameterService(created.ID).Add(parameters.Items...)
-
-	if err != nil {
-		cleanUpProject(t, client, testParameterProjectId)
-		t.Fatalf("Failed to create parameters: %s", err)
-	}
-
-	actual, err := client.BuildTypes.GetByID(created.ID)
-	cleanUpProject(t, client, testParameterProjectId)
-
-	if err != nil || actual == nil {
-		t.Fatalf("Error when getting created build type: %s", err)
-	}
-
-	assert.NotNilf(t, actual.Parameters, "Expected parameters for build type, but got nil")
-	assert.NotEmpty(t, actual.Parameters.Items, "Expected parameters for build type, but its empty")
-
-	params := actual.Parameters.Map()
-	for k, v := range expected {
-		if value, ok := params[k]; !ok || value != v {
-			t.Errorf("parameter '%s' was expected but was not defined or had incorrect value (actual: '%s', expected: %s)", k, value, v)
-		}
-	}
+	assert.Equal("param1", actual.Name)
+	assert.Equal("value1", actual.Value)
+	assert.Equal(string(teamcity.ParameterTypes.System), actual.Type)
 }
 
-func getTestParameters() *teamcity.Properties {
-	return teamcity.NewProperties(
-		&teamcity.Property{
-			Name:  "env.ENV_PARAMETER",
-			Value: "env parameter value",
-		},
-		&teamcity.Property{
-			Name:  "system.system_parameter",
-			Value: "system parameter value",
-		},
-		&teamcity.Property{
-			Name:  "configuration_parameter",
-			Value: "configuration parameter value",
-		})
+func Test_ParameterEnvironmentVariable_Serialization(t *testing.T) {
+	assert := assert.New(t)
+	sut, _ := teamcity.NewParameter(teamcity.ParameterTypes.EnvironmentVariable, "param1", "value1")
+	jsonBytes, err := sut.MarshalJSON()
+
+	require.NoError(t, err)
+	require.Equal(t, string(jsonBytes), `{"name":"env.param1","value":"value1"}`)
+
+	actual := &teamcity.Parameter{}
+	if err := json.Unmarshal([]byte(jsonBytes), &actual); err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal("param1", actual.Name)
+	assert.Equal("value1", actual.Value)
+	assert.Equal(string(teamcity.ParameterTypes.EnvironmentVariable), actual.Type)
 }

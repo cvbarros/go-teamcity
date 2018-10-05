@@ -105,6 +105,10 @@ func (r *restHelper) putTextPlain(path string, data string, resourceDescription 
 		return "", err
 	}
 	resp, err := r.httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

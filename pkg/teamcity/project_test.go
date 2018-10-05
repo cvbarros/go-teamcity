@@ -29,13 +29,56 @@ func TestProject_Create(t *testing.T) {
 	assert.Equal(t, newProject.Name, actual.Name)
 }
 
-func TestProject_ValidateName(t *testing.T) {
-	newProject := teamcity.Project{}
+func TestProject_UpdateParameters(t *testing.T) {
 	client := setup()
-	_, err := client.Projects.Create(&newProject)
+	pa := newPropertyAssertions(t)
+	created := createTestProject(t, client, testProjectId)
+	sut := client.Projects
 
-	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Project name cannot be empty")
+	actual, err := sut.GetByID(created.ID) //Refresh
+
+	//Update some fields
+	props := teamcity.NewParametersEmpty()
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param2", "value2")
+	actual.Parameters = props
+
+	updated, err := sut.Update(actual)
+	cleanUpProject(t, client, testProjectId)
+
+	require.NoError(t, err)
+	pa.assertPropertyValue(updated.Parameters.Properties(), "param1", "value1")
+	pa.assertPropertyValue(updated.Parameters.Properties(), "param2", "value2")
+}
+
+func TestProject_UpdateParametersWithRemoval(t *testing.T) {
+	client := setup()
+	pa := newPropertyAssertions(t)
+	created := createTestProject(t, client, testProjectId)
+	sut := client.Projects
+
+	actual, err := sut.GetByID(created.ID) //Refresh
+
+	params := teamcity.NewParametersEmpty()
+	params.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	params.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param2", "value2")
+	actual.Parameters = params
+	actual, err = sut.Update(actual)
+
+	actual.Parameters.Remove(teamcity.ParameterTypes.Configuration, "param2")
+	actual, err = sut.Update(actual)
+	cleanUpProject(t, client, testProjectId)
+
+	require.NoError(t, err)
+
+	pa.assertPropertyValue(actual.Parameters.Properties(), "param1", "value1")
+	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "param2")
+}
+
+func TestProject_ValidateName(t *testing.T) {
+	_, err := teamcity.NewProject("", "", "")
+
+	require.Errorf(t, err, "name is required")
 }
 
 func TestProject_GetUnauthorizedHandled(t *testing.T) {
@@ -47,12 +90,8 @@ func TestProject_GetUnauthorizedHandled(t *testing.T) {
 }
 
 func getTestProjectData(name string) *teamcity.Project {
-
-	return &teamcity.Project{
-		Name:        name,
-		Description: "Test Project Description",
-		Archived:    teamcity.NewFalse(),
-	}
+	out, _ := teamcity.NewProject(name, "Test Project Description", "")
+	return out
 }
 
 func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
