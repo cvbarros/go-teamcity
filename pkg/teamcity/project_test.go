@@ -43,6 +43,34 @@ func TestProject_CreateWithParent(t *testing.T) {
 	assert.Equal(t, testProjectId, actual.ParentProject.ID)
 }
 
+func TestProject_UpdateParent(t *testing.T) {
+	parent, _ := teamcity.NewProject(testProjectId, "Parent Project", "")
+	newParent, _ := teamcity.NewProject("NewParent", "NewParent Project", "")
+	child, _ := teamcity.NewProject("ChildProject", "Child Project", testProjectId)
+
+	client := setup()
+
+	_, err := client.Projects.Create(parent)
+	require.NoError(t, err)
+	createdParent, err := client.Projects.Create(newParent)
+	require.NoError(t, err)
+	created, err := client.Projects.Create(child)
+	require.NoError(t, err)
+
+	actual, _ := client.Projects.GetByID(created.ID) // Refresh
+
+	actual.SetParentProject(createdParent.ID)
+
+	actual, err = client.Projects.Update(actual)
+
+	cleanUpProject(t, client, testProjectId)
+	cleanUpProject(t, client, createdParent.ID)
+
+	assert.Equal(t, createdParent.ID, actual.ParentProjectID)
+	require.NotNil(t, actual.ParentProject)
+	assert.Equal(t, createdParent.ID, actual.ParentProject.ID)
+}
+
 func TestProject_UpdateParameters(t *testing.T) {
 	client := setup()
 	pa := newPropertyAssertions(t)

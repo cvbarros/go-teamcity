@@ -62,6 +62,14 @@ func NewProject(name string, description string, parentProjectID string) (*Proje
 	}, nil
 }
 
+//SetParentProject changes this Project instance's parent project
+func (p *Project) SetParentProject(parentID string) {
+	p.ParentProjectID = parentID
+	p.ParentProject = &ProjectReference{
+		ID: parentID,
+	}
+}
+
 //ProjectReference converts a project instance to a ProjectReference
 func (p *Project) ProjectReference() *ProjectReference {
 	return &ProjectReference{
@@ -122,13 +130,23 @@ func (s *ProjectService) Update(project *Project) (*Project, error) {
 		return nil, err
 	}
 
-	//Update Parameters
-	var parameters *Parameters
-	err = s.restHelper.put(project.ID+"/parameters", project.Parameters, &parameters, "project parameters")
-	if err != nil {
-		return nil, err
+	//Update Parent
+	if project.ParentProjectID != "" || project.ParentProject != nil {
+		var parent ProjectReference
+		err = s.restHelper.put(project.ID+"/parentProject", project.ParentProject, &parent, "parent project")
+		if err != nil {
+			return nil, nil
+		}
 	}
 
+	//Update Parameters
+	if project.Parameters.Count > 0 {
+		var parameters *Parameters
+		err = s.restHelper.put(project.ID+"/parameters", project.Parameters, &parameters, "project parameters")
+		if err != nil {
+			return nil, err
+		}
+	}
 	out, err := s.GetByID(project.ID) //Refresh after update
 	if err != nil {
 		return nil, err
