@@ -47,12 +47,30 @@ func NewProject(name string, description string, parentProjectID string) (*Proje
 	if name == "" {
 		return nil, fmt.Errorf("name is required")
 	}
-
+	var parent *ProjectReference
+	if parentProjectID != "" {
+		parent = &ProjectReference{
+			ID: parentProjectID,
+		}
+	}
 	return &Project{
 		Name:            name,
 		Description:     description,
+		ParentProject:   parent,
 		ParentProjectID: parentProjectID,
+		Parameters:      NewParametersEmpty(),
 	}, nil
+}
+
+//ProjectReference converts a project instance to a ProjectReference
+func (p *Project) ProjectReference() *ProjectReference {
+	return &ProjectReference{
+		ID:          p.ID,
+		Description: p.Description,
+		Name:        p.Name,
+		WebURL:      p.WebURL,
+		Href:        p.Href,
+	}
 }
 
 func newProjectService(base *sling.Sling, client *http.Client) *ProjectService {
@@ -65,13 +83,22 @@ func newProjectService(base *sling.Sling, client *http.Client) *ProjectService {
 }
 
 // Create creates a new project at root project level
-func (s *ProjectService) Create(project *Project) (*ProjectReference, error) {
+func (s *ProjectService) Create(project *Project) (*Project, error) {
 	var created ProjectReference
 	err := s.restHelper.post("", project, &created, "project")
 	if err != nil {
 		return nil, err
 	}
-	return &created, nil
+
+	//initial creation does not persist "description" or parameters, so in order to be consistent with the constructor, call an update after
+	project.ID = created.ID
+	updated, err := s.Update(project)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
 }
 
 // GetByID Retrieves a project resource by ID

@@ -14,19 +14,33 @@ func TestProject_Create(t *testing.T) {
 	client := setup()
 	actual, err := client.Projects.Create(newProject)
 
-	if err != nil {
-		t.Fatalf("Failed to GetServer: %s", err)
-	}
-
-	if actual == nil {
-		t.Fatalf("CreateProject did not return a valid project instance")
-	}
-
+	require.NoError(t, err)
+	require.NotNil(t, actual)
 	assert.NotEmpty(t, actual.ID)
 
 	cleanUpProject(t, client, actual.ID)
 
 	assert.Equal(t, newProject.Name, actual.Name)
+	assert.Equal(t, newProject.Description, actual.Description)
+}
+
+func TestProject_CreateWithParent(t *testing.T) {
+	parent, _ := teamcity.NewProject(testProjectId, "Parent Project", "")
+	child, _ := teamcity.NewProject("ChildProject", "Child Project", testProjectId)
+
+	client := setup()
+
+	_, err := client.Projects.Create(parent)
+	require.NoError(t, err)
+	created, err := client.Projects.Create(child)
+	require.NoError(t, err)
+
+	actual, _ := client.Projects.GetByID(created.ID) // Refresh
+	cleanUpProject(t, client, testProjectId)
+
+	assert.Equal(t, testProjectId, actual.ParentProjectID)
+	require.NotNil(t, actual.ParentProject)
+	assert.Equal(t, testProjectId, actual.ParentProject.ID)
 }
 
 func TestProject_UpdateParameters(t *testing.T) {
@@ -110,7 +124,7 @@ func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
 	}
 }
 
-func createTestProject(t *testing.T, c *teamcity.Client, name string) *teamcity.ProjectReference {
+func createTestProject(t *testing.T, c *teamcity.Client, name string) *teamcity.Project {
 	newProject := getTestProjectData(name)
 	createdProject, err := c.Projects.Create(newProject)
 
