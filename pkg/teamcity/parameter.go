@@ -152,6 +152,14 @@ func (p *Parameters) Add(param *Parameter) {
 	p.Items = append(p.Items, param)
 }
 
+// Concat appends the source Parameters collection to this collection and returns the appended collection
+func (p *Parameters) Concat(source *Parameters) *Parameters {
+	for _, item := range source.Items {
+		p.AddOrReplaceParameter(item)
+	}
+	return p
+}
+
 //Remove a parameter if it exists in the collection
 func (p *Parameters) Remove(t string, n string) {
 	removed := -1
