@@ -100,7 +100,7 @@ func (s *ProjectService) Create(project *Project) (*Project, error) {
 
 	//initial creation does not persist "description" or parameters, so in order to be consistent with the constructor, call an update after
 	project.ID = created.ID
-	updated, err := s.Update(project)
+	updated, err := s.updateProject(project, true)
 
 	if err != nil {
 		return nil, err
@@ -124,6 +124,16 @@ func (s *ProjectService) GetByID(id string) (*Project, error) {
 //TeamCity API does not support "PUT" on the whole project resource, so the only updateable field is "Description". Other field updates will be ignored.
 //This method also updates Settings and Parameters, but this is not an atomic operation. If an error occurs, it will be returned to caller what was updated or not.
 func (s *ProjectService) Update(project *Project) (*Project, error) {
+	return s.updateProject(project, false)
+}
+
+//Delete - Deletes a project
+func (s *ProjectService) Delete(id string) error {
+	err := s.restHelper.deleteByIDWithSling(s.sling.New(), id, "project")
+	return err
+}
+
+func (s *ProjectService) updateProject(project *Project, isCreate bool) (*Project, error) {
 	_, err := s.restHelper.putTextPlain(project.ID+"/description", project.Description, "project description")
 
 	if err != nil {
@@ -131,11 +141,20 @@ func (s *ProjectService) Update(project *Project) (*Project, error) {
 	}
 
 	//Update Parent
-	if project.ParentProjectID != "" || project.ParentProject != nil {
-		var parent ProjectReference
-		err = s.restHelper.put(project.ID+"/parentProject", project.ParentProject, &parent, "parent project")
+	if !isCreate {
+		current, err := s.GetByID(project.ID)
 		if err != nil {
-			return nil, nil
+			return nil, err
+		}
+		// Only perform update if there is a change.
+		// Or else TeamCity will "copy" the project to the same parent project, altering it's name
+		// For instance: "project" -> "project (1)"
+		if (project.ParentProjectID != "" || project.ParentProject != nil) && current.ParentProjectID != project.ParentProjectID {
+			var parent ProjectReference
+			err = s.restHelper.put(project.ID+"/parentProject", project.ParentProject, &parent, "parent project")
+			if err != nil {
+				return nil, nil
+			}
 		}
 	}
 
@@ -153,10 +172,4 @@ func (s *ProjectService) Update(project *Project) (*Project, error) {
 	}
 
 	return out, nil
-}
-
-//Delete - Deletes a project
-func (s *ProjectService) Delete(id string) error {
-	err := s.restHelper.deleteByIDWithSling(s.sling.New(), id, "project")
-	return err
 }
