@@ -51,6 +51,15 @@ func NewParametersEmpty() *Parameters {
 	}
 }
 
+// NewParameters returns an instance of Parameters collection with the given parameters slice
+func NewParameters(items ...*Parameter) *Parameters {
+	count := len(items)
+	return &Parameters{
+		Count: int32(count),
+		Items: items,
+	}
+}
+
 //NewParameter creates a new instance of a parameter with the given type
 func NewParameter(t string, name string, value string) (*Parameter, error) {
 	if name == "" {
