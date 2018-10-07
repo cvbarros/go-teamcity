@@ -66,6 +66,27 @@ func TestBuildType_Update(t *testing.T) {
 	assert.Equal(10, updated.Options.BuildCounter)
 }
 
+func TestBuildType_CreateWithParameters(t *testing.T) {
+	client := setup()
+	pa := newPropertyAssertions(t)
+	project := createTestProject(t, client, testBuildTypeProjectId)
+	bt, _ := teamcity.NewBuildType(project.ID, "testbuild")
+
+	bt.Parameters.AddOrReplaceValue(teamcity.ParameterTypes.EnvironmentVariable, "param1", "value1")
+	bt.Parameters.AddOrReplaceValue(teamcity.ParameterTypes.System, "param2", "value2")
+
+	sut := client.BuildTypes
+	created, err := sut.Create(project.ID, bt)
+	require.NoError(t, err)
+
+	actual, _ := sut.GetByID(created.ID) //Refresh
+	props := actual.Parameters.Properties()
+	pa.assertPropertyValue(props, "env.param1", "value1")
+	pa.assertPropertyValue(props, "system.param2", "value2")
+
+	cleanUpProject(t, client, project.ID)
+}
+
 func TestBuildType_UpdateParameters(t *testing.T) {
 	client := setup()
 	pa := newPropertyAssertions(t)

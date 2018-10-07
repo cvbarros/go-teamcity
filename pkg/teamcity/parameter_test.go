@@ -62,3 +62,36 @@ func Test_ParameterEnvironmentVariable_Serialization(t *testing.T) {
 	assert.Equal("value1", actual.Value)
 	assert.Equal(string(teamcity.ParameterTypes.EnvironmentVariable), actual.Type)
 }
+
+func Test_ParameterCollection_Serialization(t *testing.T) {
+	sut := teamcity.NewParametersEmpty()
+
+	sut.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "config", "value_config")
+	sut.AddOrReplaceValue(teamcity.ParameterTypes.System, "system", "value_system")
+	sut.AddOrReplaceValue(teamcity.ParameterTypes.EnvironmentVariable, "env", "value_env")
+
+	jsonBytes, err := json.Marshal(sut)
+	require.NoError(t, err)
+	require.Equal(t, `{"count":3,"property":[{"name":"config","value":"value_config"},{"name":"system.system","value":"value_system"},{"name":"env.env","value":"value_env"}]}`, string(jsonBytes))
+}
+
+func Test_ParameterConvertToProperty(t *testing.T) {
+	assert := assert.New(t)
+	sut, _ := teamcity.NewParameter(teamcity.ParameterTypes.Configuration, "name", "value_config")
+	actual := sut.Property()
+
+	assert.Equal("name", actual.Name)
+	assert.Equal("value_config", actual.Value)
+
+	sut, _ = teamcity.NewParameter(teamcity.ParameterTypes.System, "name", "value_system")
+	actual = sut.Property()
+
+	assert.Equal("system.name", actual.Name)
+	assert.Equal("value_system", actual.Value)
+
+	sut, _ = teamcity.NewParameter(teamcity.ParameterTypes.EnvironmentVariable, "name", "value_env")
+	actual = sut.Property()
+
+	assert.Equal("env.name", actual.Name)
+	assert.Equal("value_env", actual.Value)
+}
