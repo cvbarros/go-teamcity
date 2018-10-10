@@ -54,6 +54,11 @@ func NewStepCommandLineExecutable(name string, executable string, args string) (
 	}, nil
 }
 
+//GetID is a wrapper implementation for ID field, to comply with Step interface
+func (s *StepCommandLine) GetID() string {
+	return s.ID
+}
+
 //Type returns the step type, in this case "StepTypePowershell".
 func (s *StepCommandLine) Type() BuildStepType {
 	return StepTypeCommandLine
