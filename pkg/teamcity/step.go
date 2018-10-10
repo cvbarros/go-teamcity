@@ -34,6 +34,7 @@ const (
 // Step interface represents a a build configuration/template build step. To interact with concrete step types, see the Step* types.
 type Step interface {
 	GetID() string
+	GetName() string
 	Type() string
 }
 

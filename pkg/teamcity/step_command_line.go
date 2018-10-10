@@ -59,6 +59,11 @@ func (s *StepCommandLine) GetID() string {
 	return s.ID
 }
 
+//GetName is a wrapper implementation for Name field, to comply with Step interface
+func (s *StepCommandLine) GetName() string {
+	return s.Name
+}
+
 //Type returns the step type, in this case "StepTypePowershell".
 func (s *StepCommandLine) Type() BuildStepType {
 	return StepTypeCommandLine
