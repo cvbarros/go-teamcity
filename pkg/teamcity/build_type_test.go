@@ -223,9 +223,9 @@ func TestBuildType_GetSteps(t *testing.T) {
 func TestBuildType_DeleteStep(t *testing.T) {
 	client := setup()
 	step, _ := teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
-	buildType, created := createTestBuildStep(t, client, step, testBuildTypeProjectId)
-
-	client.BuildTypes.DeleteStep(buildType.ID, created.ID())
+	buildType, s := createTestBuildStep(t, client, step, testBuildTypeProjectId)
+	created := s.(*teamcity.StepCommandLine)
+	client.BuildTypes.DeleteStep(buildType.ID, created.ID)
 
 	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
 
