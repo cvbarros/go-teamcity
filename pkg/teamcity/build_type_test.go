@@ -133,6 +133,38 @@ func TestBuildType_UpdateParametersWithRemoval(t *testing.T) {
 	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "param2")
 }
 
+func TestBuildType_GetParametersExcludeInherited(t *testing.T) {
+	client := setup()
+	pa := newPropertyAssertions(t)
+	require := require.New(t)
+	created := createTestBuildTypeWithName(t, client, testBuildTypeProjectId, testBuildTypeId, true)
+
+	//Add parameters to parent project
+	proj, _ := client.Projects.GetByID(testBuildTypeProjectId)
+	proj.Parameters.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "project_inherited", "value")
+	proj, _ = client.Projects.Update(proj)
+
+	pa.assertPropertyExists(proj.Parameters.Properties(), "project_inherited")
+
+	sut := client.BuildTypes
+	actual, err := sut.GetByID(created.ID) //Refresh
+	props := teamcity.NewParametersEmpty()
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param2", "value2")
+	actual.Parameters = props
+	actual, err = sut.Update(actual)
+
+	actual.Parameters.Remove(teamcity.ParameterTypes.Configuration, "param2")
+	actual, err = sut.Update(actual)
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	require.NoError(err)
+
+	pa.assertPropertyValue(actual.Parameters.Properties(), "param1", "value1")
+	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "param2")
+	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "project_inherited")
+}
+
 func TestBuildType_AttachVcsRoot(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
