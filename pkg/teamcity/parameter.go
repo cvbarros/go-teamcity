@@ -120,11 +120,15 @@ func (p *Parameters) Properties() *Properties {
 
 //Property converts a Parameter instance to a Property
 func (p *Parameter) Property() *Property {
-	return &Property{
-		Name:      fmt.Sprintf("%s%s", paramPrefixByType[p.Type], p.Name),
-		Value:     p.Value,
-		Inherited: NewBool(p.Inherited),
+	out := &Property{
+		Name:  fmt.Sprintf("%s%s", paramPrefixByType[p.Type], p.Name),
+		Value: p.Value,
 	}
+	//Omit default inherited value
+	if p.Inherited {
+		out.Inherited = NewBool(p.Inherited)
+	}
+	return out
 }
 
 // AddOrReplaceValue will update a parameter value if it exists, or add if it doesnt
