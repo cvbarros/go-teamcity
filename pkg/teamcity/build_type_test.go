@@ -55,6 +55,7 @@ func TestBuildType_Update(t *testing.T) {
 	actual.Description = "Updated description"
 	actual.Options.ArtifactRules = []string{"rule1", "rule2"}
 	actual.Options.BuildCounter = 10
+	actual.Options.AllowPersonalBuildTriggering = false
 
 	updated, err := sut.Update(actual)
 	cleanUpProject(t, client, testBuildTypeProjectId)
@@ -64,6 +65,7 @@ func TestBuildType_Update(t *testing.T) {
 	assert.Equal("Updated description", updated.Description)
 	assert.Equal([]string{"rule1", "rule2"}, updated.Options.ArtifactRules)
 	assert.Equal(10, updated.Options.BuildCounter)
+	assert.Equal(false, updated.Options.AllowPersonalBuildTriggering)
 }
 
 func TestBuildType_CreateWithParameters(t *testing.T) {

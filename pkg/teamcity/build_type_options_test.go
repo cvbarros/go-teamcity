@@ -143,7 +143,7 @@ func Test_Properties_Full(t *testing.T) {
 
 	actual := sut.properties()
 
-	pa.assertPropertyDoesNotExist(actual, "allowPersonalBuildTriggering")
+	pa.assertPropertyValue(actual, "allowPersonalBuildTriggering", "false")
 	pa.assertPropertyValue(actual, "buildConfigurationType", "DEPLOYMENT")
 	pa.assertPropertyValue(actual, "enableHangingBuildsDetection", "false")
 	pa.assertPropertyValue(actual, "allowExternalStatus", "true")
