@@ -159,7 +159,6 @@ func TestBuildType_GetParametersExcludeInherited(t *testing.T) {
 	require.NoError(err)
 
 	pa.assertPropertyValue(actual.Parameters.Properties(), "param1", "value1")
-	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "param2")
 	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "project_inherited")
 }
 
