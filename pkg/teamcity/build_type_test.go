@@ -154,8 +154,6 @@ func TestBuildType_GetParametersExcludeInherited(t *testing.T) {
 	actual.Parameters = props
 	actual, err = sut.Update(actual)
 
-	actual.Parameters.Remove(teamcity.ParameterTypes.Configuration, "param2")
-	actual, err = sut.Update(actual)
 	cleanUpProject(t, client, testBuildTypeProjectId)
 
 	require.NoError(err)
