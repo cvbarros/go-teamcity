@@ -123,6 +123,20 @@ func (s *ProjectService) GetByID(id string) (*Project, error) {
 	return &out, err
 }
 
+//GetByName returns a project by it's name. There are no duplicate names in projects for TeamCity
+func (s *ProjectService) GetByName(name string) (*Project, error) {
+	var out Project
+
+	err := s.restHelper.get(LocatorName(name).String(), &out, "project")
+	if err != nil {
+		return nil, err
+	}
+
+	//For now, filter all inherited parameters, until figuring out a proper way of exposing filtering options to the caller
+	out.Parameters = out.Parameters.NonInherited()
+	return &out, err
+}
+
 //Update changes the resource in-place for this project.
 //TeamCity API does not support "PUT" on the whole project resource, so the only updateable field is "Description". Other field updates will be ignored.
 //This method also updates Settings and Parameters, but this is not an atomic operation. If an error occurs, it will be returned to caller what was updated or not.
