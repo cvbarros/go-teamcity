@@ -11,6 +11,10 @@ func LocatorID(id string) Locator {
 	return Locator("id:" + id)
 }
 
+func LocatorName(name string) Locator {
+	return Locator("name:" + name)
+}
+
 func (l Locator) String() string {
 	return url.QueryEscape(string(l))
 }

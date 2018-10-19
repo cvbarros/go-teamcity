@@ -136,6 +136,18 @@ func TestProject_UpdateParametersWithRemoval(t *testing.T) {
 	pa.assertPropertyDoesNotExist(actual.Parameters.Properties(), "param2")
 }
 
+func TestProject_GetByName(t *testing.T) {
+	client := setup()
+	created := createTestProject(t, client, testProjectId)
+	sut := client.Projects
+
+	actual, err := sut.GetByName(created.Name)
+	cleanUpProject(t, client, testProjectId)
+	require.NoError(t, err)
+
+	assert.Equal(t, created.Name, actual.Name)
+}
+
 func TestProject_ValidateName(t *testing.T) {
 	_, err := teamcity.NewProject("", "", "")
 
