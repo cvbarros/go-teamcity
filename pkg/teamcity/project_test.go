@@ -148,6 +148,16 @@ func TestProject_GetByName(t *testing.T) {
 	assert.Equal(t, created.Name, actual.Name)
 }
 
+func TestProject_GetRootByName(t *testing.T) {
+	client := setup()
+	sut := client.Projects
+
+	actual, err := sut.GetByName("<Root project>") // This is case sensitive!
+	require.NoError(t, err)
+
+	assert.Equal(t, "<Root project>", actual.Name)
+}
+
 func TestProject_ValidateName(t *testing.T) {
 	_, err := teamcity.NewProject("", "", "")
 

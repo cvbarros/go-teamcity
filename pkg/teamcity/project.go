@@ -112,8 +112,8 @@ func (s *ProjectService) Create(project *Project) (*Project, error) {
 // GetByID Retrieves a project resource by ID
 func (s *ProjectService) GetByID(id string) (*Project, error) {
 	var out Project
-
-	err := s.restHelper.get(LocatorID(id).String(), &out, "project")
+	locator := LocatorID(id).String()
+	err := s.restHelper.get(locator, &out, "project")
 	if err != nil {
 		return nil, err
 	}
