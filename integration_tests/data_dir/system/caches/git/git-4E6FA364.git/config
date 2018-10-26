@@ -1,8 +1,0 @@
-[core]
-	symlinks = false
-	repositoryformatversion = 0
-	filemode = true
-	bare = true
-	logallrefupdates = false
-[teamcity]
-	remote = https://coolblue-teamcity@github.com/coolblue-development/canary-dotnetcore20
