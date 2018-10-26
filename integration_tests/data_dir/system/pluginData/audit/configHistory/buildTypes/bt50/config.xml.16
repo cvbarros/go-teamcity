@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="fa458a42-bb1f-4e54-b1a6-2f592491e321" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/2017.2/project-config.xsd">
+  <name>BuildRelease</name>
+  <description />
+  <settings>
+    <options>
+      <option name="allowPersonalBuildTriggering" value="false" />
+      <option name="artifactRules" value="abcd" />
+      <option name="buildConfigurationType" value="DEPLOYMENT" />
+      <option name="enableHangingBuildsDetection" value="false" />
+      <option name="maximumNumberOfBuilds" value="1" />
+      <option name="showDependenciesChanges" value="true" />
+    </options>
+    <parameters />
+    <build-runners />
+    <vcs-settings />
+    <requirements />
+    <build-triggers>
+      <build-trigger id="TRIGGER_12" type="schedulingTrigger">
+        <parameters>
+          <param name="cronExpression_dm" value="*" />
+          <param name="cronExpression_dw" value="?" />
+          <param name="cronExpression_hour" value="*" />
+          <param name="cronExpression_min" value="0" />
+          <param name="cronExpression_month" value="*" />
+          <param name="cronExpression_sec" value="0" />
+          <param name="cronExpression_year" value="*" />
+          <param name="dayOfWeek" value="Sunday" />
+          <param name="enableQueueOptimization" value="true" />
+          <param name="enforceCleanCheckout" value="true" />
+          <param name="enforceCleanCheckoutForDependencies" value="true" />
+          <param name="hour" value="12" />
+          <param name="minute" value="0" />
+          <param name="promoteWatchedBuild" value="true" />
+          <param name="revisionRule" value="lastFinished" />
+          <param name="revisionRuleBuildBranch" value="&lt;default&gt;" />
+          <param name="revisionRuleDependsOn" value="Project1_ReleasetoTesting" />
+          <param name="schedulingPolicy" value="cron" />
+          <param name="timezone" value="Pacific/Pitcairn" />
+          <param name="triggerBuildIfWatchedBuildChanges" value="true" />
+          <param name="triggerBuildOnAllCompatibleAgents" value="true" />
+          <param name="triggerBuildWithPendingChangesOnly" value="true" />
+          <param name="triggerRules"><![CDATA[+:*
+-:*.md]]></param>
+        </parameters>
+      </build-trigger>
+      <build-trigger id="TRIGGER_1" type="schedulingTrigger">
+        <parameters>
+          <param name="cronExpression_dm" value="*" />
+          <param name="cronExpression_dw" value="?" />
+          <param name="cronExpression_hour" value="*" />
+          <param name="cronExpression_min" value="0" />
+          <param name="cronExpression_month" value="*" />
+          <param name="cronExpression_sec" value="0" />
+          <param name="cronExpression_year" value="*" />
+          <param name="dayOfWeek" value="Sunday" />
+          <param name="enableQueueOptimization" value="true" />
+          <param name="hour" value="12" />
+          <param name="minute" value="0" />
+          <param name="promoteWatchedBuild" value="true" />
+          <param name="revisionRule" value="lastFinished" />
+          <param name="revisionRuleBuildBranch" value="&lt;default&gt;" />
+          <param name="schedulingPolicy" value="daily" />
+          <param name="timezone" value="SERVER" />
+          <param name="triggerBuildWithPendingChangesOnly" value="true" />
+          <param name="triggerRules" value="-:*.md" />
+        </parameters>
+      </build-trigger>
+      <build-trigger id="TRIGGER_20" type="schedulingTrigger">
+        <parameters>
+          <param name="cronExpression_dm" value="*" />
+          <param name="cronExpression_dw" value="?" />
+          <param name="cronExpression_hour" value="*" />
+          <param name="cronExpression_min" value="0" />
+          <param name="cronExpression_month" value="*" />
+          <param name="cronExpression_sec" value="0" />
+          <param name="cronExpression_year" value="*" />
+          <param name="dayOfWeek" value="Sunday" />
+          <param name="enableQueueOptimization" value="true" />
+          <param name="hour" value="12" />
+          <param name="minute" value="0" />
+          <param name="promoteWatchedBuild" value="true" />
+          <param name="revisionRule" value="lastFinished" />
+          <param name="revisionRuleBuildBranch" value="&lt;default&gt;" />
+          <param name="schedulingPolicy" value="daily" />
+          <param name="timezone" value="SERVER" />
+          <param name="triggerBuildWithPendingChangesOnly" value="true" />
+        </parameters>
+      </build-trigger>
+    </build-triggers>
+    <cleanup />
+  </settings>
+</build-type>
+

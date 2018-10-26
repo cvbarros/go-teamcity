@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="b7d5a227-e236-431e-b7ff-b96093fd773a" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/2017.2/project-config.xsd">
+  <name>Triggers</name>
+  <description />
+  <settings>
+    <parameters />
+    <build-runners />
+    <vcs-settings />
+    <requirements />
+    <build-triggers>
+      <build-trigger id="TRIGGER_6" type="schedulingTrigger">
+        <parameters>
+          <param name="hour" value="12" />
+          <param name="minute" value="0" />
+          <param name="schedulingPolicy" value="daily" />
+        </parameters>
+      </build-trigger>
+      <build-trigger id="TRIGGER_16" type="schedulingTrigger">
+        <parameters>
+          <param name="enableQueueOptimization" value="false" />
+          <param name="hour" value="12" />
+          <param name="minute" value="0" />
+          <param name="promoteWatchedBuild" value="false" />
+          <param name="schedulingPolicy" value="daily" />
+          <param name="triggerBuildWithPendingChangesOnly" value="false" />
+        </parameters>
+      </build-trigger>
+      <build-trigger id="TRIGGER_40" type="schedulingTrigger">
+        <parameters>
+          <param name="enableQueueOptimization" value="false" />
+          <param name="hour" value="12" />
+          <param name="minute" value="0" />
+          <param name="promoteWatchedBuild" value="false" />
+          <param name="schedulingPolicy" value="daily" />
+          <param name="triggerBuildWithPendingChangesOnly" value="false" />
+        </parameters>
+      </build-trigger>
+    </build-triggers>
+    <cleanup />
+  </settings>
+</build-type>
+

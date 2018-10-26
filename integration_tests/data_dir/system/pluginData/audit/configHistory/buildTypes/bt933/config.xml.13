@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="3a6a71ad-a614-432c-86fb-51fb45095d2f" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/2017.2/project-config.xsd">
+  <name>BuildTypeSettings</name>
+  <description>BuildTypeWithSettings</description>
+  <settings>
+    <options>
+      <option name="allowPersonalBuildTriggering" value="false" />
+      <option name="artifactRules" value="abcd&#xA;efgh" />
+      <option name="enableHangingBuildsDetection" value="false" />
+      <option name="maximumNumberOfBuilds" value="1" />
+      <option name="showDependenciesChanges" value="true" />
+    </options>
+    <parameters />
+    <build-runners />
+    <vcs-settings />
+    <requirements />
+    <build-triggers />
+    <cleanup />
+  </settings>
+</build-type>
+

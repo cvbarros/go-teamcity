@@ -1,0 +1,83 @@
+<root>
+  <page path="/">
+    <usage userId="1" timestamp="1540548103835" />
+  </page>
+  <page path="/admin/admin.html">
+    <usage userId="1" timestamp="1540548514046" />
+  </page>
+  <page path="/admin/createBuildType.html">
+    <usage userId="1" timestamp="1540214044890" />
+  </page>
+  <page path="/admin/createObjectMenu.html">
+    <usage userId="1" timestamp="1540214044413" />
+  </page>
+  <page path="/admin/createProject.html">
+    <usage userId="1" timestamp="1538923600333" />
+  </page>
+  <page path="/admin/editBuild.html">
+    <usage userId="1" timestamp="1538934881488" />
+  </page>
+  <page path="/admin/editBuildParams.html">
+    <usage userId="1" timestamp="1540217285405" />
+  </page>
+  <page path="/admin/editBuildTypeVcsRoots.html">
+    <usage userId="1" timestamp="1540214051432" />
+  </page>
+  <page path="/admin/editDependencies.html" />
+  <page path="/admin/editProject.html">
+    <usage userId="1" timestamp="1540214042842" />
+  </page>
+  <page path="/admin/editProject.html?tab=BuildsSchedule">
+    <usage userId="1" timestamp="1538304750580" />
+  </page>
+  <page path="/admin/editProject.html?tab=cleanup">
+    <usage userId="1" timestamp="1538304870011" />
+  </page>
+  <page path="/admin/editProject.html?tab=issueTrackers">
+    <usage userId="1" timestamp="1538304766182" />
+  </page>
+  <page path="/admin/editProject.html?tab=projectGeneralTab">
+    <usage userId="1" timestamp="1538934112532" />
+  </page>
+  <page path="/admin/editProject.html?tab=projectParams">
+    <usage userId="1" timestamp="1538307002260" />
+  </page>
+  <page path="/admin/editProject.html?tab=projectVcsRoots">
+    <usage userId="1" timestamp="1538304866698" />
+  </page>
+  <page path="/admin/editProject.html?tab=ssh-manager">
+    <usage userId="1" timestamp="1538304725647" />
+  </page>
+  <page path="/admin/editProject.html?tab=versionedSettings">
+    <usage userId="1" timestamp="1538304771830" />
+  </page>
+  <page path="/admin/editTriggers.html" />
+  <page path="/admin/editVcsRoot.html">
+    <usage userId="1" timestamp="1540214049151" />
+  </page>
+  <page path="/editArtifactDepsHelper.html" />
+  <page path="/favoriteIcon.html">
+    <usage userId="1" timestamp="1537995313397" />
+  </page>
+  <page path="/limitedPendingChangesLink.html">
+    <usage userId="1" timestamp="1540548285277" />
+  </page>
+  <page path="/parameters/editParameter.html">
+    <usage userId="1" timestamp="1540217195346" />
+  </page>
+  <page path="/project.html?tab=projectOverview">
+    <usage userId="1" timestamp="1540214038874" />
+  </page>
+  <page path="/queue.html">
+    <usage userId="1" timestamp="1537995310975" />
+  </page>
+  <page path="/runCustomBuild.html">
+    <usage userId="1" timestamp="1540214236645" />
+  </page>
+  <page path="/systemProblems.html">
+    <usage userId="1" timestamp="1540547648837" />
+  </page>
+  <page path="/viewType.html">
+    <usage userId="1" timestamp="1540214037541" />
+  </page>
+</root>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="f91f31fd-7317-46f3-bdf1-1a4ce8072ffb" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/2017.2/project-config.xsd">
+  <name>1. Pull Request</name>
+  <description>Inspection Build with "pullrequest" target</description>
+  <settings>
+    <options>
+      <option name="buildNumberPattern" value="2.0.%build.counter%" />
+      <option name="maximumNumberOfBuilds" value="1" />
+    </options>
+    <parameters />
+    <build-runners>
+      <runner id="RUNNER_221" name="Invoke build.ps1 with 'pullrequest' target" type="jetbrains_powershell">
+        <parameters>
+          <param name="jetbrains_powershell_execution" value="PS1" />
+          <param name="jetbrains_powershell_noprofile" value="true" />
+          <param name="jetbrains_powershell_scriptArguments" value="-Target pullrequest -Verbosity %verbosity%" />
+          <param name="jetbrains_powershell_script_file" value="build.ps1" />
+          <param name="jetbrains_powershell_script_mode" value="FILE" />
+          <param name="teamcity.step.mode" value="default" />
+        </parameters>
+      </runner>
+    </build-runners>
+    <vcs-settings />
+    <requirements>
+      <does-not-equal id="RQ_88" name="teamcity.agent.environment" value="testing" />
+      <does-not-equal id="RQ_89" name="teamcity.agent.environment" value="shared" />
+      <does-not-equal id="RQ_90" name="teamcity.agent.environment" value="acceptance" />
+    </requirements>
+    <build-triggers>
+      <build-trigger id="vcsTrigger" type="vcsTrigger">
+        <parameters>
+          <param name="branchFilter" value="+:pull/*" />
+          <param name="enableQueueOptimization" value="true" />
+          <param name="quietPeriodMode" value="DO_NOT_USE" />
+          <param name="triggerRules" value="+:*" />
+        </parameters>
+      </build-trigger>
+    </build-triggers>
+    <build-extensions>
+      <extension id="BUILD_EXT_76" type="commit-status-publisher">
+        <parameters>
+          <param name="github_authentication_type" value="password" />
+          <param name="github_host" value="https://api.github.com" />
+          <param name="github_username" value="coolblue-teamcity" />
+          <param name="publisherId" value="githubStatusPublisher" />
+          <param name="secure:github_password" value="zxx107a45dcecca1904" />
+        </parameters>
+      </extension>
+    </build-extensions>
+    <cleanup />
+  </settings>
+</build-type>
+
