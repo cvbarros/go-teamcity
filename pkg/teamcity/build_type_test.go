@@ -18,7 +18,7 @@ func TestBuildType_Create(t *testing.T) {
 	assert.NotEmpty(t, actual.ID)
 	assert.Equal("BuildRelease", actual.Name)
 	assert.Equal("BuildTypeProject", actual.ProjectID)
-	assert.Equal(false, actual.Template)
+	assert.Equal(false, actual.IsTemplate)
 
 	//Verify some default properties
 	optExpected := teamcity.NewBuildTypeOptionsWithDefaults()
@@ -40,7 +40,7 @@ func TestBuildTypeTemplate_Create(t *testing.T) {
 	assert.NotEmpty(t, actual.ID)
 	assert.Equal("BuildRelease", actual.Name)
 	assert.Equal("BuildTypeProject", actual.ProjectID)
-	assert.Equal(true, actual.Template)
+	assert.Equal(true, actual.IsTemplate)
 
 	//Verify some default properties
 	optExpected := teamcity.NewBuildTypeOptionsWithDefaults()
