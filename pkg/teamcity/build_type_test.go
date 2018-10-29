@@ -18,6 +18,7 @@ func TestBuildType_Create(t *testing.T) {
 	assert.NotEmpty(t, actual.ID)
 	assert.Equal("BuildRelease", actual.Name)
 	assert.Equal("BuildTypeProject", actual.ProjectID)
+	assert.Equal(false, actual.IsTemplate)
 
 	//Verify some default properties
 	optExpected := teamcity.NewBuildTypeOptionsWithDefaults()
@@ -25,6 +26,27 @@ func TestBuildType_Create(t *testing.T) {
 	require.NotNil(t, optActual)
 	assert.Equal(optExpected.ArtifactRules, optActual.ArtifactRules)
 	assert.Equal(optExpected.BuildCounter, optActual.BuildCounter)
+	assert.Equal(optExpected.BuildNumberFormat, optActual.BuildNumberFormat)
+	assert.Equal(optExpected.AllowPersonalBuildTriggering, optActual.AllowPersonalBuildTriggering)
+}
+
+func TestBuildTypeTemplate_Create(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	actual := createTestBuildTypeTemplateWithName(t, client, "BuildTypeProject", "BuildRelease", true)
+
+	cleanUpProject(t, client, "BuildTypeProject")
+
+	assert.NotEmpty(t, actual.ID)
+	assert.Equal("BuildRelease", actual.Name)
+	assert.Equal("BuildTypeProject", actual.ProjectID)
+	assert.Equal(true, actual.IsTemplate)
+
+	//Verify some default properties
+	optExpected := teamcity.NewBuildTypeOptionsWithDefaults()
+	optActual := actual.Options
+	require.NotNil(t, optActual)
+	assert.Equal(optExpected.ArtifactRules, optActual.ArtifactRules)
 	assert.Equal(optExpected.BuildNumberFormat, optActual.BuildNumberFormat)
 	assert.Equal(optExpected.AllowPersonalBuildTriggering, optActual.AllowPersonalBuildTriggering)
 }
@@ -279,6 +301,14 @@ func createTestBuildType(t *testing.T, client *teamcity.Client, buildTypeProject
 }
 
 func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string, createProject bool) *teamcity.BuildType {
+	return createTestBuildTypeInternal(t, client, buildTypeProjectId, name, createProject, false)
+}
+
+func createTestBuildTypeTemplateWithName(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string, createProject bool) *teamcity.BuildType {
+	return createTestBuildTypeInternal(t, client, buildTypeProjectId, name, createProject, true)
+}
+
+func createTestBuildTypeInternal(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string, createProject bool, template bool) *teamcity.BuildType {
 	if createProject {
 		newProject := getTestProjectData(buildTypeProjectId)
 
@@ -287,7 +317,7 @@ func createTestBuildTypeWithName(t *testing.T, client *teamcity.Client, buildTyp
 		}
 	}
 
-	newBuildType := getTestBuildTypeData(name, "Inspection", buildTypeProjectId)
+	newBuildType := getTestBuildTypeData(name, "Inspection", buildTypeProjectId, template)
 
 	createdBuildType, err := client.BuildTypes.Create(buildTypeProjectId, newBuildType)
 	if err != nil {
@@ -310,10 +340,14 @@ func createTestBuildStep(t *testing.T, client *teamcity.Client, step teamcity.St
 	return updated, created
 }
 
-func getTestBuildTypeData(name string, description string, projectId string) *teamcity.BuildType {
-	out, _ := teamcity.NewBuildType(projectId, name)
+func getTestBuildTypeData(name string, description string, projectId string, template bool) (out *teamcity.BuildType) {
+	if template {
+		out, _ = teamcity.NewBuildTypeTemplate(projectId, name)
+	} else {
+		out, _ = teamcity.NewBuildType(projectId, name)
+	}
 	out.Description = description
-	return out
+	return
 }
 
 func cleanUpBuildType(t *testing.T, c *teamcity.Client, id string) {
