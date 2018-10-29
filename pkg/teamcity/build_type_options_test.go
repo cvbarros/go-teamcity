@@ -29,7 +29,7 @@ func Test_ConvertFromPropertiesAllowTriggringPersonalBuilds_SetsDefaultTrue(t *t
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("someProperty", "someValue")
 
-	actual := props.buildTypeOptions()
+	actual := props.buildTypeOptions(false)
 
 	assert.Equal(actual.AllowPersonalBuildTriggering, true)
 }
@@ -48,7 +48,7 @@ func Test_ConvertFromPropertiesBuildConfigurationType_SetsDefault(t *testing.T) 
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("someProperty", "someValue")
 
-	actual := props.buildTypeOptions()
+	actual := props.buildTypeOptions(false)
 
 	assert.Equal(actual.BuildConfigurationType, DefaultBuildConfigurationType)
 }
@@ -67,7 +67,7 @@ func Test_ConvertFromPropertiesBuildNumberFormat_SetsDefault(t *testing.T) {
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("someProperty", "someValue")
 
-	actual := props.buildTypeOptions()
+	actual := props.buildTypeOptions(false)
 
 	assert.Equal(actual.BuildNumberFormat, DefaultBuildNumberFormat)
 }
@@ -85,10 +85,11 @@ func Test_ConvertFromPropertiesEnableStatusWidget_SetsDefault(t *testing.T) {
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("someProperty", "someValue")
 
-	actual := props.buildTypeOptions()
+	actual := props.buildTypeOptions(false)
 
 	assert.Equal(actual.EnableStatusWidget, false)
 }
+
 func Test_PropertiesEnableHangingBuildsDetection_OmitWhenTrue(t *testing.T) {
 	pa := newPropertyAssertions(t)
 	sut := NewBuildTypeOptionsWithDefaults()
@@ -103,7 +104,7 @@ func Test_ConvertFromPropertiesEnableHangingBuildsDetection_SetsDefault(t *testi
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("someProperty", "someValue")
 
-	actual := props.buildTypeOptions()
+	actual := props.buildTypeOptions(false)
 
 	assert.Equal(actual.EnableStatusWidget, false)
 }
@@ -122,9 +123,18 @@ func Test_ConvertFromPropertiesMaxSimultaneousBuilds_SetsDefault(t *testing.T) {
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("someProperty", "someValue")
 
-	actual := props.buildTypeOptions()
+	actual := props.buildTypeOptions(false)
 
 	assert.Equal(actual.MaxSimultaneousBuilds, 0)
+}
+
+func Test_PropertiesIfTemplate_OmitBuildCounter(t *testing.T) {
+	pa := newPropertyAssertions(t)
+	sut := NewBuildTypeOptionsWithDefaults()
+	sut.Template = true
+	actual := sut.properties()
+
+	pa.assertPropertyDoesNotExist(actual, "buildNumberCounter")
 }
 
 func Test_Properties_Full(t *testing.T) {

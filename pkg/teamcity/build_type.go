@@ -79,6 +79,7 @@ type BuildType struct {
 	Description string
 	Options     *BuildTypeOptions
 	Disabled    bool
+	Template    bool
 
 	VcsRootEntries []*VcsRootEntry
 	Parameters     *Parameters
@@ -97,6 +98,27 @@ func NewBuildType(projectID string, name string) (*BuildType, error) {
 		Name:       name,
 		Options:    opt,
 		Parameters: NewParametersEmpty(),
+		Template:   false,
+		buildTypeJSON: &buildTypeJSON{
+			ProjectID: projectID,
+			Settings:  opt.properties(),
+		},
+	}, nil
+}
+
+//NewBuildTypeTemplate returns a build configuration template with default options
+func NewBuildTypeTemplate(projectID string, name string) (*BuildType, error) {
+	if projectID == "" || name == "" {
+		return nil, fmt.Errorf("projectID and name are required")
+	}
+
+	opt := NewBuildTypeOptionsTemplate()
+	return &BuildType{
+		ProjectID:  projectID,
+		Name:       name,
+		Options:    opt,
+		Template:   true,
+		Parameters: NewParametersEmpty(),
 		buildTypeJSON: &buildTypeJSON{
 			ProjectID: projectID,
 			Settings:  opt.properties(),
@@ -109,14 +131,18 @@ func (b *BuildType) MarshalJSON() ([]byte, error) {
 	optProps := b.Options.properties()
 
 	out := &buildTypeJSON{
-		ID:          b.ID,
-		ProjectID:   b.ProjectID,
-		Description: b.Description,
-		Name:        b.Name,
-		Settings:    optProps,
-		Parameters:  b.Parameters,
+		ID:           b.ID,
+		ProjectID:    b.ProjectID,
+		Name:         b.Name,
+		Settings:     optProps,
+		Parameters:   b.Parameters,
+		TemplateFlag: NewBool(b.Template),
 	}
 
+	//TODO: TeamCity API doesn't support "description" property if creating a template. Need to manually update it after, like projects.
+	if !b.Template {
+		out.Description = b.Description
+	}
 	return json.Marshal(out)
 }
 
@@ -135,7 +161,12 @@ func (b *BuildType) UnmarshalJSON(data []byte) error {
 }
 
 func (b *BuildType) read(dt *buildTypeJSON) error {
-	opts := dt.Settings.buildTypeOptions()
+	var isTemplate bool
+	if dt.TemplateFlag != nil {
+		isTemplate = *dt.TemplateFlag
+		b.Template = isTemplate
+	}
+	opts := dt.Settings.buildTypeOptions(isTemplate)
 
 	b.ID = dt.ID
 	b.Name = dt.Name
@@ -190,7 +221,7 @@ func newBuildTypeService(base *sling.Sling, httpClient *http.Client) *BuildTypeS
 func (s *BuildTypeService) Create(projectID string, buildType *BuildType) (*BuildTypeReference, error) {
 	var created BuildTypeReference
 
-	_, err := s.sling.New().Post("").BodyJSON(buildType).ReceiveSuccess(&created)
+	err := s.restHelper.post("", buildType, &created, "Build Type")
 
 	if err != nil {
 		return nil, err
