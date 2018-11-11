@@ -17,7 +17,7 @@ func TestTrigger_CreateTriggerVcs(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerVcs("+:*", "")
+	nt, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
 
 	created, err := sut.AddTrigger(nt)
 
@@ -109,7 +109,7 @@ func TestTrigger_GetTriggerVcs(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerVcs("+:*", "")
+	nt, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
 
 	created, err := sut.AddTrigger(nt)
 
@@ -186,7 +186,7 @@ func TestTrigger_DeleteTriggerVcs(t *testing.T) {
 	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
 
 	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerVcs("+:*", "")
+	nt, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
 
 	created, err := sut.AddTrigger(nt)
 

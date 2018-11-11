@@ -12,11 +12,11 @@ func TestTrigger_Constructor(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	actual, _ := teamcity.NewTriggerVcs("+:*", "")
+	actual, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
 
 	require.NotNil(actual)
 	assert.Equal("vcsTrigger", actual.Type())
 
-	assert.Equal("+:*", actual.Rules)
+	assert.Equal([]string{"+:*"}, actual.Rules)
 	assert.Empty(actual.BranchFilter)
 }
