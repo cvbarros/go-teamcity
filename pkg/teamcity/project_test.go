@@ -158,6 +158,26 @@ func TestProject_GetRootByName(t *testing.T) {
 	assert.Equal(t, "<Root project>", actual.Name)
 }
 
+func TestProject_BuildTypes(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	bt1 := createTestBuildTypeWithName(t, client, testProjectId, "Build1", true)
+	bt2 := createTestBuildTypeWithName(t, client, testProjectId, "Build2", false)
+
+	actual, _ := client.Projects.GetByID(testProjectId)
+
+	cleanUpProject(t, client, testProjectId)
+	assert.Equal(int32(2), actual.BuildTypes.Count)
+
+	projectBuildTypes := make(map[string]string, 2)
+	for _, i := range actual.BuildTypes.Items {
+		projectBuildTypes[i.ID] = i.Name
+	}
+
+	assert.Contains(projectBuildTypes, bt1.ID)
+	assert.Contains(projectBuildTypes, bt2.ID)
+}
+
 func TestProject_ValidateName(t *testing.T) {
 	_, err := teamcity.NewProject("", "", "")
 
