@@ -48,6 +48,7 @@ type Client struct {
 	BuildTypes *BuildTypeService
 	Server     *ServerService
 	VcsRoots   *VcsRootService
+	Queue      *QueueService
 }
 
 // New creates a new client for server address specified at TEAMCITY_ADDR environment variable
@@ -83,6 +84,7 @@ func newClientInstance(userName, password, address string, httpClient *http.Clie
 		BuildTypes: newBuildTypeService(sharedClient.New(), httpClient),
 		Server:     newServerService(sharedClient.New()),
 		VcsRoots:   newVcsRootService(sharedClient.New(), httpClient),
+		Queue:      newQueueService(sharedClient.New(), httpClient),
 	}, nil
 }
 
