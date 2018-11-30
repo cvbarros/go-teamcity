@@ -124,7 +124,7 @@ func (s *ProjectService) GetByID(id string) (*Project, error) {
 	return &out, err
 }
 
-//GetByName returns a project by it's name. There are no duplicate names in projects for TeamCity
+//GetByName returns a project by its name. There are no duplicate names in projects for TeamCity
 func (s *ProjectService) GetByName(name string) (*Project, error) {
 	var out Project
 

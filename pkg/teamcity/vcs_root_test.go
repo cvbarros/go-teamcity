@@ -31,7 +31,64 @@ func TestGitVcsRoot_Get(t *testing.T) {
 
 	require.NotNil(actual.Project)
 	assert.Equal(actual.Project.ID, actual.Project.ID)
-	assert.Equal(actual.Name, actual.Name)
+	assert.Equal(actual.Name(), actual.Name())
+}
+
+func TestGitVcsRoot_Update(t *testing.T) {
+	require := require.New(t)
+	assert := assert.New(t)
+	client := setup()
+	newProject := createTestProject(t, client, testVcsRootProjectId)
+	newVcsRoot := getTestVcsRootData(testVcsRootProjectId).(*teamcity.GitVcsRoot)
+	sut := client.VcsRoots
+
+	created, err := sut.Create(newProject.ID, newVcsRoot)
+
+	require.NoError(err)
+	require.NotNil(created)
+
+	data, err := sut.GetByID(created.ID) // refresh
+	require.NoError(err)
+	require.NotNil(data)
+	require.IsType(&teamcity.GitVcsRoot{}, data)
+
+	gitVcs := data.(*teamcity.GitVcsRoot)
+	as := &teamcity.GitAgentSettings{
+		CleanFilesPolicy: teamcity.CleanFilesPolicyIgnoredUntracked,
+		CleanPolicy:      teamcity.CleanPolicyNever,
+		UseMirrors:       false,
+	}
+	opt, _ := teamcity.NewGitVcsRootOptionsWithAgentSettings(
+		"refs/head/develop",
+		"https://github.com/cvbarros/go-teamcity-sdk",
+		"",
+		teamcity.GitAuthMethodAnonymous,
+		"",
+		"",
+		as)
+
+	gitVcs.Options = opt
+	gitVcs.SetModificationCheckInterval(60)
+	gitVcs.SetName("new_name")
+
+	data, err = sut.Update(gitVcs)
+	cleanUpProject(t, client, newProject.ID)
+
+	require.NoError(err)
+	require.NotNil(data)
+	require.IsType(&teamcity.GitVcsRoot{}, data)
+	actual := data.(*teamcity.GitVcsRoot)
+
+	assert.Equal("new_name", actual.Name())
+	assert.Equal(int32(60), *(actual.ModificationCheckInterval()))
+
+	actualOpt := actual.Options
+	assert.Equal(teamcity.GitAuthMethodAnonymous, actualOpt.AuthMethod)
+	assert.Equal("https://github.com/cvbarros/go-teamcity-sdk", actualOpt.FetchURL)
+	assert.Equal("refs/head/develop", actualOpt.DefaultBranch)
+	assert.Equal(teamcity.CleanFilesPolicyIgnoredUntracked, actualOpt.AgentSettings.CleanFilesPolicy)
+	assert.Equal(teamcity.CleanPolicyNever, actualOpt.AgentSettings.CleanPolicy)
+	assert.Equal(false, actualOpt.AgentSettings.UseMirrors)
 }
 
 func TestGitVcsRoot_CreateWithUsernamePassword(t *testing.T) {
