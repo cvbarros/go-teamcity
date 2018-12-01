@@ -39,6 +39,7 @@ func TestGitVcsRoot_Update(t *testing.T) {
 	assert := assert.New(t)
 	client := setup()
 	newProject := createTestProject(t, client, testVcsRootProjectId)
+	updatedProject := createTestProject(t, client, "VcsRootUpdatedProjectTest")
 	newVcsRoot := getTestVcsRootData(testVcsRootProjectId).(*teamcity.GitVcsRoot)
 	sut := client.VcsRoots
 
@@ -68,11 +69,14 @@ func TestGitVcsRoot_Update(t *testing.T) {
 		as)
 
 	gitVcs.Options = opt
+	opt.SubModuleCheckout = "IGNORE"
 	gitVcs.SetModificationCheckInterval(60)
 	gitVcs.SetName("new_name")
+	gitVcs.Project.ID = updatedProject.ID
 
 	data, err = sut.Update(gitVcs)
 	cleanUpProject(t, client, newProject.ID)
+	cleanUpProject(t, client, updatedProject.ID)
 
 	require.NoError(err)
 	require.NotNil(data)
@@ -81,11 +85,13 @@ func TestGitVcsRoot_Update(t *testing.T) {
 
 	assert.Equal("new_name", actual.Name())
 	assert.Equal(int32(60), *(actual.ModificationCheckInterval()))
+	assert.Equal(updatedProject.ID, actual.Project.ID)
 
 	actualOpt := actual.Options
 	assert.Equal(teamcity.GitAuthMethodAnonymous, actualOpt.AuthMethod)
 	assert.Equal("https://github.com/cvbarros/go-teamcity-sdk", actualOpt.FetchURL)
 	assert.Equal("refs/head/develop", actualOpt.DefaultBranch)
+	assert.Equal("IGNORE", actualOpt.SubModuleCheckout)
 	assert.Equal(teamcity.CleanFilesPolicyIgnoredUntracked, actualOpt.AgentSettings.CleanFilesPolicy)
 	assert.Equal(teamcity.CleanPolicyNever, actualOpt.AgentSettings.CleanPolicy)
 	assert.Equal(false, actualOpt.AgentSettings.UseMirrors)
