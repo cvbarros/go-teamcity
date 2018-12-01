@@ -16,8 +16,35 @@ func TestBuildType_Create(t *testing.T) {
 	cleanUpProject(t, client, "BuildTypeProject")
 
 	assert.NotEmpty(t, actual.ID)
+	assert.Equal("BuildTypeProject_BuildRelease", actual.ID)
 	assert.Equal("BuildRelease", actual.Name)
 	assert.Equal("BuildTypeProject", actual.ProjectID)
+	assert.Equal(false, actual.IsTemplate)
+
+	//Verify some default properties
+	optExpected := teamcity.NewBuildTypeOptionsWithDefaults()
+	optActual := actual.Options
+	require.NotNil(t, optActual)
+	assert.Equal(optExpected.ArtifactRules, optActual.ArtifactRules)
+	assert.Equal(optExpected.BuildCounter, optActual.BuildCounter)
+	assert.Equal(optExpected.BuildNumberFormat, optActual.BuildNumberFormat)
+	assert.Equal(optExpected.AllowPersonalBuildTriggering, optActual.AllowPersonalBuildTriggering)
+}
+
+func TestBuildType_CreateWithChildProject(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	parent := createTestProject(t, client, testBuildTypeProjectId)
+	child := createTestProjectWithParent(t, client, "BuildTypeProjectChild", parent.ID)
+
+	actual := createTestBuildTypeWithName(t, client, child.ID, "BuildRelease", false)
+
+	cleanUpProject(t, client, testBuildTypeProjectId)
+
+	assert.NotEmpty(t, actual.ID)
+	assert.Equal("BuildTypeProjectTest_BuildTypeProjectChild_BuildRelease", actual.ID)
+	assert.Equal("BuildRelease", actual.Name)
+	assert.Equal("BuildTypeProjectTest_BuildTypeProjectChild", actual.ProjectID)
 	assert.Equal(false, actual.IsTemplate)
 
 	//Verify some default properties
@@ -310,7 +337,7 @@ func createTestBuildTypeTemplateWithName(t *testing.T, client *teamcity.Client, 
 
 func createTestBuildTypeInternal(t *testing.T, client *teamcity.Client, buildTypeProjectId string, name string, createProject bool, template bool) *teamcity.BuildType {
 	if createProject {
-		newProject := getTestProjectData(buildTypeProjectId)
+		newProject := getTestProjectData(buildTypeProjectId, "")
 
 		if _, err := client.Projects.Create(newProject); err != nil {
 			t.Fatalf("Failed to create project for buildType: %s", err)
