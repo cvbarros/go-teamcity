@@ -10,7 +10,7 @@ import (
 )
 
 func TestProject_Create(t *testing.T) {
-	newProject := getTestProjectData(testProjectId)
+	newProject := getTestProjectData(testProjectId, "")
 	client := setup()
 	actual, err := client.Projects.Create(newProject)
 
@@ -25,6 +25,7 @@ func TestProject_Create(t *testing.T) {
 }
 
 func TestProject_CreateWithParent(t *testing.T) {
+	assert := assert.New(t)
 	parent, _ := teamcity.NewProject(testProjectId, "Parent Project", "")
 	child, _ := teamcity.NewProject("ChildProject", "Child Project", testProjectId)
 
@@ -38,9 +39,10 @@ func TestProject_CreateWithParent(t *testing.T) {
 	actual, _ := client.Projects.GetByID(created.ID) // Refresh
 	cleanUpProject(t, client, testProjectId)
 
-	assert.Equal(t, testProjectId, actual.ParentProjectID)
+	assert.Equal(testProjectId, actual.ParentProjectID)
 	require.NotNil(t, actual.ParentProject)
-	assert.Equal(t, testProjectId, actual.ParentProject.ID)
+	assert.Equal(testProjectId, actual.ParentProject.ID)
+	assert.Equal("ProjectTest_ChildProject", actual.ID)
 }
 
 func TestProject_UpdateWithSameParentDoesNotChangeName(t *testing.T) {
@@ -186,14 +188,14 @@ func TestProject_ValidateName(t *testing.T) {
 
 func TestProject_GetUnauthorizedHandled(t *testing.T) {
 	client, _ := teamcity.New("admin", "error", http.DefaultClient)
-	_, err := client.Projects.Create(getTestProjectData(testProjectId))
+	_, err := client.Projects.Create(getTestProjectData(testProjectId, ""))
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "401")
 }
 
-func getTestProjectData(name string) *teamcity.Project {
-	out, _ := teamcity.NewProject(name, "Test Project Description", "")
+func getTestProjectData(name string, parentId string) *teamcity.Project {
+	out, _ := teamcity.NewProject(name, "Test Project Description", parentId)
 	return out
 }
 
@@ -214,7 +216,11 @@ func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
 }
 
 func createTestProject(t *testing.T, c *teamcity.Client, name string) *teamcity.Project {
-	newProject := getTestProjectData(name)
+	return createTestProjectWithParent(t, c, name, "")
+}
+
+func createTestProjectWithParent(t *testing.T, c *teamcity.Client, name string, parentProjectId string) *teamcity.Project {
+	newProject := getTestProjectData(name, parentProjectId)
 	createdProject, err := c.Projects.Create(newProject)
 
 	if err != nil {

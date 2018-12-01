@@ -93,7 +93,7 @@ func TestGitVcsRoot_Update(t *testing.T) {
 
 func TestGitVcsRoot_CreateWithUsernamePassword(t *testing.T) {
 	client := setup()
-	newProject := getTestProjectData(testVcsRootProjectId)
+	newProject := getTestProjectData(testVcsRootProjectId, "")
 	opts, _ := teamcity.NewGitVcsRootOptions("refs/head/master", "https://github.com/cvbarros/go-teamcity-sdk/", "", teamcity.GitAuthMethodPassword, "admin", "admin")
 
 	createdProject, err := client.Projects.Create(newProject)
