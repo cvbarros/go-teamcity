@@ -37,9 +37,9 @@ func TestBuildType_CreateWithChildProject(t *testing.T) {
 	parent := createTestProject(t, client, testBuildTypeProjectId)
 	child := createTestProjectWithParent(t, client, "BuildTypeProjectChild", parent.ID)
 
-	actual := createTestBuildTypeWithName(t, client, child.ID, "00BuildRelease", false)
+	actual := createTestBuildTypeWithName(t, client, child.ID, "BuildRelease", false)
 
-	//cleanUpProject(t, client, testBuildTypeProjectId)
+	cleanUpProject(t, client, testBuildTypeProjectId)
 
 	assert.NotEmpty(t, actual.ID)
 	assert.Equal("BuildTypeProjectTest_BuildTypeProjectChild_BuildRelease", actual.ID)
