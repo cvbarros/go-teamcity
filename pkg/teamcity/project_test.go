@@ -186,6 +186,33 @@ func TestProject_ValidateName(t *testing.T) {
 	require.Errorf(t, err, "name is required")
 }
 
+func TestProject_Get(t *testing.T) {
+	project1, _ := teamcity.NewProject(testProjectId, "Project1", "")
+	project2, _ := teamcity.NewProject("Project2", "Project2", testProjectId)
+
+	client := setup()
+	c := client.Projects
+	assert := assert.New(t)
+
+	parent, err := c.Create(project1)
+	require.NoError(t, err)
+	child, err := c.Create(project2)
+	require.NoError(t, err)
+
+	actual, _ := c.Get()
+
+	cleanUpProject(t, client, parent.ID)
+	assert.Equal(int32(7), actual.Count)
+
+	projects := make(map[string]string, 7)
+	for _, i := range actual.Items {
+		projects[i.ID] = i.Name
+	}
+
+	assert.Contains(projects, parent.ID)
+	assert.Contains(projects, child.ID)
+}
+
 func TestProject_GetUnauthorizedHandled(t *testing.T) {
 	client, _ := teamcity.New("admin", "error", http.DefaultClient)
 	_, err := client.Projects.Create(getTestProjectData(testProjectId, ""))

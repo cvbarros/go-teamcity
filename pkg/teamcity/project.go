@@ -191,3 +191,23 @@ func (s *ProjectService) updateProject(project *Project, isCreate bool) (*Projec
 
 	return out, nil
 }
+
+// Projects represents a collection of *Project
+type Projects struct {
+	// count
+	Count int32 `json:"count,omitempty" xml:"count"`
+
+	// project
+	Items []*Project `json:"project"`
+}
+
+// Get Retrieves all projects
+func (s *ProjectService) Get() (*Projects, error) {
+	var out Projects
+	err := s.restHelper.get("", &out, "project")
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, err
+}
