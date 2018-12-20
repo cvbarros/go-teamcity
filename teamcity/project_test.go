@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	teamcity "github.com/cvbarros/go-teamcity-sdk/pkg/teamcity"
+	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
