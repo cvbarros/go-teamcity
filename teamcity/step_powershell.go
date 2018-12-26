@@ -89,16 +89,18 @@ func (s *StepPowershell) properties() *Properties {
 
 	return props
 }
-
-//MarshalJSON implements JSON serialization for StepPowershell
-func (s *StepPowershell) MarshalJSON() ([]byte, error) {
-	out := &stepJSON{
+func (s *StepPowershell) serializable() *stepJSON {
+	return &stepJSON{
 		ID:         s.ID,
 		Name:       s.Name,
 		Type:       s.stepType,
 		Properties: s.properties(),
 	}
+}
 
+//MarshalJSON implements JSON serialization for StepPowershell
+func (s *StepPowershell) MarshalJSON() ([]byte, error) {
+	out := s.serializable()
 	return json.Marshal(out)
 }
 
