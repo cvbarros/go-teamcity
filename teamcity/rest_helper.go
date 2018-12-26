@@ -71,6 +71,30 @@ func (r *restHelper) get(path string, out interface{}, resourceDescription strin
 	return r.handleRestError(response, "GET", resourceDescription)
 }
 
+func (r *restHelper) putCustom(path string, data interface{}, out interface{}, resourceDescription string, reader responseReadFunc) error {
+	request, _ := r.sling.New().Put(path).BodyJSON(data).Request()
+	response, err := r.httpClient.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	bodyBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode == 201 || response.StatusCode == 200 {
+		err := reader(bodyBytes, out)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return r.handleRestError(response, "PUT", resourceDescription)
+}
+
 func (r *restHelper) postCustom(path string, data interface{}, out interface{}, resourceDescription string, reader responseReadFunc) error {
 	request, _ := r.sling.New().Post(path).BodyJSON(data).Request()
 	response, err := r.httpClient.Do(request)

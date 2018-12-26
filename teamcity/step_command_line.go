@@ -87,15 +87,18 @@ func (s *StepCommandLine) properties() *Properties {
 	return props
 }
 
-//MarshalJSON implements JSON serialization for StepCommandLine
-func (s *StepCommandLine) MarshalJSON() ([]byte, error) {
-	out := &stepJSON{
+func (s *StepCommandLine) serializable() *stepJSON {
+	return &stepJSON{
 		ID:         s.ID,
 		Name:       s.Name,
 		Type:       s.stepType,
 		Properties: s.properties(),
 	}
+}
 
+//MarshalJSON implements JSON serialization for StepCommandLine
+func (s *StepCommandLine) MarshalJSON() ([]byte, error) {
+	out := s.serializable()
 	return json.Marshal(out)
 }
 

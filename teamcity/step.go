@@ -36,6 +36,8 @@ type Step interface {
 	GetID() string
 	GetName() string
 	Type() string
+
+	serializable() *stepJSON
 }
 
 type stepJSON struct {
@@ -51,6 +53,27 @@ type stepJSON struct {
 type stepsJSON struct {
 	Count int32       `json:"count,omitempty" xml:"count"`
 	Items []*stepJSON `json:"step"`
+}
+
+var stepsReadingFunc = func(dt []byte, out interface{}) error {
+	var payload stepsJSON
+	if err := json.Unmarshal(dt, &payload); err != nil {
+		return err
+	}
+
+	var steps = make([]Step, payload.Count)
+	for i := 0; i < int(payload.Count); i++ {
+		sdt, err := json.Marshal(payload.Items[i])
+		if err != nil {
+			return err
+		}
+		err = stepReadingFunc(sdt, &steps[i])
+		if err != nil {
+			return err
+		}
+	}
+	replaceValue(out, &steps)
+	return nil
 }
 
 var stepReadingFunc = func(dt []byte, out interface{}) error {

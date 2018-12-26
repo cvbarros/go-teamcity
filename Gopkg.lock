@@ -4,32 +4,20 @@
 [[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/dghubble/sling"
   packages = ["."]
-  revision = "eb56e89ac5088bebb12eef3cb4b293300f43608b"
-  version = "v1.1.0"
+  revision = "e2624bf29a7de45ab0802b09aea94ca0a7815c5f"
+  version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/google/go-querystring"
   packages = ["query"]
-  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/lann/builder"
-  packages = ["."]
-  revision = "1b87b36280d04fe7882d1512bf038ea2967ad534"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/lann/ps"
-  packages = ["."]
-  revision = "62de8c46ede02a7675c4c79c84883eb164cb71e3"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -56,14 +44,15 @@
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
-    "require"
+    "require",
+    "suite"
   ]
-  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
-  version = "v1.2.1"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4f053d8c608dc2770abcce5fb78ae7a241c66434420dad7982b3450e429488cd"
+  inputs-digest = "706a388e71521db9236bf224b8c1cbb182e7a01e42b4c0f19f9f51d38cf33ecd"
   solver-name = "gps-cdcl"
   solver-version = 1

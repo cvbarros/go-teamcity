@@ -38,9 +38,5 @@
   name = "github.com/motemen/go-loghttp"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/lann/builder"
-
-[[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.1"

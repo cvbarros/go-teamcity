@@ -28,6 +28,7 @@ type buildTypeJSON struct {
 	UUID                 string                `json:"uuid,omitempty" xml:"uuid"`
 	Settings             *Properties           `json:"settings,omitempty"`
 	Templates            *Templates            `json:"templates,omitempty"`
+	Steps                *stepsJSON            `json:"steps,omitempty"`
 	VcsRootEntries       *VcsRootEntries       `json:"vcs-root-entries,omitempty"`
 	WebURL               string                `json:"webUrl,omitempty" xml:"webUrl"`
 
@@ -54,6 +55,7 @@ type BuildType struct {
 	Options     *BuildTypeOptions
 	Disabled    bool
 	IsTemplate  bool
+	Steps       []Step
 	Templates   *Templates
 
 	VcsRootEntries []*VcsRootEntry
@@ -78,6 +80,7 @@ func NewBuildType(projectID string, name string) (*BuildType, error) {
 			ProjectID: projectID,
 			Settings:  opt.properties(),
 		},
+		Steps: []Step{},
 	}, nil
 }
 
@@ -119,6 +122,9 @@ func (b *BuildType) MarshalJSON() ([]byte, error) {
 	if !b.IsTemplate {
 		out.Description = b.Description
 	}
+	if len(b.Steps) > 0 {
+		out.Steps = b.serializeSteps()
+	}
 	return json.Marshal(out)
 }
 
@@ -153,7 +159,25 @@ func (b *BuildType) read(dt *buildTypeJSON) error {
 	b.Parameters = dt.Parameters
 	b.Templates = dt.Templates
 
+	steps := make([]Step, dt.Steps.Count)
+	for i := range dt.Steps.Items {
+		dt, err := json.Marshal(dt.Steps.Items[i])
+		if err != nil {
+			return err
+		}
+		stepReadingFunc(dt, &steps[i])
+	}
+	b.Steps = steps
+
 	return nil
+}
+
+func (b *BuildType) serializeSteps() *stepsJSON {
+	out := &stepsJSON{Count: int32(len(b.Steps)), Items: make([]*stepJSON, len(b.Steps))}
+	for i := 0; i < len(b.Steps); i++ {
+		out.Items[i] = b.Steps[i].serializable()
+	}
+	return out
 }
 
 // BuildTypeReference represents a subset detail of a Build Type
@@ -258,6 +282,15 @@ func (s *BuildTypeService) Update(buildType *BuildType) (*BuildType, error) {
 	err = s.restHelper.put(buildType.ID+"/parameters", buildType.Parameters, &parameters, "build type parameters")
 	if err != nil {
 		return nil, err
+	}
+
+	//Update Steps
+	if buildType.Steps != nil && len(buildType.Steps) > 0 {
+		var steps []Step
+		err = s.restHelper.putCustom(buildType.ID+"/steps", buildType.serializeSteps(), &steps, "build type steps", stepsReadingFunc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	out, err := s.GetByID(buildType.ID) //Refresh after update

@@ -244,76 +244,6 @@ func TestBuildType_AttachVcsRoot(t *testing.T) {
 	cleanUpProject(t, client, testBuildTypeProjectId)
 }
 
-func TestBuildType_AddStepPowerShell(t *testing.T) {
-	client := setup()
-	step, _ := teamcity.NewStepPowershellScriptFile("step1", "build.ps1", "")
-	_, created := createTestBuildStep(t, client, step, testBuildTypeProjectId)
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	assert.NotNil(t, created)
-}
-
-func TestBuildType_AddStepCommandLineExecutable(t *testing.T) {
-	assert := assert.New(t)
-	client := setup()
-	step, _ := teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
-	_, actual := createTestBuildStep(t, client, step, testBuildTypeProjectId)
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	require.NotNil(t, actual)
-	assert.Equal(teamcity.StepTypeCommandLine, actual.Type())
-}
-
-func TestBuildType_AddStepCommandLineScript(t *testing.T) {
-	assert := assert.New(t)
-	client := setup()
-	script := `echo "Hello World
-	echo "World, Hello!
-	export HELLO_WORLD=1
-	`
-	step, _ := teamcity.NewStepCommandLineScript("step_exe", script)
-	_, actual := createTestBuildStep(t, client, step, testBuildTypeProjectId)
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	require.NotNil(t, actual)
-	assert.Equal(teamcity.StepTypeCommandLine, actual.Type())
-}
-
-func TestBuildType_GetSteps(t *testing.T) {
-	client := setup()
-	step1, _ := teamcity.NewStepCommandLineExecutable("step1", "./script.sh", "hello")
-	step2, _ := teamcity.NewStepCommandLineExecutable("step2", "./script.sh", "hello")
-
-	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
-
-	created1, _ := client.BuildTypes.AddStep(buildType.ID, step1)
-	created2, _ := client.BuildTypes.AddStep(buildType.ID, step2)
-
-	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	assert.Contains(t, steps, created1)
-	assert.Contains(t, steps, created2)
-}
-
-func TestBuildType_DeleteStep(t *testing.T) {
-	client := setup()
-	step, _ := teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
-	buildType, s := createTestBuildStep(t, client, step, testBuildTypeProjectId)
-	created := s.(*teamcity.StepCommandLine)
-	client.BuildTypes.DeleteStep(buildType.ID, created.ID)
-
-	steps, _ := client.BuildTypes.GetSteps(buildType.ID)
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	assert.Empty(t, steps)
-}
-
 func idMapVcsRootEntries(v []*teamcity.VcsRootEntry) map[string]string {
 	out := make(map[string]string)
 	for _, item := range v {
@@ -353,18 +283,6 @@ func createTestBuildTypeInternal(t *testing.T, client *teamcity.Client, buildTyp
 
 	detailed, _ := client.BuildTypes.GetByID(createdBuildType.ID)
 	return detailed
-}
-
-func createTestBuildStep(t *testing.T, client *teamcity.Client, step teamcity.Step, buildTypeProjectId string) (*teamcity.BuildType, teamcity.Step) {
-	createdBuildType := createTestBuildType(t, client, buildTypeProjectId)
-
-	created, err := client.BuildTypes.AddStep(createdBuildType.ID, step)
-	if err != nil {
-		t.Fatalf("Failed to add step to buildType '%s'", createdBuildType.ID)
-	}
-
-	updated, _ := client.BuildTypes.GetByID(createdBuildType.ID)
-	return updated, created
 }
 
 func getTestBuildTypeData(name string, description string, projectId string, template bool) (out *teamcity.BuildType) {
