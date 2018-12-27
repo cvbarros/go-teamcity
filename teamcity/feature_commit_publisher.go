@@ -80,6 +80,9 @@ func (f *FeatureCommitStatusPublisher) MarshalJSON() ([]byte, error) {
 		Type:       f.Type(),
 	}
 
+	if f.vcsRootID != "" {
+		out.Properties.AddOrReplaceValue("vcsRootId", f.vcsRootID)
+	}
 	return json.Marshal(out)
 }
 
@@ -103,6 +106,9 @@ func (f *FeatureCommitStatusPublisher) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	if v, ok := f.properties.GetOk("vcsRootId"); ok {
+		f.vcsRootID = v
+	}
 	f.Options = opt
 
 	return nil

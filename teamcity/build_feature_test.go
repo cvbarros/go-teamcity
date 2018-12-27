@@ -12,6 +12,7 @@ type SuiteBuildFeature struct {
 	TC               *TestContext
 	BuildTypeContext *BuildTypeContext
 	BuildTypeID      string
+	VcsRootID        string
 
 	Github *teamcity.FeatureCommitStatusPublisher
 }
@@ -21,15 +22,17 @@ func NewSuiteBuildFeature(t *testing.T) *SuiteBuildFeature {
 }
 
 func (suite *SuiteBuildFeature) SetupTest() {
-	suite.BuildTypeContext.Setup(suite.TC)
+	suite.BuildTypeContext.SetupWithOpt(suite.TC, BuildTypeContextOptions{AttachVcsRoot: true})
 	suite.BuildTypeID = suite.BuildTypeContext.BuildType.ID
+	suite.Require().NotNil(suite.BuildTypeContext.VcsRoot)
+	suite.VcsRootID = suite.BuildTypeContext.VcsRoot.ID
 
 	opt := teamcity.NewCommitStatusPublisherGithubOptionsToken("https://api.github.com", "1234")
-	suite.Github, _ = teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+	suite.Github, _ = teamcity.NewFeatureCommitStatusPublisherGithub(opt, suite.BuildTypeContext.VcsRoot.ID)
 }
 
 func (suite *SuiteBuildFeature) TearDownTest() {
-	suite.BuildTypeContext.Teardown()
+	// suite.BuildTypeContext.Teardown()
 }
 
 func (suite *SuiteBuildFeature) Service() *teamcity.BuildFeatureService {
@@ -49,6 +52,7 @@ func (suite *SuiteBuildFeature) TestCommitPublisher_Create() {
 	suite.Equal(suite.BuildTypeID, csp.BuildTypeID())
 	suite.Equal("commit-status-publisher", csp.Type())
 	suite.Equal(false, csp.Disabled())
+	suite.Equal(suite.VcsRootID, csp.VcsRootID())
 }
 
 func (suite *SuiteBuildFeature) TestCommitPublisher_Get() {
@@ -66,6 +70,7 @@ func (suite *SuiteBuildFeature) TestCommitPublisher_Get() {
 	suite.Equal(suite.BuildTypeID, csp.BuildTypeID())
 	suite.Equal("commit-status-publisher", csp.Type())
 	suite.Equal(false, csp.Disabled())
+	suite.Equal(suite.VcsRootID, csp.VcsRootID())
 }
 
 func TestBuildFeatureSuite(t *testing.T) {

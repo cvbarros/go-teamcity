@@ -21,19 +21,39 @@ func NewTc(prefix string, t *testing.T) *TestContext {
 	}
 }
 
+var BuildTypeContextOptionsDefault = BuildTypeContextOptions{
+	AttachVcsRoot: false,
+}
+
+type BuildTypeContextOptions struct {
+	AttachVcsRoot bool
+}
 type BuildTypeContext struct {
 	TC        *TestContext
 	BuildType *teamcity.BuildType
 	Project   *teamcity.Project
+	VcsRoot   *teamcity.VcsRootReference
 
 	ready bool
 }
 
 func (b *BuildTypeContext) Setup(t *TestContext) {
+	b.SetupWithOpt(t, BuildTypeContextOptionsDefault)
+}
+
+func (b *BuildTypeContext) SetupWithOpt(t *TestContext, opt BuildTypeContextOptions) {
 	b.TC = t
 	b.Project = createTestProject(t.T, t.Client, acctest.RandomWithPrefix(t.Prefix))
 	b.BuildType = b.NewBuildType(t.Prefix)
 	b.ready = true
+
+	if opt.AttachVcsRoot {
+		gitVcs := getTestVcsRootData(b.Project.ID).(*teamcity.GitVcsRoot)
+		created, _ := t.Client.VcsRoots.Create(b.Project.ID, gitVcs)
+		b.VcsRoot = created
+
+		t.Client.BuildTypes.AttachVcsRoot(b.BuildType.ID, created)
+	}
 }
 
 func (b *BuildTypeContext) Teardown() {

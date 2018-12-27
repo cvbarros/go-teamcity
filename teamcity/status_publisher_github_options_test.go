@@ -13,17 +13,17 @@ const githubHost = "https://api.github.com"
 func TestFeatureCommitPublisher_Invariants(t *testing.T) {
 	t.Run("AuthenticationType Required", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{}
-		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt, "")
 		assert.Error(t, err)
 	})
 	t.Run("AuthenticationType Valid", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{AuthenticationType: "anything"}
-		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt, "")
 		assert.Error(t, err)
 	})
 	t.Run("Host Required", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{AuthenticationType: "password"}
-		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt, "")
 		require.EqualError(t, err, "Host is required")
 	})
 }
@@ -31,12 +31,12 @@ func TestFeatureCommitPublisher_Invariants(t *testing.T) {
 func TestFeatureCommitPublisher_GithubAuthenticationPassword(t *testing.T) {
 	t.Run("Username Required", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{AuthenticationType: "password", Host: githubHost, Password: "1234"}
-		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt, "")
 		require.EqualError(t, err, "username/password required for auth type 'password'")
 	})
 	t.Run("Password Required", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{AuthenticationType: "password", Host: githubHost, Username: "bob"}
-		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt, "")
 		require.EqualError(t, err, "username/password required for auth type 'password'")
 	})
 
@@ -57,7 +57,7 @@ func TestFeatureCommitPublisher_GithubAuthenticationPassword(t *testing.T) {
 func TestFeatureCommitPublisher_GithubAuthenticationToken(t *testing.T) {
 	t.Run("AccessToken Required", func(t *testing.T) {
 		opt := teamcity.StatusPublisherGithubOptions{AuthenticationType: "token", Host: githubHost}
-		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+		_, err := teamcity.NewFeatureCommitStatusPublisherGithub(opt, "")
 		require.EqualError(t, err, "accesstoken required for auth type 'token'")
 	})
 
