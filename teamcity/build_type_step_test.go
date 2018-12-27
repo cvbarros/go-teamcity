@@ -113,19 +113,7 @@ func (suite *SuiteBuildTypeSteps) TestAdd_Inline() {
 	}
 }
 
-func TestSuiteBuildTypeSteps(t *testing.T) {
+func TestBuildTypeStepsSuite(t *testing.T) {
 	s := NewSuiteBuildTypeSteps(t)
 	suite.Run(t, s)
-}
-
-func createTestBuildStep(t *testing.T, client *teamcity.Client, step teamcity.Step, buildTypeProjectId string) (*teamcity.BuildType, teamcity.Step) {
-	createdBuildType := createTestBuildType(t, client, buildTypeProjectId)
-
-	created, err := client.BuildTypes.AddStep(createdBuildType.ID, step)
-	if err != nil {
-		t.Fatalf("Failed to add step to buildType '%s'", createdBuildType.ID)
-	}
-
-	updated, _ := client.BuildTypes.GetByID(createdBuildType.ID)
-	return updated, created
 }

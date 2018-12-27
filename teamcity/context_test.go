@@ -1,10 +1,12 @@
 package teamcity_test
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
-	"github.com/cvbarros/go-teamcity-sdk/teamcity/acctest"
 )
 
 type TestContext struct {
@@ -19,6 +21,15 @@ func NewTc(prefix string, t *testing.T) *TestContext {
 		T:      t,
 		Client: setup(),
 	}
+}
+
+func (tc *TestContext) RandomName() string {
+	reseed()
+	return fmt.Sprintf("%s-%d", tc.Prefix, rand.New(rand.NewSource(time.Now().UnixNano())).Int())
+}
+
+func reseed() {
+	rand.Seed(time.Now().UTC().UnixNano())
 }
 
 var BuildTypeContextOptionsDefault = BuildTypeContextOptions{
@@ -43,8 +54,8 @@ func (b *BuildTypeContext) Setup(t *TestContext) {
 
 func (b *BuildTypeContext) SetupWithOpt(t *TestContext, opt BuildTypeContextOptions) {
 	b.TC = t
-	b.Project = createTestProject(t.T, t.Client, acctest.RandomWithPrefix(t.Prefix))
-	b.BuildType = b.NewBuildType(t.Prefix)
+	b.Project = createTestProject(t.T, t.Client, t.RandomName())
+	b.BuildType = b.NewBuildType()
 	b.ready = true
 
 	if opt.AttachVcsRoot {
@@ -62,6 +73,6 @@ func (b *BuildTypeContext) Teardown() {
 	}
 }
 
-func (b *BuildTypeContext) NewBuildType(name string) *teamcity.BuildType {
-	return createTestBuildTypeWithName(b.TC.T, b.TC.Client, b.Project.ID, acctest.RandomWithPrefix(name), false)
+func (b *BuildTypeContext) NewBuildType() *teamcity.BuildType {
+	return createTestBuildTypeWithName(b.TC.T, b.TC.Client, b.Project.ID, b.TC.RandomName(), false)
 }

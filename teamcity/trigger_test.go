@@ -64,7 +64,7 @@ func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Delete() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Create() {
-	s := suite.BuildTypeContext.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
+	s := suite.BuildTypeContext.NewBuildType()
 	t := suite.TriggerBuildFinish(s.ID)
 	actual := suite.AddTrigger(t)
 
@@ -73,7 +73,7 @@ func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Create() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Delete() {
-	s := suite.BuildTypeContext.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
+	s := suite.BuildTypeContext.NewBuildType()
 	t := suite.TriggerBuildFinish(s.ID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
@@ -81,7 +81,7 @@ func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Delete() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Get() {
-	s := suite.BuildTypeContext.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
+	s := suite.BuildTypeContext.NewBuildType()
 	t := suite.TriggerBuildFinish(s.ID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
