@@ -5,32 +5,33 @@ import (
 	"time"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
-	"github.com/cvbarros/go-teamcity-sdk/teamcity/acctest"
 	"github.com/stretchr/testify/suite"
 )
 
 type SuiteBuildTypeTrigger struct {
 	suite.Suite
-	Project    *teamcity.Project
-	BuildType  *teamcity.BuildType
-	Client     *teamcity.Client
-	TriggerVcs teamcity.Trigger
-	Trigger    teamcity.Trigger
-	AddTrigger func(teamcity.Trigger) teamcity.Trigger
+	TC               *TestContext
+	BuildTypeContext *BuildTypeContext
+	BuildTypeID      string
+	TriggerVcs       teamcity.Trigger
+	Trigger          teamcity.Trigger
+	AddTrigger       func(teamcity.Trigger) teamcity.Trigger
+}
+
+func NewSuiteBuildTypeTrigger(t *testing.T) *SuiteBuildTypeTrigger {
+	return &SuiteBuildTypeTrigger{TC: NewTc("SuiteBuildTypeTrigger", t), BuildTypeContext: new(BuildTypeContext)}
 }
 
 func (suite *SuiteBuildTypeTrigger) SetupSuite() {
-	suite.Client = setup()
 	suite.TriggerVcs, _ = teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
 }
 
 func (suite *SuiteBuildTypeTrigger) SetupTest() {
-
-	suite.Project = createTestProject(suite.T(), suite.Client, acctest.RandomWithPrefix("Project_SuiteBuildTypeTrigger"))
-	suite.BuildType = suite.NewBuildType("BuildType_SuiteBuildTypeTrigger")
+	suite.BuildTypeContext.Setup(suite.TC)
+	suite.BuildTypeID = suite.BuildTypeContext.BuildType.ID
 
 	suite.AddTrigger = func(t teamcity.Trigger) (created teamcity.Trigger) {
-		created, err := suite.Client.TriggerService(suite.BuildType.ID).AddTrigger(t)
+		created, err := suite.TC.Client.TriggerService(suite.BuildTypeID).AddTrigger(t)
 		suite.Require().NoError(err)
 		suite.Require().NotNil(created)
 		return
@@ -38,12 +39,12 @@ func (suite *SuiteBuildTypeTrigger) SetupTest() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TearDownTest() {
-	cleanUpProject(suite.T(), suite.Client, suite.Project.ID)
+	suite.BuildTypeContext.Teardown()
 }
 
 func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Create() {
 	actual := suite.AddTrigger(suite.TriggerVcs)
-	suite.Equal(suite.BuildType.ID, actual.BuildTypeID())
+	suite.Equal(suite.BuildTypeID, actual.BuildTypeID())
 }
 
 func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Get() {
@@ -63,16 +64,16 @@ func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Delete() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Create() {
-	s := suite.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
+	s := suite.BuildTypeContext.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
 	t := suite.TriggerBuildFinish(s.ID)
 	actual := suite.AddTrigger(t)
 
-	suite.Equal(suite.BuildType.ID, actual.BuildTypeID())
+	suite.Equal(suite.BuildTypeID, actual.BuildTypeID())
 	suite.Equal(teamcity.BuildTriggerBuildFinish, actual.Type())
 }
 
 func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Delete() {
-	s := suite.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
+	s := suite.BuildTypeContext.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
 	t := suite.TriggerBuildFinish(s.ID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
@@ -80,7 +81,7 @@ func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Delete() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Get() {
-	s := suite.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
+	s := suite.BuildTypeContext.NewBuildType("SourceBuildType_SuiteBuildTypeTrigger")
 	t := suite.TriggerBuildFinish(s.ID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
@@ -92,10 +93,10 @@ func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Get() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Create() {
-	t := suite.TriggerScheduledDaily(suite.BuildType.ID)
+	t := suite.TriggerScheduledDaily(suite.BuildTypeID)
 	nt := suite.AddTrigger(t)
 
-	suite.Equal(suite.BuildType.ID, nt.BuildTypeID())
+	suite.Equal(suite.BuildTypeID, nt.BuildTypeID())
 	suite.Equal(teamcity.BuildTriggerSchedule, nt.Type())
 	suite.Require().IsType(&teamcity.TriggerSchedule{}, nt)
 
@@ -110,14 +111,14 @@ func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Create() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Delete() {
-	t := suite.TriggerScheduledDaily(suite.BuildType.ID)
+	t := suite.TriggerScheduledDaily(suite.BuildTypeID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
 	suite.AssertDeleted()
 }
 
 func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Get() {
-	t := suite.TriggerScheduledDaily(suite.BuildType.ID)
+	t := suite.TriggerScheduledDaily(suite.BuildTypeID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
 
@@ -128,10 +129,10 @@ func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Get() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Create() {
-	t := suite.TriggerScheduledWeekly(suite.BuildType.ID)
+	t := suite.TriggerScheduledWeekly(suite.BuildTypeID)
 	nt := suite.AddTrigger(t)
 
-	suite.Equal(suite.BuildType.ID, nt.BuildTypeID())
+	suite.Equal(suite.BuildTypeID, nt.BuildTypeID())
 	suite.Equal(teamcity.BuildTriggerSchedule, nt.Type())
 	suite.Require().IsType(&teamcity.TriggerSchedule{}, nt)
 
@@ -141,14 +142,14 @@ func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Create() {
 }
 
 func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Delete() {
-	t := suite.TriggerScheduledWeekly(suite.BuildType.ID)
+	t := suite.TriggerScheduledWeekly(suite.BuildTypeID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
 	suite.AssertDeleted()
 }
 
 func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Get() {
-	t := suite.TriggerScheduledWeekly(suite.BuildType.ID)
+	t := suite.TriggerScheduledWeekly(suite.BuildTypeID)
 	nt := suite.AddTrigger(t)
 	suite.RefreshTrigger(nt.ID())
 
@@ -159,7 +160,7 @@ func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Get() {
 }
 
 func (suite *SuiteBuildTypeTrigger) AssertDeleted() {
-	ts := suite.Client.TriggerService(suite.BuildType.ID)
+	ts := suite.TC.Client.TriggerService(suite.BuildTypeID)
 	ts.Delete(suite.Trigger.ID())
 	_, err := ts.GetByID(suite.Trigger.ID()) // refresh
 
@@ -168,7 +169,7 @@ func (suite *SuiteBuildTypeTrigger) AssertDeleted() {
 }
 
 func (suite *SuiteBuildTypeTrigger) RefreshTrigger(id string) {
-	actual, err := suite.Client.TriggerService(suite.BuildType.ID).GetByID(id)
+	actual, err := suite.TC.Client.TriggerService(suite.BuildTypeID).GetByID(id)
 	suite.Require().NoError(err)
 	suite.Trigger = actual
 }
@@ -196,10 +197,7 @@ func (suite *SuiteBuildTypeTrigger) TriggerScheduledWeekly(source string) teamci
 	return nt
 }
 
-func (suite *SuiteBuildTypeTrigger) NewBuildType(name string) *teamcity.BuildType {
-	return createTestBuildTypeWithName(suite.T(), suite.Client, suite.Project.ID, acctest.RandomWithPrefix(name), false)
-}
-
 func TestSuiteBuildTypeTrigger(t *testing.T) {
-	suite.Run(t, new(SuiteBuildTypeTrigger))
+	s := NewSuiteBuildTypeTrigger(t)
+	suite.Run(t, s)
 }
