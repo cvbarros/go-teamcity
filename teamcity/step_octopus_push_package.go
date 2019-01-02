@@ -64,14 +64,18 @@ func (s *StepOctopusPushPackage) properties() *Properties {
 	return props
 }
 
-func (s *StepOctopusPushPackage) MarshalJSON() ([]byte, error) {
-	out := &stepJSON{
+func (s *StepOctopusPushPackage) serializable() *stepJSON {
+	return &stepJSON{
 		ID:         s.ID,
 		Name:       s.Name,
 		Type:       s.stepType,
 		Properties: s.properties(),
 	}
+}
 
+//MarshalJSON implements JSON serialization for StepOctopusPushPackage
+func (s *StepOctopusPushPackage) MarshalJSON() ([]byte, error) {
+	out := s.serializable()
 	return json.Marshal(out)
 }
 
