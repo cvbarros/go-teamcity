@@ -89,14 +89,18 @@ func (s *StepOctopusCreateRelease) properties() *Properties {
 	return props
 }
 
-func (s *StepOctopusCreateRelease) MarshalJSON() ([]byte, error) {
-	out := &stepJSON{
+func (s *StepOctopusCreateRelease) serializable() *stepJSON {
+	return &stepJSON{
 		ID:         s.ID,
 		Name:       s.Name,
 		Type:       s.stepType,
 		Properties: s.properties(),
 	}
+}
 
+//MarshalJSON implements JSON serialization for StepOctopusCreateRelease
+func (s *StepOctopusCreateRelease) MarshalJSON() ([]byte, error) {
+	out := s.serializable()
 	return json.Marshal(out)
 }
 
