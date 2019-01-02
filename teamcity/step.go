@@ -14,8 +14,9 @@ const (
 	//StepTypeDotnetCli step type
 	StepTypeDotnetCli BuildStepType = "dotnet.cli"
 	//StepTypeCommandLine (shell/cmd) step type
-	StepTypeCommandLine        BuildStepType = "simpleRunner"
-	StepTypeOctopusPushPackage BuildStepType = "octopus.push.package"
+	StepTypeCommandLine          BuildStepType = "simpleRunner"
+	StepTypeOctopusPushPackage   BuildStepType = "octopus.push.package"
+	StepTypeOctopusCreateRelease BuildStepType = "octopus.create.release"
 )
 
 //StepExecuteMode represents how a build configuration step will execute regarding others.
@@ -84,27 +85,29 @@ var stepReadingFunc = func(dt []byte, out interface{}) error {
 	}
 
 	var step Step
+	var err error
 	switch payload.Type {
 	case string(StepTypePowershell):
 		var ps StepPowershell
-		if err := ps.UnmarshalJSON(dt); err != nil {
-			return err
-		}
+		err = ps.UnmarshalJSON(dt)
 		step = &ps
 	case string(StepTypeCommandLine):
 		var cmd StepCommandLine
-		if err := cmd.UnmarshalJSON(dt); err != nil {
-			return err
-		}
+		err = cmd.UnmarshalJSON(dt)
 		step = &cmd
 	case string(StepTypeOctopusPushPackage):
 		var opp StepOctopusPushPackage
-		if err := opp.UnmarshalJSON(dt); err != nil {
-			return err
-		}
+		err = opp.UnmarshalJSON(dt)
 		step = &opp
+	case string(StepTypeOctopusCreateRelease):
+		var ocr StepOctopusCreateRelease
+		err = ocr.UnmarshalJSON(dt)
+		step = &ocr
 	default:
 		return fmt.Errorf("Unsupported step type: '%s' (id:'%s')", payload.Type, payload.ID)
+	}
+	if err != nil {
+		return err
 	}
 
 	replaceValue(out, &step)
