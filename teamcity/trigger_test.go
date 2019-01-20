@@ -5,242 +5,214 @@ import (
 	"time"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestTrigger_CreateTriggerVcs(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	assert.Equal(created.BuildTypeID(), bt.ID)
-	cleanUpProject(t, client, bt.ProjectID)
+type SuiteBuildTypeTrigger struct {
+	suite.Suite
+	TC               *TestContext
+	BuildTypeContext *BuildTypeContext
+	BuildTypeID      string
+	TriggerVcs       teamcity.Trigger
+	Trigger          teamcity.Trigger
+	AddTrigger       func(teamcity.Trigger) teamcity.Trigger
+	AddTriggerError  func(teamcity.Trigger) error
 }
 
-func TestTrigger_CreateTriggerBuildFinish(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	assert.Equal(created.BuildTypeID(), bt.ID)
-	cleanUpProject(t, client, bt.ProjectID)
+func NewSuiteBuildTypeTrigger(t *testing.T) *SuiteBuildTypeTrigger {
+	return &SuiteBuildTypeTrigger{TC: NewTc("SuiteBuildTypeTrigger", t), BuildTypeContext: new(BuildTypeContext)}
 }
 
-func TestTrigger_CreateTriggerScheduleDaily(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
+func (suite *SuiteBuildTypeTrigger) SetupSuite() {
+	suite.TriggerVcs, _ = teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
+}
 
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
+func (suite *SuiteBuildTypeTrigger) SetupTest() {
+	suite.BuildTypeContext.Setup(suite.TC)
+	suite.BuildTypeID = suite.BuildTypeContext.BuildType.ID
 
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 30, "SERVER", []string{"+:*"})
+	suite.AddTrigger = func(t teamcity.Trigger) (created teamcity.Trigger) {
+		created, err := suite.TC.Client.TriggerService(suite.BuildTypeID).AddTrigger(t)
+		suite.Require().NoError(err)
+		suite.Require().NotNil(created)
+		return
+	}
+
+	suite.AddTriggerError = func(t teamcity.Trigger) error {
+		_, err := suite.TC.Client.TriggerService(suite.BuildTypeID).AddTrigger(t)
+		suite.Require().Error(err)
+		return err
+	}
+
+}
+
+func (suite *SuiteBuildTypeTrigger) TearDownTest() {
+	suite.BuildTypeContext.Teardown()
+}
+
+func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Create() {
+	actual := suite.AddTrigger(suite.TriggerVcs)
+	suite.Equal(suite.BuildTypeID, actual.BuildTypeID())
+}
+
+func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_CreateTwoHandledGracefully() {
+	suite.AddTrigger(suite.TriggerVcs)
+	err := suite.AddTriggerError(suite.TriggerVcs)
+
+	suite.Assert().EqualError(err, "unable to add two VCS triggers to build configuration")
+}
+
+func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Get() {
+	nt := suite.AddTrigger(suite.TriggerVcs)
+	suite.RefreshTrigger(nt.ID())
+
+	actual := suite.Trigger
+	suite.Equal(nt.ID(), actual.ID())
+	suite.Equal(nt.BuildTypeID(), actual.BuildTypeID())
+	suite.Equal(nt.Type(), actual.Type())
+}
+
+func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Delete() {
+	nt := suite.AddTrigger(suite.TriggerVcs)
+	suite.RefreshTrigger(nt.ID())
+	suite.AssertDeleted()
+}
+
+func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Create() {
+	s := suite.BuildTypeContext.NewBuildType()
+	t := suite.TriggerBuildFinish(s.ID)
+	actual := suite.AddTrigger(t)
+
+	suite.Equal(suite.BuildTypeID, actual.BuildTypeID())
+	suite.Equal(teamcity.BuildTriggerBuildFinish, actual.Type())
+}
+
+func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Delete() {
+	s := suite.BuildTypeContext.NewBuildType()
+	t := suite.TriggerBuildFinish(s.ID)
+	nt := suite.AddTrigger(t)
+	suite.RefreshTrigger(nt.ID())
+	suite.AssertDeleted()
+}
+
+func (suite *SuiteBuildTypeTrigger) TestBuildFinishTrigger_Get() {
+	s := suite.BuildTypeContext.NewBuildType()
+	t := suite.TriggerBuildFinish(s.ID)
+	nt := suite.AddTrigger(t)
+	suite.RefreshTrigger(nt.ID())
+
+	actual := suite.Trigger
+	suite.Equal(nt.ID(), actual.ID())
+	suite.Equal(nt.BuildTypeID(), actual.BuildTypeID())
+	suite.Equal(nt.Type(), actual.Type())
+}
+
+func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Create() {
+	t := suite.TriggerScheduledDaily(suite.BuildTypeID)
+	nt := suite.AddTrigger(t)
+
+	suite.Equal(suite.BuildTypeID, nt.BuildTypeID())
+	suite.Equal(teamcity.BuildTriggerSchedule, nt.Type())
+	suite.Require().IsType(&teamcity.TriggerSchedule{}, nt)
+
+	actual := nt.(*teamcity.TriggerSchedule)
+	suite.Equal(teamcity.TriggerSchedulingDaily, actual.SchedulingPolicy)
+	suite.Equal(uint(12), actual.Hour)
+	suite.Equal(uint(30), actual.Minute)
+	suite.Equal(false, actual.Options.BuildWithPendingChangesOnly)
+	suite.Equal(false, actual.Options.PromoteWatchedBuild)
+	suite.Equal(false, actual.Options.QueueOptimization)
+	suite.Equal(true, actual.Options.BuildOnAllCompatibleAgents)
+}
+
+func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Delete() {
+	t := suite.TriggerScheduledDaily(suite.BuildTypeID)
+	nt := suite.AddTrigger(t)
+	suite.RefreshTrigger(nt.ID())
+	suite.AssertDeleted()
+}
+
+func (suite *SuiteBuildTypeTrigger) TestScheduledDailyTrigger_Get() {
+	t := suite.TriggerScheduledDaily(suite.BuildTypeID)
+	nt := suite.AddTrigger(t)
+	suite.RefreshTrigger(nt.ID())
+
+	created := suite.Trigger
+	suite.Equal(nt.ID(), created.ID())
+	suite.Equal(nt.BuildTypeID(), created.BuildTypeID())
+	suite.Equal(nt.Type(), created.Type())
+}
+
+func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Create() {
+	t := suite.TriggerScheduledWeekly(suite.BuildTypeID)
+	nt := suite.AddTrigger(t)
+
+	suite.Equal(suite.BuildTypeID, nt.BuildTypeID())
+	suite.Equal(teamcity.BuildTriggerSchedule, nt.Type())
+	suite.Require().IsType(&teamcity.TriggerSchedule{}, nt)
+
+	actual := nt.(*teamcity.TriggerSchedule)
+	suite.Equal(actual.SchedulingPolicy, teamcity.TriggerSchedulingWeekly)
+	suite.Equal(actual.Weekday, time.Thursday)
+}
+
+func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Delete() {
+	t := suite.TriggerScheduledWeekly(suite.BuildTypeID)
+	nt := suite.AddTrigger(t)
+	suite.RefreshTrigger(nt.ID())
+	suite.AssertDeleted()
+}
+
+func (suite *SuiteBuildTypeTrigger) TestScheduledWeeklyTrigger_Get() {
+	t := suite.TriggerScheduledWeekly(suite.BuildTypeID)
+	nt := suite.AddTrigger(t)
+	suite.RefreshTrigger(nt.ID())
+
+	created := suite.Trigger
+	suite.Equal(nt.ID(), created.ID())
+	suite.Equal(nt.BuildTypeID(), created.BuildTypeID())
+	suite.Equal(nt.Type(), created.Type())
+}
+
+func (suite *SuiteBuildTypeTrigger) AssertDeleted() {
+	ts := suite.TC.Client.TriggerService(suite.BuildTypeID)
+	ts.Delete(suite.Trigger.ID())
+	_, err := ts.GetByID(suite.Trigger.ID()) // refresh
+
+	suite.Require().Error(err)
+	suite.Contains(err.Error(), "404")
+}
+
+func (suite *SuiteBuildTypeTrigger) RefreshTrigger(id string) {
+	actual, err := suite.TC.Client.TriggerService(suite.BuildTypeID).GetByID(id)
+	suite.Require().NoError(err)
+	suite.Trigger = actual
+}
+
+func (suite *SuiteBuildTypeTrigger) TriggerBuildFinish(source string) teamcity.Trigger {
+	t, err := teamcity.NewTriggerBuildFinish(source, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
+	suite.Require().NoError(err)
+	return t
+}
+
+func (suite *SuiteBuildTypeTrigger) TriggerScheduledDaily(source string) teamcity.Trigger {
+	nt, _ := teamcity.NewTriggerScheduleDaily(source, 12, 30, "SERVER", []string{"+:*"})
 	opt := teamcity.NewTriggerScheduleOptions()
 	opt.QueueOptimization = false
 	opt.BuildOnAllCompatibleAgents = true
 	opt.PromoteWatchedBuild = false
 	opt.BuildWithPendingChangesOnly = false
 	nt.Options = opt
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	assert.IsType(&teamcity.TriggerSchedule{}, created)
-	assert.Equal(created.BuildTypeID(), bt.ID)
-	cleanUpProject(t, client, bt.ProjectID)
-
-	actual := created.(*teamcity.TriggerSchedule)
-	assert.Equal(teamcity.TriggerSchedulingDaily, actual.SchedulingPolicy)
-	assert.Equal(uint(12), actual.Hour)
-	assert.Equal(uint(30), actual.Minute)
-	assert.Equal(false, actual.Options.BuildWithPendingChangesOnly)
-	assert.Equal(false, actual.Options.PromoteWatchedBuild)
-	assert.Equal(false, actual.Options.QueueOptimization)
-	assert.Equal(true, actual.Options.BuildOnAllCompatibleAgents)
+	return nt
 }
 
-func TestTrigger_CreateTriggerScheduleWeekly(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerScheduleWeekly(bt.ID, time.Thursday, 12, 0, "SERVER", []string{"+:*"})
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-	assert.IsType(&teamcity.TriggerSchedule{}, created)
-	assert.Equal(created.BuildTypeID(), bt.ID)
-	cleanUpProject(t, client, bt.ProjectID)
-
-	actual := created.(*teamcity.TriggerSchedule)
-	assert.Equal(actual.SchedulingPolicy, teamcity.TriggerSchedulingWeekly)
-	assert.Equal(actual.Weekday, time.Thursday)
+func (suite *SuiteBuildTypeTrigger) TriggerScheduledWeekly(source string) teamcity.Trigger {
+	nt, err := teamcity.NewTriggerScheduleWeekly(source, time.Thursday, 12, 0, "SERVER", []string{"+:*"})
+	suite.Require().NoError(err)
+	return nt
 }
 
-func TestTrigger_GetTriggerVcs(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	actual, err := sut.GetByID(created.ID())
-
-	require.NoError(err)
-	assert.Equal(created.ID(), actual.ID())
-	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
-	assert.Equal(created.Type(), actual.Type())
-
-	cleanUpProject(t, client, bt.ProjectID)
-}
-
-func TestTrigger_GetTriggerBuildFinish(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"master", "feature"}))
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	actual, err := sut.GetByID(created.ID())
-
-	cleanUpProject(t, client, bt.ProjectID)
-	require.NoError(err)
-	require.IsType(&teamcity.TriggerBuildFinish{}, actual)
-	actualT := actual.(*teamcity.TriggerBuildFinish)
-
-	assert.Equal(st.ID, actualT.SourceBuildID)
-	assert.Equal(created.ID(), actual.ID())
-	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
-	assert.Equal(created.Type(), actual.Type())
-	assert.Equal([]string{"master", "feature"}, actualT.Options.BranchFilter)
-}
-
-func TestTrigger_GetTriggerScheduleDaily(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 0, "SERVER", []string{"+:*"})
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	actual, err := sut.GetByID(created.ID())
-
-	require.NoError(err)
-	assert.Equal(created.ID(), actual.ID())
-	assert.Equal(created.BuildTypeID(), actual.BuildTypeID())
-	assert.Equal(created.Type(), actual.Type())
-
-	cleanUpProject(t, client, bt.ProjectID)
-}
-
-func TestTrigger_DeleteTriggerVcs(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerVcs([]string{"+:*"}, []string{})
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	sut.Delete(created.ID())
-	_, err = sut.GetByID(created.ID()) // refresh
-
-	require.Error(err)
-	assert.Contains(err.Error(), "404")
-	cleanUpProject(t, client, bt.ProjectID)
-}
-
-func TestTrigger_DeleteTriggerBuildFinish(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-	st := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "SourceBuild", false)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerBuildFinish(st.ID, teamcity.NewTriggerBuildFinishOptions(true, []string{"+:<default>"}))
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	sut.Delete(created.ID())
-	_, err = sut.GetByID(created.ID()) // refresh
-
-	require.Error(err)
-	assert.Contains(err.Error(), "404")
-	cleanUpProject(t, client, bt.ProjectID)
-}
-
-func TestTrigger_DeleteTriggerScheduleDaily(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
-	client := setup()
-
-	bt := createTestBuildTypeWithName(t, client, "BuildTriggerProject", "BuildRelease", true)
-
-	sut := client.TriggerService(bt.ID)
-	nt, _ := teamcity.NewTriggerScheduleDaily(bt.ID, 12, 0, "SERVER", []string{"+:*"})
-
-	created, err := sut.AddTrigger(nt)
-
-	require.Nil(err)
-
-	sut.Delete(created.ID())
-	_, err = sut.GetByID(created.ID()) // refresh
-
-	require.Error(err)
-	assert.Contains(err.Error(), "404")
-	cleanUpProject(t, client, bt.ProjectID)
+func TestSuiteBuildTypeTrigger(t *testing.T) {
+	s := NewSuiteBuildTypeTrigger(t)
+	suite.Run(t, s)
 }

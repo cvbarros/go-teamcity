@@ -4,58 +4,75 @@ import (
 	"testing"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestBuildFeature_CommitPublisher_Create(t *testing.T) {
-	client := setup()
-	assert := assert.New(t)
-	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
+type SuiteBuildFeature struct {
+	suite.Suite
+	TC               *TestContext
+	BuildTypeContext *BuildTypeContext
+	BuildTypeID      string
+	VcsRootID        string
 
-	opt := teamcity.NewCommitStatusPublisherGithubOptionsToken("https://api.github.com", "1234")
-	ni, _ := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
-
-	sut := client.BuildFeatureService(buildType.ID)
-	actual, err := sut.Create(ni)
-
-	cleanUpProject(t, client, testBuildTypeProjectId)
-
-	require.NoError(t, err)
-	assert.NotNil(actual)
-
-	csp := actual.(*teamcity.FeatureCommitStatusPublisher)
-
-	assert.NotEqual("", csp.ID())
-	assert.Equal(buildType.ID, csp.BuildTypeID())
-	assert.Equal("commit-status-publisher", csp.Type())
-	assert.Equal(false, csp.Disabled())
+	Github *teamcity.FeatureCommitStatusPublisher
 }
 
-func TestBuildFeature_CommitPublisher_Get(t *testing.T) {
-	client := setup()
-	assert := assert.New(t)
-	buildType := createTestBuildType(t, client, testBuildTypeProjectId)
+func NewSuiteBuildFeature(t *testing.T) *SuiteBuildFeature {
+	return &SuiteBuildFeature{TC: NewTc("SuiteBuildFeature", t), BuildTypeContext: new(BuildTypeContext)}
+}
+
+func (suite *SuiteBuildFeature) SetupTest() {
+	suite.BuildTypeContext.SetupWithOpt(suite.TC, BuildTypeContextOptions{AttachVcsRoot: true})
+	suite.BuildTypeID = suite.BuildTypeContext.BuildType.ID
+	suite.Require().NotNil(suite.BuildTypeContext.VcsRoot)
+	suite.VcsRootID = suite.BuildTypeContext.VcsRoot.ID
 
 	opt := teamcity.NewCommitStatusPublisherGithubOptionsToken("https://api.github.com", "1234")
-	ni, _ := teamcity.NewFeatureCommitStatusPublisherGithub(opt)
+	suite.Github, _ = teamcity.NewFeatureCommitStatusPublisherGithub(opt, suite.BuildTypeContext.VcsRoot.ID)
+}
 
-	sut := client.BuildFeatureService(buildType.ID)
-	actual, err := sut.Create(ni)
+func (suite *SuiteBuildFeature) TearDownTest() {
+	// suite.BuildTypeContext.Teardown()
+}
 
-	require.NoError(t, err)
-	assert.NotNil(actual)
+func (suite *SuiteBuildFeature) Service() *teamcity.BuildFeatureService {
+	return suite.TC.Client.BuildFeatureService(suite.BuildTypeContext.BuildType.ID)
+}
 
-	actual, err = sut.GetByID(actual.ID())
+func (suite *SuiteBuildFeature) TestCommitPublisher_Create() {
+	sut := suite.Service()
+	actual, err := sut.Create(suite.Github)
+	suite.Require().NoError(err)
 
-	require.NoError(t, err)
-	assert.NotNil(actual)
+	suite.Require().IsType(new(teamcity.FeatureCommitStatusPublisher), actual)
 
 	csp := actual.(*teamcity.FeatureCommitStatusPublisher)
 
-	cleanUpProject(t, client, testBuildTypeProjectId)
-	assert.NotEqual("", csp.ID())
-	assert.Equal(buildType.ID, csp.BuildTypeID())
-	assert.Equal("commit-status-publisher", csp.Type())
-	assert.Equal(false, csp.Disabled())
+	suite.NotEqual("", csp.ID())
+	suite.Equal(suite.BuildTypeID, csp.BuildTypeID())
+	suite.Equal("commit-status-publisher", csp.Type())
+	suite.Equal(false, csp.Disabled())
+	suite.Equal(suite.VcsRootID, csp.VcsRootID())
+}
+
+func (suite *SuiteBuildFeature) TestCommitPublisher_Get() {
+	sut := suite.Service()
+	actual, err := sut.Create(suite.Github)
+	suite.Require().NoError(err)
+
+	actual, err = sut.GetByID(actual.ID())
+	suite.Require().NoError(err)
+	suite.Require().IsType(new(teamcity.FeatureCommitStatusPublisher), actual)
+
+	csp := actual.(*teamcity.FeatureCommitStatusPublisher)
+
+	suite.NotEqual("", csp.ID())
+	suite.Equal(suite.BuildTypeID, csp.BuildTypeID())
+	suite.Equal("commit-status-publisher", csp.Type())
+	suite.Equal(false, csp.Disabled())
+	suite.Equal(suite.VcsRootID, csp.VcsRootID())
+}
+
+func TestBuildFeatureSuite(t *testing.T) {
+	suite.Run(t, NewSuiteBuildFeature(t))
 }

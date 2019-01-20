@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/dghubble/sling"
 )
@@ -40,6 +41,10 @@ func (s *TriggerService) AddTrigger(t Trigger) (Trigger, error) {
 	var created Trigger
 	err := s.restHelper.postCustom("", t, &created, "build trigger", triggerReadingFunc)
 	if err != nil {
+		//Duplicate vcsTrigger for the buildConfiguration - Can't add more than one vcsTrigger
+		if strings.Contains(err.Error(), "Trigger with id 'vcsTrigger'already exists") {
+			return nil, fmt.Errorf("unable to add two VCS triggers to build configuration")
+		}
 		return nil, err
 	}
 

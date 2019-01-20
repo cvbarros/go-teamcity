@@ -38,6 +38,10 @@ func TestFeatureCommitPublisher_UnmarshallProperties_Github(t *testing.T) {
 				},
 				{
 					"name": "secure:github_password"
+				},
+				{
+					"name": "vcsRootId",
+					"value": "Project_VcsRootId"
 				}
 			]
 		}
@@ -46,6 +50,7 @@ func TestFeatureCommitPublisher_UnmarshallProperties_Github(t *testing.T) {
 	actual.UnmarshalJSON([]byte(json))
 
 	assert.Equal("BUILD_EXT_1", actual.ID())
+	assert.Equal("Project_VcsRootId", actual.VcsRootID())
 	assert.IsType(new(teamcity.StatusPublisherGithubOptions), actual.Options)
 	actualOpt := actual.Options.(*teamcity.StatusPublisherGithubOptions)
 

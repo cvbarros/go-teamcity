@@ -27,35 +27,19 @@ type BuildFeature interface {
 }
 
 type buildFeatureJSON struct {
-	// disabled
-	Disabled *bool `json:"disabled,omitempty" xml:"disabled"`
-
-	// href
-	Href string `json:"href,omitempty" xml:"href"`
-
-	// id
-	ID string `json:"id,omitempty" xml:"id"`
-
-	// inherited
-	Inherited *bool `json:"inherited,omitempty" xml:"inherited"`
-
-	// properties
+	Disabled   *bool       `json:"disabled,omitempty" xml:"disabled"`
+	Href       string      `json:"href,omitempty" xml:"href"`
+	ID         string      `json:"id,omitempty" xml:"id"`
+	Inherited  *bool       `json:"inherited,omitempty" xml:"inherited"`
 	Properties *Properties `json:"properties,omitempty"`
-
-	// type
-	Type string `json:"type,omitempty" xml:"type"`
+	Type       string      `json:"type,omitempty" xml:"type"`
+	VcsRootID  string      `json:"vcsRootId,omitempty" xml:"vcsRootId"`
 }
 
 // Features is a collection of BuildFeature
 type Features struct {
-
-	// count
-	Count int32 `json:"count,omitempty" xml:"count"`
-
-	// href
-	Href string `json:"href,omitempty" xml:"href"`
-
-	// property
+	Count int32              `json:"count,omitempty" xml:"count"`
+	Href  string             `json:"href,omitempty" xml:"href"`
 	Items []buildFeatureJSON `json:"feature"`
 }
 

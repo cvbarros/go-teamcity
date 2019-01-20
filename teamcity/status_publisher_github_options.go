@@ -35,8 +35,9 @@ func NewCommitStatusPublisherGithubOptionsToken(host string, accessToken string)
 	}
 }
 
-//NewFeatureCommitStatusPublisherGithub creates a Build Feature Commit status Publisher to Github with the given options and validates the required properties
-func NewFeatureCommitStatusPublisherGithub(opt StatusPublisherGithubOptions) (*FeatureCommitStatusPublisher, error) {
+//NewFeatureCommitStatusPublisherGithub creates a Build Feature Commit status Publisher to Github with the given options and validates the required properties.
+//VcsRootID is optional - if empty, it will apply the commit publisher feature to all VCS roots.
+func NewFeatureCommitStatusPublisherGithub(opt StatusPublisherGithubOptions, vcsRootID string) (*FeatureCommitStatusPublisher, error) {
 	if opt.AuthenticationType == "" {
 		return nil, fmt.Errorf("AuthenticationType is required")
 	}
@@ -64,6 +65,10 @@ func NewFeatureCommitStatusPublisherGithub(opt StatusPublisherGithubOptions) (*F
 	out := &FeatureCommitStatusPublisher{
 		Options:    opt,
 		properties: opt.Properties(),
+	}
+
+	if vcsRootID != "" {
+		out.vcsRootID = vcsRootID
 	}
 
 	return out, nil
