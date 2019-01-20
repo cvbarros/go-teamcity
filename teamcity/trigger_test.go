@@ -16,6 +16,7 @@ type SuiteBuildTypeTrigger struct {
 	TriggerVcs       teamcity.Trigger
 	Trigger          teamcity.Trigger
 	AddTrigger       func(teamcity.Trigger) teamcity.Trigger
+	AddTriggerError  func(teamcity.Trigger) error
 }
 
 func NewSuiteBuildTypeTrigger(t *testing.T) *SuiteBuildTypeTrigger {
@@ -36,6 +37,13 @@ func (suite *SuiteBuildTypeTrigger) SetupTest() {
 		suite.Require().NotNil(created)
 		return
 	}
+
+	suite.AddTriggerError = func(t teamcity.Trigger) error {
+		_, err := suite.TC.Client.TriggerService(suite.BuildTypeID).AddTrigger(t)
+		suite.Require().Error(err)
+		return err
+	}
+
 }
 
 func (suite *SuiteBuildTypeTrigger) TearDownTest() {
@@ -45,6 +53,13 @@ func (suite *SuiteBuildTypeTrigger) TearDownTest() {
 func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Create() {
 	actual := suite.AddTrigger(suite.TriggerVcs)
 	suite.Equal(suite.BuildTypeID, actual.BuildTypeID())
+}
+
+func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_CreateTwoHandledGracefully() {
+	suite.AddTrigger(suite.TriggerVcs)
+	err := suite.AddTriggerError(suite.TriggerVcs)
+
+	suite.Assert().EqualError(err, "unable to add two VCS triggers to build configuration")
 }
 
 func (suite *SuiteBuildTypeTrigger) TestVcsTrigger_Get() {

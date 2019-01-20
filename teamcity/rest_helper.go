@@ -51,7 +51,7 @@ func (r *restHelper) getCustom(path string, out interface{}, resourceDescription
 		return nil
 	}
 
-	return r.handleRestError(response, "GET", resourceDescription)
+	return r.handleRestError(bodyBytes, response.StatusCode, "GET", resourceDescription)
 }
 
 func (r *restHelper) get(path string, out interface{}, resourceDescription string) error {
@@ -68,7 +68,11 @@ func (r *restHelper) get(path string, out interface{}, resourceDescription strin
 		return nil
 	}
 
-	return r.handleRestError(response, "GET", resourceDescription)
+	dt, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	return r.handleRestError(dt, response.StatusCode, "GET", resourceDescription)
 }
 
 func (r *restHelper) putCustom(path string, data interface{}, out interface{}, resourceDescription string, reader responseReadFunc) error {
@@ -92,7 +96,7 @@ func (r *restHelper) putCustom(path string, data interface{}, out interface{}, r
 		return nil
 	}
 
-	return r.handleRestError(response, "PUT", resourceDescription)
+	return r.handleRestError(bodyBytes, response.StatusCode, "PUT", resourceDescription)
 }
 
 func (r *restHelper) postCustom(path string, data interface{}, out interface{}, resourceDescription string, reader responseReadFunc) error {
@@ -116,7 +120,7 @@ func (r *restHelper) postCustom(path string, data interface{}, out interface{}, 
 		return nil
 	}
 
-	return r.handleRestError(response, "POST", resourceDescription)
+	return r.handleRestError(bodyBytes, response.StatusCode, "POST", resourceDescription)
 }
 
 func (r *restHelper) putTextPlain(path string, data string, resourceDescription string) (string, error) {
@@ -143,7 +147,7 @@ func (r *restHelper) putTextPlain(path string, data string, resourceDescription 
 		return string(bodyBytes), nil
 	}
 
-	return "", r.handleRestError(resp, "PUT", resourceDescription)
+	return "", r.handleRestError(bodyBytes, resp.StatusCode, "PUT", resourceDescription)
 }
 
 func (r *restHelper) post(path string, data interface{}, out interface{}, resourceDescription string) error {
@@ -159,8 +163,11 @@ func (r *restHelper) post(path string, data interface{}, out interface{}, resour
 		json.NewDecoder(response.Body).Decode(out)
 		return nil
 	}
-
-	return r.handleRestError(response, "POST", resourceDescription)
+	dt, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	return r.handleRestError(dt, response.StatusCode, "POST", resourceDescription)
 }
 
 func (r *restHelper) put(path string, data interface{}, out interface{}, resourceDescription string) error {
@@ -176,8 +183,11 @@ func (r *restHelper) put(path string, data interface{}, out interface{}, resourc
 		json.NewDecoder(response.Body).Decode(out)
 		return nil
 	}
-
-	return r.handleRestError(response, "PUT", resourceDescription)
+	dt, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	return r.handleRestError(dt, response.StatusCode, "PUT", resourceDescription)
 }
 
 func (r *restHelper) delete(path string, resourceDescription string) error {
@@ -197,18 +207,18 @@ func (r *restHelper) deleteByIDWithSling(sling *sling.Sling, resourceID string, 
 	}
 
 	if response.StatusCode != 200 && response.StatusCode != 204 {
-		return r.handleRestError(response, "DELETE", resourceDescription)
+		dt, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		return r.handleRestError(dt, response.StatusCode, "DELETE", resourceDescription)
 	}
 
 	return nil
 }
 
-func (r *restHelper) handleRestError(resp *http.Response, op string, res string) error {
-	dt, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	return fmt.Errorf("Error '%d' when performing '%s' operation - %s: %s", resp.StatusCode, op, res, string(dt))
+func (r *restHelper) handleRestError(dt []byte, status int, op string, res string) error {
+	return fmt.Errorf("Error '%d' when performing '%s' operation - %s: %s", status, op, res, string(dt))
 }
 
 func replaceValue(i, v interface{}) {
