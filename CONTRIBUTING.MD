@@ -5,12 +5,15 @@ We'd more than happy to accept all forms of contribution. Those may come in form
 ## Reporting issues ##
 
 ### Problems and/or bugs ###
+
 Be descriptive about your issue. Specify which TeamCity, Golang and OS version you are running and provide helpful information through logs and/or debug information.
 
 ### Feature Requests ###
+
 Feature requests are welcome, still, try to be as specific as possible about what the intended feature should be. Then, after proposing the feature, be open to discussion and patient regarding it's implementation.
 
 ## Developing ##
+
 If you want to contribute in form of development, you may fork this repo, clone it locally (preferably inside your `GOPATH`) then create a branch to work on. [This link](https://opensource.guide/how-to-contribute/#opening-a-pull-request) has helpful information to get started.
 
 Seen an issue that you want to tackle? Make sure to comment indicating that intention, so others know that someone is already willing to work on it.
@@ -20,21 +23,22 @@ Try to maitain the code conventions, or spot where they are inconsistent across 
 You'll need Go (1.10+) installed locally. For instructions on how to do that for your platform, you may refer to [Golang Installation](https://golang.org/doc/install).
 
 ### Running Locally ###
-TeamCity can be run with the official docker images from JetBrains. We leverage that by implementing full integration tests with every feature.   
+
+TeamCity can be run with the official docker images from JetBrains. We leverage that by implementing full integration tests with every feature.
 You are expected to fully run these tests and make sure your changes do not break existing functionality.
 
-In order to run it locally you can first start a warmed-up TeamCity container, from the repository root folder:
+In order to run the tests locally, run following command from the repository root folder:
 
 ```bash
-./integration_tests/start_teamcity.sh
+make test
 ```
 
-This will start the needed dependencies to run all tests in your local machine as per [this configuration](./integration_tests/docker-compose.yml). After your environment is running, you may set the `TEAMCITY_ADDR` environment variable to the corresponding value (defaults to `http://127.0.0.1:8112`).
+This will start a Docker container to run all tests against. If the container is already up and running, it will simply run the tests.
 
-To run tests:
+Once you are done with testing, you can destroy the test environment:
 
 ```bash
-go test -v -timeout 30s ./...
+make clean-docker
 ```
 
 If using an editor such as **Visual Studio Code** with `Go` integration, make sure to configure your workspace settings, such as:
@@ -44,7 +48,6 @@ If using an editor such as **Visual Studio Code** with `Go` integration, make su
     "go.testEnvVars": {
         "TEAMCITY_ADDR":"http://localhost:8112"
     },
-    
     "go.testFlags": ["-v"],
     "go.buildFlags": ["-v"]
 }
