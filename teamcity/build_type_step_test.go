@@ -9,13 +9,14 @@ import (
 
 type SuiteBuildTypeSteps struct {
 	suite.Suite
-	TC                    *TestContext
-	BuildTypeContext      *BuildTypeContext
-	BuildTypeID           string
-	StepPowershell        teamcity.Step
-	StepCmdLineExecutable teamcity.Step
-	StepCmdLineScript     teamcity.Step
-	AddStep               func(teamcity.Step) teamcity.Step
+	TC                     *TestContext
+	BuildTypeContext       *BuildTypeContext
+	BuildTypeID            string
+	StepPowershell         teamcity.Step
+	StepCmdLineExecutable  teamcity.Step
+	StepCmdLineScript      teamcity.Step
+	StepOctopusPushPackage teamcity.Step
+	AddStep                func(teamcity.Step) teamcity.Step
 }
 
 func NewSuiteBuildTypeSteps(t *testing.T) *SuiteBuildTypeSteps {
@@ -25,12 +26,12 @@ func NewSuiteBuildTypeSteps(t *testing.T) *SuiteBuildTypeSteps {
 func (suite *SuiteBuildTypeSteps) SetupSuite() {
 	suite.StepPowershell, _ = teamcity.NewStepPowershellScriptFile("step1", "build.ps1", "")
 	suite.StepCmdLineExecutable, _ = teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
-	suite.StepCmdLineScript, _ = teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
 	script := `echo "Hello World
 	echo "World, Hello!
 	export HELLO_WORLD=1
 	`
 	suite.StepCmdLineScript, _ = teamcity.NewStepCommandLineScript("step_exe", script)
+	suite.StepOctopusPushPackage, _ = teamcity.NewStepOctopusPushPackage("Octopus package")
 }
 
 func (suite *SuiteBuildTypeSteps) SetupTest() {
@@ -58,6 +59,10 @@ func (suite *SuiteBuildTypeSteps) TestAdd_StepCmdLineExecutable() {
 
 func (suite *SuiteBuildTypeSteps) TestAdd_StepCmdLineScript() {
 	suite.AddStep(suite.StepCmdLineScript)
+}
+
+func (suite *SuiteBuildTypeSteps) TestAdd_StepOctopusPushPackage() {
+	suite.AddStep(suite.StepOctopusPushPackage)
 }
 
 func (suite *SuiteBuildTypeSteps) GetSteps(buildTypeID string) []teamcity.Step {
