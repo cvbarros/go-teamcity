@@ -64,7 +64,7 @@ func (s *StepCommandLine) GetName() string {
 	return s.Name
 }
 
-//Type returns the step type, in this case "StepTypePowershell".
+//Type returns the step type, in this case "StepTypeCommandLine".
 func (s *StepCommandLine) Type() BuildStepType {
 	return StepTypeCommandLine
 }

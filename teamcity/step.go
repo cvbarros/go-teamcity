@@ -14,7 +14,8 @@ const (
 	//StepTypeDotnetCli step type
 	StepTypeDotnetCli BuildStepType = "dotnet.cli"
 	//StepTypeCommandLine (shell/cmd) step type
-	StepTypeCommandLine BuildStepType = "simpleRunner"
+	StepTypeCommandLine        BuildStepType = "simpleRunner"
+	StepTypeOctopusPushPackage BuildStepType = "octopus.push.package"
 )
 
 //StepExecuteMode represents how a build configuration step will execute regarding others.
@@ -96,6 +97,12 @@ var stepReadingFunc = func(dt []byte, out interface{}) error {
 			return err
 		}
 		step = &cmd
+	case string(StepTypeOctopusPushPackage):
+		var opp StepOctopusPushPackage
+		if err := opp.UnmarshalJSON(dt); err != nil {
+			return err
+		}
+		step = &opp
 	default:
 		return fmt.Errorf("Unsupported step type: '%s' (id:'%s')", payload.Type, payload.ID)
 	}

@@ -39,12 +39,13 @@ ci: test ## Run all the CI targets
 .PHONY: test
 test: ## Run the unit tests
 	@test -d  $(TEAMCITY_DATA_DIR) || tar xfz $(INTEGRATION_TEST_DIR)/teamcity_data.tar.gz -C $(INTEGRATION_TEST_DIR)
+	@curl -sL https://download.octopusdeploy.com/octopus-teamcity/4.42.1/Octopus.TeamCity.zip -o $(TEAMCITY_DATA_DIR)/plugins/Octopus.TeamCity.zip
 	@test -n "$$(docker ps -q -f name=$(CONTAINER_NAME))" || docker run --rm -d \
-			--name $(CONTAINER_NAME) \
-			-v $(PWD)/$(TEAMCITY_DATA_DIR):/data/teamcity_server/datadir \
-			-v $(PWD)/$(INTEGRATION_TEST_DIR)/log_dir:/opt/teamcity/logs \
-			-p 8112:8111 \
-			jetbrains/teamcity-server:2018.1.3
+		--name $(CONTAINER_NAME) \
+		-v $(PWD)/$(TEAMCITY_DATA_DIR):/data/teamcity_server/datadir \
+		-v $(PWD)/$(INTEGRATION_TEST_DIR)/log_dir:/opt/teamcity/logs \
+		-p 8112:8111 \
+		jetbrains/teamcity-server:2018.1.3
 	@echo -n "Teamcity server is booting (this may take a while)..."
 	@until $$(curl -o /dev/null -sfI $(TEAMCITY_HOST)/login.html);do echo -n ".";sleep 5;done
 	@export TEAMCITY_ADDR=$(TEAMCITY_HOST) \
@@ -54,7 +55,7 @@ test: ## Run the unit tests
 clean: clean-code clean-docker ## Clean all resources (!DESTRUCTIVE!)
 
 .PHONY: clean-code
-clean-code: ## Remove unwanted files in this project (!DESTRUCTIVE!)
+clean-code: ## Remove unwanted files in this project (!DESTRUCTIVE!
 	@cd $(TOPDIR) && git clean -ffdx && git reset --hard
 
 .PHONY: clean-docker
