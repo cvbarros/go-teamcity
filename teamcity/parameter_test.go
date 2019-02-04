@@ -45,6 +45,33 @@ func Test_ParameterSystem_Serialization(t *testing.T) {
 	assert.Equal(string(teamcity.ParameterTypes.System), actual.Type)
 }
 
+func Test_ParameterConfiguration_FullSpec_Serialization(t *testing.T) {
+	assert := assert.New(t)
+	sut, _ := teamcity.NewParameter(teamcity.ParameterTypes.Configuration, "param1", "value1")
+	sut.ControlType = "password"
+	sut.Description = "some description"
+	sut.Display = "prompt"
+	sut.Label = "some label"
+	sut.ReadOnly = "true"
+	jsonBytes, err := sut.MarshalJSON()
+
+	require.NoError(t, err)
+	require.Equal(t, string(jsonBytes), `{"name":"param1","type":{"rawValue":"password display='prompt' description='some description' readOnly='true' label='some label'"},"value":"value1"}`)
+	actual := &teamcity.Parameter{}
+	if err := json.Unmarshal([]byte(jsonBytes), &actual); err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal("param1", actual.Name)
+	assert.Equal("value1", actual.Value)
+	assert.Equal("password", actual.ControlType)
+	assert.Equal("some description", actual.Description)
+	assert.Equal("prompt", actual.Display)
+	assert.Equal("true", actual.ReadOnly)
+	assert.Equal("some label", actual.Label)
+	assert.Equal(string(teamcity.ParameterTypes.Configuration), actual.Type)
+}
+
 func Test_ParameterEnvironmentVariable_Serialization(t *testing.T) {
 	assert := assert.New(t)
 	sut, _ := teamcity.NewParameter(teamcity.ParameterTypes.EnvironmentVariable, "param1", "value1")

@@ -3,6 +3,7 @@ package teamcity
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -41,6 +42,16 @@ type Parameter struct {
 	Value string `json:"value" xml:"value"`
 
 	Type string `json:"-"`
+
+	Label string
+
+	Description string
+
+	Display string //normal, hidden, prompt
+
+	ReadOnly string
+
+	ControlType string //checkbox, password, text, select
 }
 
 //NewParametersEmpty returns an empty collection of Parameters
@@ -105,7 +116,70 @@ func (p *Parameter) UnmarshalJSON(data []byte) error {
 		p.Inherited = *aux.Inherited
 	}
 	p.Value = aux.Value
+
+	if aux.Type != nil {
+		p.UnmarshalType(aux.Type.RawValue)
+	}
+
 	p.Type = paramType
+	return nil
+}
+
+// MarshalType performs the special marshalling of the parameter.type.rawValue field
+func (p *Parameter) MarshalType() (string, error) {
+	s := []string{}
+
+	if p.ControlType != "" {
+		s = append(s, p.ControlType)
+	}
+	if p.Display != "" {
+		s = append(s, fmt.Sprintf("display='%s'", p.Display))
+	}
+	if p.Description != "" {
+		s = append(s, fmt.Sprintf("description='%s'", p.Description))
+	}
+	if p.ReadOnly != "" {
+		s = append(s, fmt.Sprintf("readOnly='%s'", p.ReadOnly))
+	}
+	if p.Label != "" {
+		s = append(s, fmt.Sprintf("label='%s'", p.Label))
+	}
+
+	return strings.Join(s, " "), nil
+}
+
+// UnmarshalType performs the special unmarshalling of the parameter.type.rawValue field
+func (p *Parameter) UnmarshalType(t string) error {
+	e := regexp.MustCompile("^(checkbox|password|text|select)")
+	match := e.FindStringSubmatch(t)
+	if len(match) > 0 {
+		p.ControlType = match[1]
+	}
+
+	e = regexp.MustCompile("display='(nomal|hidden|prompt)'")
+	match = e.FindStringSubmatch(t)
+	if len(match) > 0 {
+		p.Display = match[1]
+	}
+
+	e = regexp.MustCompile("readOnly='(true|false)'")
+	match = e.FindStringSubmatch(t)
+	if len(match) > 0 {
+		p.ReadOnly = match[1]
+	}
+
+	e = regexp.MustCompile("label='([^']+)'")
+	match = e.FindStringSubmatch(t)
+	if len(match) > 0 {
+		p.Label = match[1]
+	}
+
+	e = regexp.MustCompile("description='([^']+)'")
+	match = e.FindStringSubmatch(t)
+	if len(match) > 0 {
+		p.Description = match[1]
+	}
+
 	return nil
 }
 
@@ -127,6 +201,13 @@ func (p *Parameter) Property() *Property {
 	//Omit default inherited value
 	if p.Inherited {
 		out.Inherited = NewBool(p.Inherited)
+	}
+
+	rawValue, err := p.MarshalType()
+	if err == nil && rawValue != "" {
+		out.Type = &Type{
+			RawValue: rawValue,
+		}
 	}
 	return out
 }
