@@ -230,7 +230,22 @@ func (p *Parameters) AddOrReplaceValue(t string, n string, v string) {
 
 // AddOrReplaceParameter will update a parameter value if another parameter with the same name exists. It won't replace the Parameter struct within the Parameters collection.
 func (p *Parameters) AddOrReplaceParameter(param *Parameter) {
-	p.AddOrReplaceValue(param.Type, param.Name, param.Value)
+	for _, elem := range p.Items {
+		if elem == nil {
+			continue
+		}
+
+		if elem.Name == param.Name {
+			elem.Value = param.Value
+			elem.ControlType = param.ControlType
+			elem.Description = param.Description
+			elem.Display = param.Display
+			elem.ReadOnly = param.ReadOnly
+			elem.Label = param.Label
+			return
+		}
+	}
+	p.Add(param)
 }
 
 // Add a new parameter to this collection

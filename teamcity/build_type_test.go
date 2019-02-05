@@ -125,15 +125,25 @@ func TestBuildType_CreateWithParameters(t *testing.T) {
 
 	bt.Parameters.AddOrReplaceValue(teamcity.ParameterTypes.EnvironmentVariable, "param1", "value1")
 	bt.Parameters.AddOrReplaceValue(teamcity.ParameterTypes.System, "param2", "value2")
+	extendedParameter, _ := teamcity.NewParameter(teamcity.ParameterTypes.EnvironmentVariable, "param3", "value3")
+	extendedParameter.ControlType = "text"
+	extendedParameter.Display = "hidden"
+	bt.Parameters.AddOrReplaceParameter(extendedParameter)
 
 	sut := client.BuildTypes
 	created, err := sut.Create(project.ID, bt)
 	require.NoError(t, err)
 
 	actual, _ := sut.GetByID(created.ID) //Refresh
+
 	props := actual.Parameters.Properties()
 	pa.assertPropertyValue(props, "env.param1", "value1")
 	pa.assertPropertyValue(props, "system.param2", "value2")
+	pa.assertPropertyValue(props, "env.param3", "value3")
+
+	param, _ := actual.Parameters.GetOk("env", "param3")
+	assert.Equal(t, "text", param.ControlType)
+	assert.Equal(t, "hidden", param.Display)
 
 	cleanUpProject(t, client, project.ID)
 }
@@ -150,6 +160,10 @@ func TestBuildType_UpdateParameters(t *testing.T) {
 	props := teamcity.NewParametersEmpty()
 	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param1", "value1")
 	props.AddOrReplaceValue(teamcity.ParameterTypes.Configuration, "param2", "value2")
+	extendedParameter, _ := teamcity.NewParameter(teamcity.ParameterTypes.EnvironmentVariable, "param3", "value3")
+	extendedParameter.ControlType = "text"
+	extendedParameter.Display = "hidden"
+	props.AddOrReplaceParameter(extendedParameter)
 	actual.Parameters = props
 
 	updated, err := sut.Update(actual)
@@ -158,6 +172,10 @@ func TestBuildType_UpdateParameters(t *testing.T) {
 	require.NoError(t, err)
 	pa.assertPropertyValue(updated.Parameters.Properties(), "param1", "value1")
 	pa.assertPropertyValue(updated.Parameters.Properties(), "param2", "value2")
+
+	param, _ := actual.Parameters.GetOk("env", "param3")
+	assert.Equal(t, "text", param.ControlType)
+	assert.Equal(t, "hidden", param.Display)
 }
 
 func TestBuildType_UpdateParametersWithRemoval(t *testing.T) {
