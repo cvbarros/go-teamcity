@@ -49,7 +49,7 @@ test: ## Run the unit tests
 	@echo -n "Teamcity server is booting (this may take a while)..."
 	@until $$(curl -o /dev/null -sfI $(TEAMCITY_HOST)/login.html);do echo -n ".";sleep 5;done
 	@export TEAMCITY_ADDR=$(TEAMCITY_HOST) \
-		&& go test -v -failfast -timeout 60s ./...
+		&& go test -v -failfast -timeout 5m ./...
 
 .PHONY: clean
 clean: clean-code clean-docker ## Clean all resources (!DESTRUCTIVE!)

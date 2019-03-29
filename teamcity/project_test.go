@@ -1,7 +1,9 @@
 package teamcity_test
 
 import (
+	"fmt"
 	"net/http"
+	"runtime"
 	"testing"
 
 	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
@@ -213,6 +215,17 @@ func cleanUpProject(t *testing.T, c *teamcity.Client, id string) {
 	if err == nil {
 		t.Fatalf("Expected 404 Not Found error when getting Deleted Project, but no error returned.")
 	}
+}
+
+func createTestProjectWithImplicitName(t *testing.T, c *teamcity.Client) *teamcity.Project {
+	name := "Test Project Name"
+	pc, _, _, ok := runtime.Caller(1)
+	if ok {
+		details := runtime.FuncForPC(pc)
+		name = fmt.Sprintf("Test Project - %s", details.Name())
+	}
+
+	return createTestProjectWithParent(t, c, name, "")
 }
 
 func createTestProject(t *testing.T, c *teamcity.Client, name string) *teamcity.Project {
