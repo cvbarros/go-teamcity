@@ -138,6 +138,11 @@ func (c *Client) BuildFeatureService(id string) *BuildFeatureService {
 	return newBuildFeatureService(id, c.HTTPClient, c.commonBase.New())
 }
 
+// ProjectFeatureService returns a service to manage project features for a project with given id
+func (c *Client) ProjectFeatureService(id string) *ProjectFeatureService {
+	return newProjectFeatureService(id, c.HTTPClient, c.commonBase.New())
+}
+
 //DependencyService returns a service to manage snapshot and artifact dependencies for a build configuration with given id
 func (c *Client) DependencyService(id string) *DependencyService {
 	return NewDependencyService(id, c.HTTPClient, c.commonBase.New())

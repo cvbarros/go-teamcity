@@ -23,6 +23,12 @@ func setup() *teamcity.Client {
 	return client
 }
 
+func safeSetup(t *testing.T) *teamcity.Client {
+	client, err := teamcity.New("admin", "admin", http.DefaultClient)
+	require.NoError(t, err)
+	return client
+}
+
 func TestClient_BasicAuth(t *testing.T) {
 	t.Run("Basic auth works against local instance", func(t *testing.T) {
 		client := setup()
