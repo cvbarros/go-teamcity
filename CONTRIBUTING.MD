@@ -20,7 +20,7 @@ Seen an issue that you want to tackle? Make sure to comment indicating that inte
 
 Try to maitain the code conventions, or spot where they are inconsistent across the codebase, whenever possible. When submitting your work, if you would like to propose an enhancement to existing conventions, do it in a separate issue for discussion, other than the issued worked on.
 
-You'll need Go (1.10+) installed locally. For instructions on how to do that for your platform, you may refer to [Golang Installation](https://golang.org/doc/install).
+You'll need Go (1.11+) installed locally. For instructions on how to do that for your platform, you may refer to [Golang Installation](https://golang.org/doc/install).
 
 ### Running Locally ###
 

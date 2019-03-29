@@ -6,7 +6,7 @@ services:
   - docker
 language: go
 go:
- - "1.10.x"
+ - "1.11.x"
 env:
   global:
     - TEAMCITY_ADDR=http://localhost:8112
