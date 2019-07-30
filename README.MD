@@ -1,18 +1,18 @@
-# go-teamcity-sdk #
+# go-teamcity #
 
-[![GoDoc](https://godoc.org/github.com/cvbarros/go-teamcity-sdk/github?status.svg)](https://godoc.org/github.com/cvbarros/go-teamcity-sdk) [![Build Status](https://travis-ci.org/cvbarros/go-teamcity-sdk.svg?branch=master)](https://travis-ci.org/cvbarros/go-teamcity-sdk)
+[![GoDoc](https://godoc.org/github.com/cvbarros/go-teamcity/github?status.svg)](https://godoc.org/github.com/cvbarros/go-teamcity) [![Build Status](https://travis-ci.org/cvbarros/go-teamcity.svg?branch=master)](https://travis-ci.org/cvbarros/go-teamcity)
 
-go-teamcity-sdk is a Go client library interacting with Jetbrain's [TeamCity CI server REST API](https://confluence.jetbrains.com/display/TCD10/REST+API).
-Currently, supported API version is TeamCity 10.x (2017.2.1) or up.
+go-teamcity is a Go client library interacting with Jetbrain's [TeamCity CI server REST API](https://confluence.jetbrains.com/display/TCD10/REST+API).
+Currently, supported API version is TeamCity 2018.1.3 or up.
 
 ## Motivation ##
-go-teamcity-sdk is intended for automating Jetbrain's TeamCity tasks and configurations using Go.
+go-teamcity is intended for automating Jetbrain's TeamCity tasks and configurations using Go.
 It is also the client library used in [TeamCity Provider](https://github.com/cvbarros/terraform-provider-teamcity), a [Hashicorp's Terraform](https://www.terraform.io) custom provider to configure TeamCity fully in code.
 
 ## Usage ##
 
 ```go
-import teamcity "github.com/cvbarros/go-teamcity-sdk"
+import teamcity "github.com/cvbarros/go-teamcity"
 ```
 
 Construct a new Teamcity client with a default `http.Client` for the server at the `TEAMCITY_ADDR` environment variable, then use the various services exposed by the client to use TeamCity API's features.
@@ -28,7 +28,7 @@ project,  err := client.Projects.GetById("myproject")
 
 ### Examples ###
 
-For now, [integration tests](https://github.com/cvbarros/go-teamcity-sdk/search?q=filename%3A*_test.go&unscoped_q=filename%3A*_test.go) are the best examples on how to use the library to interact with the several services.
+For now, [integration tests](https://github.com/cvbarros/go-teamcity/search?q=filename%3A*_test.go&unscoped_q=filename%3A*_test.go) are the best examples on how to use the library to interact with the several services.
 
 ## Project Status ##
 
