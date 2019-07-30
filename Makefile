@@ -1,5 +1,5 @@
 # Project name.
-PROJECT_NAME = go-teamcity-sdk
+PROJECT_NAME = go-teamcity
 
 # Makefile parameters.
 TAG ?= $(shell git describe)
@@ -18,6 +18,8 @@ CONTAINER_NAME = teamcity_server
 INTEGRATION_TEST_DIR = integration_tests
 TEAMCITY_DATA_DIR = $(INTEGRATION_TEST_DIR)/data_dir
 TEAMCITY_HOST = http://localhost:8112
+TEAMCITY_VERSION ?= "2018.1.3"
+GO111MODULE ?= "on"
 
 default: build
 
@@ -45,11 +47,11 @@ test: ## Run the unit tests
 		-v $(PWD)/$(TEAMCITY_DATA_DIR):/data/teamcity_server/datadir \
 		-v $(PWD)/$(INTEGRATION_TEST_DIR)/log_dir:/opt/teamcity/logs \
 		-p 8112:8111 \
-		jetbrains/teamcity-server:2018.1.3
+		jetbrains/teamcity-server:$(TEAMCITY_VERSION)
 	@echo -n "Teamcity server is booting (this may take a while)..."
 	@until $$(curl -o /dev/null -sfI $(TEAMCITY_HOST)/login.html);do echo -n ".";sleep 5;done
 	@export TEAMCITY_ADDR=$(TEAMCITY_HOST) \
-		&& go test -v -failfast -timeout 60s ./...
+		&& GO111MODULE=$(GO111MODULE) go test -v -failfast -timeout 60s ./...
 
 .PHONY: clean
 clean: clean-code clean-docker ## Clean all resources (!DESTRUCTIVE!)
