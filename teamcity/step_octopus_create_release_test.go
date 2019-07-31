@@ -3,7 +3,7 @@ package teamcity_test
 import (
 	"testing"
 
-	teamcity "github.com/cvbarros/go-teamcity-sdk/teamcity"
+	teamcity "github.com/cvbarros/go-teamcity/teamcity"
 	"github.com/stretchr/testify/assert"
 )
 
