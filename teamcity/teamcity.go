@@ -10,7 +10,7 @@ import (
 
 	"github.com/dghubble/sling"
 
-	loghttp "github.com/motemen/go-loghttp"
+	"github.com/motemen/go-loghttp"
 	// Enable HTTP log tracing
 	_ "github.com/motemen/go-loghttp/global"
 )
