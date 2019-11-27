@@ -18,7 +18,7 @@ CONTAINER_NAME = teamcity_server
 INTEGRATION_TEST_DIR = integration_tests
 TEAMCITY_DATA_DIR = $(INTEGRATION_TEST_DIR)/data_dir
 TEAMCITY_HOST = http://localhost:8112
-TEAMCITY_VERSION ?= "2018.1.3"
+TEAMCITY_VERSION ?= "2019.1.1"
 GO111MODULE ?= "on"
 
 default: build
