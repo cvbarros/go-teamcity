@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add support for `octopus.push.package` step. It allows creating and pushing packages from [TeamCity to Octopus](https://octopus.com/docs/api-and-integration/teamcity). [#53]
-- Fix: Issue with serialization and newlines for VCSRoot branchSpec property
+
+### Fixed
+- Issue with serialization and newlines for VCSRoot branchSpec property
 
 ### Changed
 
