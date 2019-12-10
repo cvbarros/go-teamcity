@@ -95,9 +95,9 @@ type GitVcsRootOptions struct {
 	//DefaultBranch indicates which main branch or tag to be monitored by the VCS Root. Requied.
 	DefaultBranch string `prop:"branch"`
 
-	//BrancSpec are monitor besides the default one as a newline-delimited set of rules in the form of +|-:branch name (with the optional * placeholder)
+	//BranchSpec are monitor besides the default one as a newline-delimited set of rules in the form of +|-:branch name (with the optional * placeholder)
 	//Set separately, outside constructor.
-	BranchSpec []string `prop:"teamcity:branchSpec" separator:"\\n"`
+	BranchSpec []string `prop:"teamcity:branchSpec" separator:"\n"`
 
 	//FetchURL is used for fetching data from the repository. Required.
 	FetchURL string `prop:"url"`
@@ -220,7 +220,7 @@ func (o *GitVcsRootOptions) properties() *Properties {
 
 	if len(o.BranchSpec) > 0 {
 		// Some properties use \\r\\n to split. But this one only uses \\n, conversely
-		p.AddOrReplaceValue("teamcity:branchSpec", strings.Join(o.BranchSpec, "\\n"))
+		p.AddOrReplaceValue("teamcity:branchSpec", strings.Join(o.BranchSpec, "\n"))
 	}
 
 	if o.EnableTagsInBranchSpec {

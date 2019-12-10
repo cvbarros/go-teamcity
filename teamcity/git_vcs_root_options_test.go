@@ -119,7 +119,7 @@ func Test_GitVcsRootOptionsVcsRootProperties_BranchSpec(t *testing.T) {
 	actual.BranchSpec = []string{"+:refs/(pull/*)/head", "+:refs/heads/develop"}
 	props := actual.properties()
 
-	propAssert.assertPropertyValue(props, "teamcity:branchSpec", "+:refs/(pull/*)/head\\n+:refs/heads/develop")
+	propAssert.assertPropertyValue(props, "teamcity:branchSpec", "+:refs/(pull/*)/head\n+:refs/heads/develop")
 }
 
 func Test_GitVcsRootOptionsVcsRootProperties_EnableTagsInBranchSpec(t *testing.T) {
@@ -160,7 +160,7 @@ func Test_PropertiesToGitVcsRootOptions(t *testing.T) {
 	sut := NewProperties([]*Property{
 		NewProperty("branch", "refs/head/master"),
 		NewProperty("reportTagRevisions", "true"),
-		NewProperty("teamcity:branchSpec", "+:refs/(pull/*)/head\\n+:refs/heads/develop"),
+		NewProperty("teamcity:branchSpec", "+:refs/(pull/*)/head\n+:refs/heads/develop"),
 		NewProperty("authMethod", string(GitAuthMethodPassword)),
 		NewProperty("username", "admin"),
 		NewProperty("submoduleCheckout", "CHECKOUT"),
