@@ -32,6 +32,7 @@ func TestGitVcsRoot_Get(t *testing.T) {
 	require.NotNil(actual.Project)
 	assert.Equal(actual.Project.ID, actual.Project.ID)
 	assert.Equal(actual.Name(), actual.Name())
+	assert.ElementsMatch(actual.Options.BranchSpec, []string{"+:refs/heads/*", "-:refs/heads/*-ng-build"})
 }
 
 func TestGitVcsRoot_Update(t *testing.T) {
@@ -152,6 +153,7 @@ func TestGitVcsRoot_Invariants(t *testing.T) {
 
 func getTestVcsRootData(projectId string) teamcity.VcsRoot {
 	opts, _ := teamcity.NewGitVcsRootOptionsDefaults("refs/head/master", "https://github.com/cvbarros/go-teamcity")
+	opts.BranchSpec = []string{"+:refs/heads/*", "-:refs/heads/*-ng-build"}
 	v, _ := teamcity.NewGitVcsRoot(projectId, "Application", opts)
 	return v
 }
