@@ -138,6 +138,16 @@ func (s *ProjectService) GetByName(name string) (*Project, error) {
 	return &out, err
 }
 
+// Rename changes the name of a project by sending a PUT request
+func (s *ProjectService) Rename(id string, name string) error {
+	locator := LocatorID(id).String()
+	_, err := s.restHelper.putTextPlain(locator + "/name", name, "project name")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //Update changes the resource in-place for this project.
 //TeamCity API does not support "PUT" on the whole project resource, so the only updateable field is "Description". Other field updates will be ignored.
 //This method also updates Settings and Parameters, but this is not an atomic operation. If an error occurs, it will be returned to caller what was updated or not.

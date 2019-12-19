@@ -260,6 +260,16 @@ func (s *BuildTypeService) GetByID(id string) (*BuildType, error) {
 	return &out, err
 }
 
+// Rename changes the name of a build type by sending a PUT request
+func (s *BuildTypeService) Rename(id string, name string) error {
+	locator := LocatorID(id).String()
+	_, err := s.restHelper.putTextPlain(locator + "/name", name, "build type name")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //Update changes the resource in-place for this build configuration.
 //TeamCity API does not support "PUT" on the whole Build Configuration resource, so the only updateable field is "Description". Other field updates will be ignored.
 //This method also updates Settings and Parameters, but this is not an atomic operation. If an error occurs, it will be returned to caller what was updated or not.
