@@ -48,13 +48,16 @@ type BuildFeatureService struct {
 	BuildTypeID string
 	httpClient  *http.Client
 	base        *sling.Sling
+	restHelper  *restHelper
 }
 
 func newBuildFeatureService(buildTypeID string, c *http.Client, base *sling.Sling) *BuildFeatureService {
+	slingName := base.New().Path(fmt.Sprintf("buildTypes/%s/features/", buildTypeID))
 	return &BuildFeatureService{
 		BuildTypeID: buildTypeID,
 		httpClient:  c,
-		base:        base.New().Path(fmt.Sprintf("buildTypes/%s/features/", buildTypeID)),
+		base:        slingName,
+		restHelper:  newRestHelperWithSling(c, slingName),
 	}
 }
 
@@ -107,6 +110,33 @@ func (s *BuildFeatureService) GetByID(id string) (BuildFeature, error) {
 	return s.readBuildFeatureResponse(resp)
 }
 
+// GetBuildFeatures gets all the build features of a BuildType
+func (s *BuildFeatureService) GetBuildFeatures() ([]BuildFeature, error) {
+	var features Features
+	err := s.restHelper.get("", &features, "build features")
+	if err != nil {
+		return nil, err
+	}
+
+	buildFeatures := make([]BuildFeature, features.Count)
+
+	for i := range features.Items {
+		dt, err := json.Marshal(features.Items[i])
+		if err != nil {
+			return nil, err
+		}
+
+		cbf := GenericBuildFeature{}
+		err = cbf.UnmarshalJSON(dt)
+		if err != nil {
+			return nil, err
+		}
+		buildFeatures[i] = &cbf
+	}
+
+	return buildFeatures, nil
+}
+
 //Delete removes a build feature from the build configuration by its id.
 func (s *BuildFeatureService) Delete(id string) error {
 	request, _ := s.base.New().Delete(id).Request()
@@ -131,6 +161,34 @@ func (s *BuildFeatureService) Delete(id string) error {
 	return nil
 }
 
+// DeleteAll removes all build features of a build configuration
+func (s *BuildFeatureService) DeleteAll() error {
+	emptyStruct := struct{}{}
+	req, err := s.base.New().Put("").BodyJSON(emptyStruct).Request()
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusNoContent:
+		return nil
+	default:
+		respData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("Error '%d' when deleting build features: %s", resp.StatusCode, string(respData))
+	}
+}
+
 func (s *BuildFeatureService) readBuildFeatureResponse(resp *http.Response) (BuildFeature, error) {
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -152,7 +210,11 @@ func (s *BuildFeatureService) readBuildFeatureResponse(resp *http.Response) (Bui
 
 		out = &csp
 	default:
-		return nil, fmt.Errorf("Unsupported build feature type: '%s' (id:'%s') for buildTypeID: %s", payload.Type, payload.ID, s.BuildTypeID)
+		var cbf GenericBuildFeature
+		if err := cbf.UnmarshalJSON(bodyBytes); err != nil {
+			return nil, err
+		}
+		return out, nil
 	}
 
 	out.SetBuildTypeID(s.BuildTypeID)
