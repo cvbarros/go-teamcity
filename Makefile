@@ -38,8 +38,8 @@ build: ## Build the project for the current platform
 .PHONY: ci
 ci: test ## Run all the CI targets
 
-.PHONY: test
-test: ## Run the unit tests
+.PHONY: start-docker
+start-docker: ## Starts up docker container running TeamCity Server
 	@test -d  $(TEAMCITY_DATA_DIR) || tar xfz $(INTEGRATION_TEST_DIR)/teamcity_data.tar.gz -C $(INTEGRATION_TEST_DIR)
 	@curl -sL https://download.octopusdeploy.com/octopus-teamcity/4.42.1/Octopus.TeamCity.zip -o $(TEAMCITY_DATA_DIR)/plugins/Octopus.TeamCity.zip
 	@test -n "$$(docker ps -q -f name=$(CONTAINER_NAME))" || docker run --rm -d \
@@ -50,6 +50,9 @@ test: ## Run the unit tests
 		jetbrains/teamcity-server:$(TEAMCITY_VERSION)
 	@echo -n "Teamcity server is booting (this may take a while)..."
 	@until $$(curl -o /dev/null -sfI $(TEAMCITY_HOST)/login.html);do echo -n ".";sleep 5;done
+
+.PHONY: test
+test: start-docker ## Run the unit tests
 	@export TEAMCITY_ADDR=$(TEAMCITY_HOST) \
 		&& GO111MODULE=$(GO111MODULE) go test -v -failfast -timeout 60s ./...
 
