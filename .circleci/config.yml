@@ -25,5 +25,5 @@ jobs:
             --volumes-from data \
             jetbrains/teamcity-server:${TEAMCITY_VERSION}
             echo -n "Teamcity server is booting (this may take a while)..."
-            until $$(curl -o /dev/null -sfI ${TEAMCITY_HOST}/login.html);do echo -n ".";sleep 5;done
+            until $(curl -o /dev/null -sfI $TEAMCITY_HOST/login.html);do echo -n ".";sleep 5;done
             go test -v -failfast -timeout 180s ./...
