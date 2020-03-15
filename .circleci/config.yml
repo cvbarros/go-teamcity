@@ -5,13 +5,10 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version
       - image: circleci/golang:1.11.1
 
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      # specify any bash command here prefixed with `run: `
+      - setup_remote_docker
       - run: make test
