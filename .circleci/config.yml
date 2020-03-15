@@ -18,5 +18,5 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |
-            ./integration_tests/circleci_start_teamcity.sh
+            sh ./integration_tests/circleci_start_teamcity.sh
             go test -v -failfast -timeout 180s ./...
