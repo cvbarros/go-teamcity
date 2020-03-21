@@ -6,12 +6,12 @@ services:
   - docker
 language: go
 go:
- - "1.11.x"
+ - "1.13.x"
 env:
   global:
     - GO111MODULE=on
     - TEAMCITY_ADDR=http://localhost:8112
-    - TEAMCITY_VERSION="2018.1.3"
+    - TEAMCITY_VERSION="2019.2.2"
 
 script:
  - make test

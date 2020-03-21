@@ -1,5 +1,5 @@
 #!/bin/bash -eo pipefail
-#Grab DOCKER_HOST fro CircleCI
+#Grab DOCKER_HOST from CircleCI
 TEAMCITY_HOST=$DOCKER_HOST:8112
 
 docker create -v /data/teamcity_server/datadir --name data alpine:3.4 /bin/true
