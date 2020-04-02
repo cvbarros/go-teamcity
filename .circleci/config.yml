@@ -5,10 +5,10 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11.1
+      - image: circleci/golang:1.13.9
     environment:
       GO111MODULE: "on"
-      TEAMCITY_VERSION: "2018.1.3"
+      TEAMCITY_VERSION: "2019.2.2"
       CONTAINER_NAME: "teamcity_server"
       INTEGRATION_TEST_DIR: "integration_tests"
       TEAMCITY_DATA_DIR: "integration_tests/data_dir"

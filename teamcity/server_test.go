@@ -17,6 +17,6 @@ func TestServer_Get(t *testing.T) {
 		t.Fatalf("GetServer did not return a server or serialization failure.")
 	}
 
-	assert.Equal(t, int32(2018), server.VersionMajor)
+	assert.Equal(t, int32(2019), server.VersionMajor)
 	assert.NotEmpty(t, server.WebURL)
 }
