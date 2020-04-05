@@ -18,7 +18,7 @@ CONTAINER_NAME = teamcity_server
 INTEGRATION_TEST_DIR = integration_tests
 TEAMCITY_DATA_DIR = $(INTEGRATION_TEST_DIR)/data_dir
 TEAMCITY_HOST = http://localhost:8112
-TEAMCITY_VERSION ?= "2019.1.1"
+TEAMCITY_VERSION ?= "2019.2.2"
 GO111MODULE ?= "on"
 
 default: build
@@ -54,7 +54,7 @@ start-docker: ## Starts up docker container running TeamCity Server
 .PHONY: test
 test: start-docker ## Run the unit tests
 	@export TEAMCITY_ADDR=$(TEAMCITY_HOST) \
-		&& GO111MODULE=$(GO111MODULE) go test -v -failfast -timeout 180s ./...
+		&& GO111MODULE=$(GO111MODULE) go test -v -failfast -timeout 600s ./...
 
 .PHONY: clean
 clean: clean-code clean-docker ## Clean all resources (!DESTRUCTIVE!)
@@ -69,10 +69,6 @@ clean-docker: ## Remove the docker container if it is running
 
 .PHONY: dist
 dist: $(PLATFORMS) ## Package the project for all available platforms
-
-.PHONY: setup
-setup: ## Setup the full environment
-	dep ensure
 
 .PHONY: $(PLATFORMS)
 $(PLATFORMS): # Build the project for all available platforms

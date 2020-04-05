@@ -37,8 +37,9 @@ func TestClient_BasicAuth(t *testing.T) {
 
 func TestClient_TokenAuth(t *testing.T) {
 	t.Run("Token auth works against local instance", func(t *testing.T) {
+		//This token was created for user 'admin' on the pre-warmed integration testing server. It is named 'integration_tests'
 		client, err := teamcity.NewClient(
-			teamcity.TokenAuth("eyJ0eXAiOiAiVENWMiJ9.WG1YWklkazNHX1BnSjZ3TDVyYkhULWdaMGR3.NjhkM2FmNzctYjhmZS00N2U4LWI0MzYtZDFkOGJkMjU2Njdh"),
+			teamcity.TokenAuth("eyJ0eXAiOiAiVENWMiJ9.bWZ3QWswa1ViWk5CUFlrRC1GQUVYQkM1cmZz.ODViNDA2MDctZmFkNS00YTc0LTlmYTgtM2MwMzkxMmY2ZGY5"),
 			http.DefaultClient)
 		if err != nil {
 			t.Fatalf("Error when connecting to server: %s", err)
