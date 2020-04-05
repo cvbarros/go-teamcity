@@ -18,13 +18,18 @@ import teamcity "github.com/cvbarros/go-teamcity"
 Construct a new Teamcity client with a default `http.Client` for the server at the `TEAMCITY_ADDR` environment variable, then use the various services exposed by the client to use TeamCity API's features.
 
 ```go
-client := teamcity.New("admin", "admin", http.DefaultClient)
-
+client := teamcity.NewClient(teamcity.BasicAuth("admin", "admin"), http.DefaultClient)
+```
+or
+```go
+client := teamcity.NewClient(teamcity.TokenAuth("token"), http.DefaultClient)
+``` 
+```go
 // retrieve a project identified 'myproject', using the id: locator
 project,  err := client.Projects.GetById("myproject")
 ```
 
-> You may also use an `teamcity.NewWithAddress(...)` to explicitly provide the server address.
+> You may also use an `teamcity.NewClientWithAddress(...)` to explicitly provide the server address.
 
 ### Examples ###
 

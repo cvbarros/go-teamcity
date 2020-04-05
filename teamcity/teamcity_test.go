@@ -19,7 +19,7 @@ const (
 )
 
 func setup() *teamcity.Client {
-	client, _ := teamcity.New("admin", "admin", http.DefaultClient)
+	client, _ := teamcity.NewClient(teamcity.BasicAuth("admin", "admin"), http.DefaultClient)
 	return client
 }
 
@@ -35,10 +35,27 @@ func TestClient_BasicAuth(t *testing.T) {
 	})
 }
 
+func TestClient_TokenAuth(t *testing.T) {
+	t.Run("Token auth works against local instance", func(t *testing.T) {
+		client, err := teamcity.NewClient(
+			teamcity.TokenAuth("eyJ0eXAiOiAiVENWMiJ9.WG1YWklkazNHX1BnSjZ3TDVyYkhULWdaMGR3.NjhkM2FmNzctYjhmZS00N2U4LWI0MzYtZDFkOGJkMjU2Njdh"),
+			http.DefaultClient)
+		if err != nil {
+			t.Fatalf("Error when connecting to server: %s", err)
+		}
+		success, err := client.Validate()
+		if err != nil {
+			t.Fatalf("Error when validating client: %s", err)
+		}
+
+		assert.Equal(t, true, success)
+	})
+}
+
 func TestClient_Address(t *testing.T) {
 	t.Run("Specify address from alternate constructor", func(t *testing.T) {
 		address := os.Getenv("TEAMCITY_ADDR")
-		client, err := teamcity.NewWithAddress("admin", "admin", address, http.DefaultClient)
+		client, err := teamcity.NewClientWithAddress(teamcity.BasicAuth("admin", "admin"), address, http.DefaultClient)
 		require.NoError(t, err)
 		success, err := client.Validate()
 		if err != nil {
