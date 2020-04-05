@@ -12,6 +12,8 @@ env:
     - GO111MODULE=on
     - TEAMCITY_ADDR=http://localhost:8112
     - TEAMCITY_VERSION="2019.2.2"
-
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y bsdtar
 script:
  - make test
