@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0]  
+
+This release is the first major release and includes an upgrade to TeamCity 2019.2.2 as the supported version.
+Whenever a major version is bumped, backwards compatibility with previous TeamCity versions aren't guaranteed.
+
+### Changes:
+- Updating to use TeamCity 2019.2.2 [#72]
+- Added support for TeamCity User Group API [#68]
+- Support token auth [#67]
+
 ## [0.5.1]
 
 ### Added
@@ -33,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 First release.
 
 [//]: # (Release links)
+[1.0.0]: https://github.com/cvbarros/go-teamcity-sdk/releases/tag/v1.0.0
 [0.5.1]: https://github.com/cvbarros/go-teamcity-sdk/releases/tag/v0.5.1
 [0.4.0]: https://github.com/cvbarros/go-teamcity-sdk/releases/tag/v0.4.0
 [0.2.0]: https://github.com/cvbarros/go-teamcity-sdk/releases/tag/v0.2.0
@@ -40,3 +51,6 @@ First release.
 
 [//]: # (Issue/PR links)
 [#53]: https://github.com/cvbarros/go-teamcity-sdk/pull/53
+[#67]: https://github.com/cvbarros/go-teamcity/pull/67
+[#68]: https://github.com/cvbarros/go-teamcity/pull/68
+[#72]: https://github.com/cvbarros/go-teamcity/pull/72
