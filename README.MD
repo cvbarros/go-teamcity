@@ -1,6 +1,6 @@
 # go-teamcity #
 
-[![GoDoc](https://godoc.org/github.com/cvbarros/go-teamcity/github?status.svg)](https://godoc.org/github.com/cvbarros/go-teamcity) [![Build Status](https://travis-ci.org/cvbarros/go-teamcity.svg?branch=master)](https://travis-ci.org/cvbarros/go-teamcity)
+[![GoDoc](https://godoc.org/github.com/cvbarros/go-teamcity/github?status.svg)](https://godoc.org/github.com/cvbarros/go-teamcity) [![Build Status](https://travis-ci.com/cvbarros/go-teamcity.svg?branch=master)](https://travis-ci.com/cvbarros/go-teamcity)
 
 go-teamcity is a Go client library interacting with Jetbrain's [TeamCity CI server REST API](https://confluence.jetbrains.com/display/TCD10/REST+API).
 Currently, supported API version is TeamCity 2018.1.3 or up.
