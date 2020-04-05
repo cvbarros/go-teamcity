@@ -2,7 +2,7 @@ package teamcity
 
 import "net/url"
 
-//Locator represents a arbitraty locator to be used when querying resources, such as id: or type:
+//Locator represents a arbitraty locator to be used when querying resources, such as id:, type:, or key:
 //These are used in GET requests within the URL so must be properly escaped
 type Locator string
 
@@ -14,6 +14,11 @@ func LocatorID(id string) Locator {
 //LocatorName creates a locator for Project/BuildType by Name
 func LocatorName(name string) Locator {
 	return Locator(url.QueryEscape("name:") + url.PathEscape(name))
+}
+
+//LocatorKey creates a locator for Group by Key
+func LocatorKey(key string) Locator {
+	return Locator(url.QueryEscape("key:") + url.PathEscape(key))
 }
 
 func (l Locator) String() string {
