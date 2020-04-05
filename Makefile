@@ -40,7 +40,7 @@ ci: test ## Run all the CI targets
 
 .PHONY: start-docker
 start-docker: ## Starts up docker container running TeamCity Server
-	@test -d  $(TEAMCITY_DATA_DIR) || tar xfz $(INTEGRATION_TEST_DIR)/teamcity_data.tar.gz -C $(INTEGRATION_TEST_DIR)
+	@test -d  $(TEAMCITY_DATA_DIR) || tar --warning=no-unknown-keyword -xfz $(INTEGRATION_TEST_DIR)/teamcity_data.tar.gz -C $(INTEGRATION_TEST_DIR)
 	@curl -sL https://download.octopusdeploy.com/octopus-teamcity/4.42.1/Octopus.TeamCity.zip -o $(TEAMCITY_DATA_DIR)/plugins/Octopus.TeamCity.zip
 	@test -n "$$(docker ps -q -f name=$(CONTAINER_NAME))" || docker run --rm -d \
 		--name $(CONTAINER_NAME) \
