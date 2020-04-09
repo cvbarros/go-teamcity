@@ -3,6 +3,7 @@ package teamcity
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -47,7 +48,12 @@ func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*Sna
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d", resp.StatusCode)
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf(("unable to read response body %v", err)
+		}
+		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d, response: %v", resp.StatusCode, string(body))
 	}
 	out.BuildTypeID = s.BuildTypeID
 	return &out, nil
@@ -67,7 +73,12 @@ func (s *DependencyService) AddArtifactDependency(dep *ArtifactDependency) (*Art
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Unknown error when adding artifact dependency, statusCode: %d", resp.StatusCode)
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf(("unable to read response body %v", err)
+		}
+		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d, response: %v", resp.StatusCode, string(body))
 	}
 
 	out.SetBuildTypeID(s.BuildTypeID)
