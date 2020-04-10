@@ -51,7 +51,7 @@ func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*Sna
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf(("unable to read response body %v", err)
+			return nil, fmt.Errorf("Unable to read response body: %v", err)
 		}
 		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d, response: %v", resp.StatusCode, string(body))
 	}
@@ -76,7 +76,7 @@ func (s *DependencyService) AddArtifactDependency(dep *ArtifactDependency) (*Art
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf(("unable to read response body %v", err)
+			return nil, fmt.Errorf("Unable to read response body: %v", err)
 		}
 		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d, response: %v", resp.StatusCode, string(body))
 	}
