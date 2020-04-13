@@ -37,23 +37,22 @@ func NewDependencyService(buildTypeID string, c *http.Client, base *sling.Sling)
 //AddSnapshotDependency adds a new snapshot dependency to build type
 func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*SnapshotDependency, error) {
 	var out SnapshotDependency
+	var depError interface{}
 	if dep == nil {
 		return nil, errors.New("dep can't be nil")
 	}
 
-	resp, err := s.snapshotSling.New().Post("").BodyJSON(dep).ReceiveSuccess(&out)
+	resp, err := s.snapshotSling.New().Post("").BodyJSON(dep).Receive(&out, &depError)
+	if err == nil && depError != nil{
+		err = fmt.Errorf("error encountered fetching dependency: %v", depError)
+	}
 
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("Unable to read response body: %v", err)
-		}
-		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d, response: %v", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d", resp.StatusCode)
 	}
 	out.BuildTypeID = s.BuildTypeID
 	return &out, nil
@@ -62,23 +61,22 @@ func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*Sna
 //AddArtifactDependency adds a new artifact dependency to build type
 func (s *DependencyService) AddArtifactDependency(dep *ArtifactDependency) (*ArtifactDependency, error) {
 	var out ArtifactDependency
+	var depError interface{}
 	if dep == nil {
 		return nil, errors.New("dep can't be nil")
 	}
 
-	resp, err := s.artifactSling.New().Post("").BodyJSON(dep).ReceiveSuccess(&out)
+	resp, err := s.snapshotSling.New().Post("").BodyJSON(dep).Receive(&out, &depError)
+	if err == nil && depError != nil{
+		err = fmt.Errorf("error encountered fetching dependency: %v", depError)
+	}
 
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("Unable to read response body: %v", err)
-		}
-		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d, response: %v", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d", resp.StatusCode)
 	}
 
 	out.SetBuildTypeID(s.BuildTypeID)
