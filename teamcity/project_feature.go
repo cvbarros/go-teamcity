@@ -52,8 +52,8 @@ func newProjectFeatureService(projectID string, c *http.Client, sling *sling.Sli
 	}
 }
 
-// Create a new ProjectFeature under the current project.
-func (s *ProjectFeatureService) Create(feature ProjectFeature) (ProjectFeature, error) {
+// Put creates or updates a ProjectFeature under the current project.
+func (s *ProjectFeatureService) Put(feature ProjectFeature) (ProjectFeature, error) {
 	if feature == nil {
 		return nil, errors.New("feature is nil")
 	}

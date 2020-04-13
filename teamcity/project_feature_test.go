@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestProjectFeature_Create(t *testing.T) {
+func TestProjectFeature_CreateKotlin(t *testing.T) {
 	client := safeSetup(t)
 
 	project := createTestProjectWithImplicitName(t, client)
@@ -18,15 +18,63 @@ func TestProjectFeature_Create(t *testing.T) {
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
-		Format:        "kotlin",
+		Format:        teamcity.VersionedSettingsFormatKotlin,
 		VcsRootID:     createdRoot.ID,
-		BuildSettings: "PREFER_VCS",
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Create(feature)
+	createdFeature, err := service.Put(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 }
+
+func TestProjectFeature_CreateXML(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project)
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatXML,
+		VcsRootID:     createdRoot.ID,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+	})
+
+	createdFeature, err := service.Put(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+}
+
+func TestProjectFeature_Update(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project)
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatXML,
+		VcsRootID:     createdRoot.ID,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferCurrent,
+	})
+
+	createdFeature, err := service.Put(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+
+	feature.Options.Format = teamcity.VersionedSettingsFormatKotlin
+	feature.Options.BuildSettings = teamcity.VersionedSettingsBuildSettingsPreferVcs
+
+	updatedFeature, err := service.Put(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, updatedFeature.ID)
+}
+
 func TestProjectFeature_GetEmptyFeatures(t *testing.T) {
 	client := safeSetup(t)
 
@@ -54,7 +102,7 @@ func TestProjectFeature_GetWithOneCreatedFeature(t *testing.T) {
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Create(feature)
+	createdFeature, err := service.Put(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 
@@ -78,7 +126,7 @@ func TestProjectFeature_GetByIdWithCreatedFeature(t *testing.T) {
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Create(feature)
+	createdFeature, err := service.Put(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 
