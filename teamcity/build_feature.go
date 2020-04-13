@@ -15,8 +15,6 @@ type BuildFeature interface {
 	ID() string
 	SetID(value string)
 	Type() string
-	VcsRootID() string
-	SetVcsRootID(value string)
 	Properties() *Properties
 	BuildTypeID() string
 	SetBuildTypeID(value string)
@@ -33,7 +31,6 @@ type buildFeatureJSON struct {
 	Inherited  *bool       `json:"inherited,omitempty" xml:"inherited"`
 	Properties *Properties `json:"properties,omitempty"`
 	Type       string      `json:"type,omitempty" xml:"type"`
-	VcsRootID  string      `json:"vcsRootId,omitempty" xml:"vcsRootId"`
 }
 
 // Features is a collection of BuildFeature
@@ -145,12 +142,14 @@ func (s *BuildFeatureService) readBuildFeatureResponse(resp *http.Response) (Bui
 	var out BuildFeature
 	switch payload.Type {
 	case "commit-status-publisher":
-		var csp FeatureCommitStatusPublisher
-		if err := csp.UnmarshalJSON(bodyBytes); err != nil {
-			return nil, err
-		}
+		{
+			var csp FeatureCommitStatusPublisher
+			if err := csp.UnmarshalJSON(bodyBytes); err != nil {
+				return nil, err
+			}
 
-		out = &csp
+			out = &csp
+		}
 	default:
 		return nil, fmt.Errorf("Unsupported build feature type: '%s' (id:'%s') for buildTypeID: %s", payload.Type, payload.ID, s.BuildTypeID)
 	}
