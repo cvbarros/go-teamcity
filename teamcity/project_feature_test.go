@@ -14,7 +14,7 @@ func TestProjectFeature_CreateKotlin(t *testing.T) {
 	project := createTestProjectWithImplicitName(t, client)
 	defer cleanUpProject(t, client, project.ID)
 
-	createdRoot := setupFakeRoot(t, client, project)
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
@@ -34,7 +34,7 @@ func TestProjectFeature_CreateXML(t *testing.T) {
 	project := createTestProjectWithImplicitName(t, client)
 	defer cleanUpProject(t, client, project.ID)
 
-	createdRoot := setupFakeRoot(t, client, project)
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
@@ -54,7 +54,7 @@ func TestProjectFeature_Delete(t *testing.T) {
 	project := createTestProjectWithImplicitName(t, client)
 	defer cleanUpProject(t, client, project.ID)
 
-	createdRoot := setupFakeRoot(t, client, project)
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
@@ -81,7 +81,7 @@ func TestProjectFeature_Update(t *testing.T) {
 	project := createTestProjectWithImplicitName(t, client)
 	defer cleanUpProject(t, client, project.ID)
 
-	createdRoot := setupFakeRoot(t, client, project)
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
@@ -176,6 +176,46 @@ func TestProjectFeature_Update(t *testing.T) {
 	}
 }
 
+func TestProjectFeature_UpdateVCSRoot(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project, "First Root")
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatXML,
+		VcsRootID:     createdRoot.ID,
+		Enabled:       true,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferCurrent,
+	})
+
+	createdFeature, err := service.Create(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+
+	updatedRoot := setupFakeRoot(t, client, project, "Second Root")
+	existing, err := service.GetByID(createdFeature.ID())
+	require.NoError(t, err)
+
+	existingFeatures, ok := existing.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.True(t, ok)
+	assert.Equal(t, createdRoot.ID, existingFeatures.Options.VcsRootID)
+	existingFeatures.Options.VcsRootID = updatedRoot.ID
+
+	_, err = service.Update(existingFeatures)
+	require.NoError(t, err)
+
+	existing, err = service.GetByID(createdFeature.ID())
+	require.NoError(t, err)
+
+	existingFeatures, ok = existing.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.True(t, ok)
+	assert.Equal(t, updatedRoot.ID, existingFeatures.Options.VcsRootID)
+}
+
 func TestProjectFeature_GetEmptyFeatures(t *testing.T) {
 	client := safeSetup(t)
 
@@ -194,7 +234,7 @@ func TestProjectFeature_GetWithOneCreatedFeature(t *testing.T) {
 	project := createTestProjectWithImplicitName(t, client)
 	defer cleanUpProject(t, client, project.ID)
 
-	createdRoot := setupFakeRoot(t, client, project)
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
@@ -218,7 +258,7 @@ func TestProjectFeature_GetByIdWithCreatedFeature(t *testing.T) {
 	project := createTestProjectWithImplicitName(t, client)
 	defer cleanUpProject(t, client, project.ID)
 
-	createdRoot := setupFakeRoot(t, client, project)
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
 	service := client.ProjectFeatureService(project.ID)
 
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
@@ -250,11 +290,11 @@ func TestProjectFeature_GetByIdWithFeatureNotExisting(t *testing.T) {
 	assert.Contains(t, err.Error(), "404")
 }
 
-func setupFakeRoot(t *testing.T, client *teamcity.Client, project *teamcity.Project) *teamcity.VcsRootReference {
+func setupFakeRoot(t *testing.T, client *teamcity.Client, project *teamcity.Project, name string) *teamcity.VcsRootReference {
 	rootOptions, err := teamcity.NewGitVcsRootOptionsDefaults("master", "git@test.com")
 	require.NoError(t, err)
 
-	root, err := teamcity.NewGitVcsRoot(project.ID, "Test Root", rootOptions)
+	root, err := teamcity.NewGitVcsRoot(project.ID, name, rootOptions)
 	require.NoError(t, err)
 
 	createdRoot, err := client.VcsRoots.Create(project.ID, root)
