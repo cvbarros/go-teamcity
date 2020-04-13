@@ -3,6 +3,7 @@ package teamcity
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // VersionedSettingsFormat represents the supported formats for the versioned settings project feature.
@@ -41,7 +42,6 @@ type ProjectFeatureVersionedSettingsOptions struct {
 // Can be used to configure https://confluence.jetbrains.com/display/TCD10/Storing+Project+Settings+in+Version+Control.
 type ProjectFeatureVersionedSettings struct {
 	id        string
-	disabled  bool
 	projectID string
 
 	Options ProjectFeatureVersionedSettingsOptions
@@ -80,16 +80,6 @@ func (f *ProjectFeatureVersionedSettings) SetProjectID(value string) {
 	f.projectID = value
 }
 
-// Disabled indicates whether this project feature is disabled.
-func (f *ProjectFeatureVersionedSettings) Disabled() bool {
-	return f.disabled
-}
-
-// SetDisabled sets the disabled state of this project feature.
-func (f *ProjectFeatureVersionedSettings) SetDisabled(value bool) {
-	f.disabled = value
-}
-
 // Properties returns all properties for the versioned settings project feature.
 func (f *ProjectFeatureVersionedSettings) Properties() *Properties {
 	return NewProperties(
@@ -109,12 +99,17 @@ func loadProjectFeatureVersionedSettings(projectID string, feature projectFeatur
 		Options:   ProjectFeatureVersionedSettingsOptions{},
 	}
 
-	if feature.Disabled != nil {
-		settings.disabled = *feature.Disabled
-	}
-
 	if encodedValue, ok := feature.Properties.GetOk("buildSettings"); ok {
 		settings.Options.BuildSettings = VersionedSettingsBuildSettings(encodedValue)
+	}
+
+	if encodedValue, ok := feature.Properties.GetOk("enabled"); ok {
+		v, err := strconv.ParseBool(encodedValue)
+		if err != nil {
+			return nil, err
+		}
+
+		settings.Options.Enabled = v
 	}
 
 	if encodedValue, ok := feature.Properties.GetOk("format"); ok {

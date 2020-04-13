@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: Delete
+
 func TestProjectFeature_CreateKotlin(t *testing.T) {
 	client := safeSetup(t)
 
@@ -23,7 +25,7 @@ func TestProjectFeature_CreateKotlin(t *testing.T) {
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Put(feature)
+	createdFeature, err := service.Create(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 }
@@ -43,7 +45,7 @@ func TestProjectFeature_CreateXML(t *testing.T) {
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Put(feature)
+	createdFeature, err := service.Create(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 }
@@ -60,19 +62,93 @@ func TestProjectFeature_Update(t *testing.T) {
 	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
 		Format:        teamcity.VersionedSettingsFormatXML,
 		VcsRootID:     createdRoot.ID,
+		Enabled:       true,
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferCurrent,
 	})
 
-	createdFeature, err := service.Put(feature)
+	createdFeature, err := service.Create(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 
-	feature.Options.Format = teamcity.VersionedSettingsFormatKotlin
-	feature.Options.BuildSettings = teamcity.VersionedSettingsBuildSettingsPreferVcs
+	var validate = func(t *testing.T, id string, enabled bool, buildSettings teamcity.VersionedSettingsBuildSettings, format teamcity.VersionedSettingsFormat) {
+		retrievedFeature, err := service.GetByID(id)
+		require.NoError(t, err)
+		versionedSettings, ok := retrievedFeature.(*teamcity.ProjectFeatureVersionedSettings)
+		assert.True(t, ok)
 
-	updatedFeature, err := service.Put(feature)
-	require.NoError(t, err)
-	assert.NotEmpty(t, updatedFeature.ID)
+		assert.Equal(t, enabled, versionedSettings.Options.Enabled)
+		assert.Equal(t, buildSettings, versionedSettings.Options.BuildSettings)
+		assert.Equal(t, format, versionedSettings.Options.Format)
+	}
+	t.Log("Validating initial creation")
+	validate(t, createdFeature.ID(), true, teamcity.VersionedSettingsBuildSettingsPreferCurrent, teamcity.VersionedSettingsFormatXML)
+
+	// then let's toggle some things
+	updateConfigurations := []struct {
+		description   string
+		enabled       bool
+		buildSettings teamcity.VersionedSettingsBuildSettings
+		format        teamcity.VersionedSettingsFormat
+	}{
+		{
+			description:   "Switch to Kotlin",
+			enabled:       true,
+			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+			format:        teamcity.VersionedSettingsFormatKotlin,
+		},
+		{
+			description:   "Switch back to XML",
+			enabled:       true,
+			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+			format:        teamcity.VersionedSettingsFormatXML,
+		},
+		{
+			description:   "Disabled",
+			enabled:       false,
+			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+			format:        teamcity.VersionedSettingsFormatXML,
+		},
+		{
+			description:   "Enabled & Prefer Current",
+			enabled:       true,
+			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferCurrent,
+			format:        teamcity.VersionedSettingsFormatXML,
+		},
+		{
+			description:   "Always Use Current",
+			enabled:       true,
+			buildSettings: teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
+			format:        teamcity.VersionedSettingsFormatXML,
+		},
+		{
+			description:   "Kotlin",
+			enabled:       true,
+			buildSettings: teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
+			format:        teamcity.VersionedSettingsFormatXML,
+		},
+	}
+	for _, update := range updateConfigurations {
+		t.Logf("Testing %q", update.description)
+
+		existing, err := service.GetByID(createdFeature.ID())
+		require.NoError(t, err)
+
+		settings, ok := existing.(*teamcity.ProjectFeatureVersionedSettings)
+		assert.True(t, ok)
+
+		settings.Options.BuildSettings = update.buildSettings
+		settings.Options.Enabled = update.enabled
+		settings.Options.Format = update.format
+
+		updatedFeature, err := service.Update(settings)
+		require.NoError(t, err)
+		assert.NotEmpty(t, updatedFeature.ID)
+
+		// sanity check since we're updating with the same ID
+		assert.Equal(t, createdFeature.ID(), updatedFeature.ID())
+
+		validate(t, updatedFeature.ID(), update.enabled, update.buildSettings, update.format)
+	}
 }
 
 func TestProjectFeature_GetEmptyFeatures(t *testing.T) {
@@ -102,7 +178,7 @@ func TestProjectFeature_GetWithOneCreatedFeature(t *testing.T) {
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Put(feature)
+	createdFeature, err := service.Create(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 
@@ -126,7 +202,7 @@ func TestProjectFeature_GetByIdWithCreatedFeature(t *testing.T) {
 		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
 	})
 
-	createdFeature, err := service.Put(feature)
+	createdFeature, err := service.Create(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 

@@ -18,17 +18,12 @@ type ProjectFeature interface {
 	ProjectID() string
 	SetProjectID(value string)
 
-	Disabled() bool
-	SetDisabled(value bool)
-
 	Properties() *Properties
 }
 
 type projectFeatureJSON struct {
 	ID         string      `json:"id,omitempty" xml:"id"`
 	Type       string      `json:"type,omitempty" xml:"type"`
-	Disabled   *bool       `json:"disabled,omitempty" xml:"disabled"`
-	Inherited  *bool       `json:"inherited,omitempty" xml:"inherited"`
 	Href       string      `json:"href,omitempty" xml:"href"`
 	Properties *Properties `json:"properties,omitempty"`
 }
@@ -52,8 +47,8 @@ func newProjectFeatureService(projectID string, c *http.Client, sling *sling.Sli
 	}
 }
 
-// Put creates or updates a ProjectFeature under the current project.
-func (s *ProjectFeatureService) Put(feature ProjectFeature) (ProjectFeature, error) {
+// Create creates a new ProjectFeature under the current project.
+func (s *ProjectFeatureService) Create(feature ProjectFeature) (ProjectFeature, error) {
 	if feature == nil {
 		return nil, errors.New("feature is nil")
 	}
@@ -63,7 +58,6 @@ func (s *ProjectFeatureService) Put(feature ProjectFeature) (ProjectFeature, err
 
 	requestBody := &projectFeatureJSON{
 		Type:       feature.Type(),
-		Disabled:   NewBool(feature.Disabled()),
 		Properties: feature.Properties(),
 	}
 	createdProjectFeature := &projectFeatureJSON{}
@@ -108,6 +102,29 @@ func (s *ProjectFeatureService) GetByID(id string) (ProjectFeature, error) {
 	}
 
 	return s.parseProjectFeatureJSONResponse(out)
+}
+
+// Update updated an existing a ProjectFeature under the current project.
+func (s *ProjectFeatureService) Update(feature ProjectFeature) (ProjectFeature, error) {
+	if feature == nil {
+		return nil, errors.New("feature is nil")
+	}
+	if feature.ProjectID() != s.ProjectID {
+		return nil, errors.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q.", feature.ProjectID(), s.ProjectID)
+	}
+
+	requestBody := &projectFeatureJSON{
+		Type:       feature.Type(),
+		Properties: feature.Properties(),
+	}
+	updatedProjectFeature := &projectFeatureJSON{}
+
+	url := fmt.Sprintf("projects/%s/projectFeatures/%s", s.ProjectID, feature.ID())
+	if err := s.restHelper.put(url, &requestBody, updatedProjectFeature, "projectFeature"); err != nil {
+		return nil, err
+	}
+
+	return s.parseProjectFeatureJSONResponse(*updatedProjectFeature)
 }
 
 func (s *ProjectFeatureService) parseProjectFeatureJSONResponse(feature projectFeatureJSON) (ProjectFeature, error) {
