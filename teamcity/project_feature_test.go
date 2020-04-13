@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: Delete
-
 func TestProjectFeature_CreateKotlin(t *testing.T) {
 	client := safeSetup(t)
 
@@ -48,6 +46,33 @@ func TestProjectFeature_CreateXML(t *testing.T) {
 	createdFeature, err := service.Create(feature)
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
+}
+
+func TestProjectFeature_Delete(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project)
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatXML,
+		VcsRootID:     createdRoot.ID,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+	})
+
+	createdFeature, err := service.Create(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+
+	err = service.Delete(createdFeature.ID())
+	require.NoError(t, err)
+
+	deletedFeature, err := service.GetByID(createdFeature.ID())
+	assert.NotNil(t, err)
+	assert.Nil(t, deletedFeature)
 }
 
 func TestProjectFeature_Update(t *testing.T) {

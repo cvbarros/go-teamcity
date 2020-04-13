@@ -70,6 +70,16 @@ func (s *ProjectFeatureService) Create(feature ProjectFeature) (ProjectFeature, 
 	return s.parseProjectFeatureJSONResponse(*createdProjectFeature)
 }
 
+// Delete removes a single ProjectFeature for the current project by it's id.
+func (s *ProjectFeatureService) Delete(id string) error {
+	url := fmt.Sprintf("projects/%s/projectFeatures/%s", s.ProjectID, id)
+	if err := s.restHelper.delete(url, "projectFeature"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Get all project features for the current project.
 func (s *ProjectFeatureService) Get() ([]ProjectFeature, error) {
 	var out projectFeatures
