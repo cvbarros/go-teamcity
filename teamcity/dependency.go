@@ -3,7 +3,6 @@ package teamcity
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/dghubble/sling"
