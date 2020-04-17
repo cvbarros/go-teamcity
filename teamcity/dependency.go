@@ -36,12 +36,12 @@ func NewDependencyService(buildTypeID string, c *http.Client, base *sling.Sling)
 //AddSnapshotDependency adds a new snapshot dependency to build type
 func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*SnapshotDependency, error) {
 	var out SnapshotDependency
-	var depError interface{}
+	var depError string
 	if dep == nil {
 		return nil, errors.New("dep can't be nil")
 	}
 
-	resp, err := s.snapshotSling.New().Post("").BodyJSON(dep).Receive(&out, &depError)
+	resp, err := s.snapshotSling.New().ResponseDecoder(responseDecoder{}).Post("").BodyJSON(dep).Receive(&out, &depError)
 	if err != nil {
 		return nil, err
 	}
@@ -56,12 +56,12 @@ func (s *DependencyService) AddSnapshotDependency(dep *SnapshotDependency) (*Sna
 //AddArtifactDependency adds a new artifact dependency to build type
 func (s *DependencyService) AddArtifactDependency(dep *ArtifactDependency) (*ArtifactDependency, error) {
 	var out ArtifactDependency
-	var depError interface{}
+	var depError string
 	if dep == nil {
 		return nil, errors.New("dep can't be nil")
 	}
 
-	resp, err := s.snapshotSling.New().Post("").BodyJSON(dep).Receive(&out, &depError)
+	resp, err := s.snapshotSling.New().ResponseDecoder(responseDecoder{}).Post("").BodyJSON(dep).Receive(&out, &depError)
 	if err != nil {
 		return nil, err
 	}
