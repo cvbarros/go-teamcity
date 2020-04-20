@@ -32,7 +32,7 @@ func (suite *SuiteBuildFeature) SetupTest() {
 }
 
 func (suite *SuiteBuildFeature) TearDownTest() {
-	// suite.BuildTypeContext.Teardown()
+	suite.BuildTypeContext.Teardown()
 }
 
 func (suite *SuiteBuildFeature) Service() *teamcity.BuildFeatureService {
