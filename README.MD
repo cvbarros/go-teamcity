@@ -2,12 +2,12 @@
 
 [![GoDoc](https://godoc.org/github.com/cvbarros/go-teamcity/github?status.svg)](https://godoc.org/github.com/cvbarros/go-teamcity) [![Build Status](https://travis-ci.com/cvbarros/go-teamcity.svg?branch=master)](https://travis-ci.com/cvbarros/go-teamcity)
 
-go-teamcity is a Go client library interacting with Jetbrain's [TeamCity CI server REST API](https://confluence.jetbrains.com/display/TCD10/REST+API).
-Currently, supported API version is TeamCity 2018.1.3 or up.
+_go-teamcity_ is a Go client library interacting with Jetbrain's [TeamCity CI server REST API](https://confluence.jetbrains.com/display/TCD10/REST+API).  
+Currently, guaranteed supported API version (on CI tests) is **TeamCity 2019.2.2 or up**.
 
 ## Motivation ##
 go-teamcity is intended for automating Jetbrain's TeamCity tasks and configurations using Go.
-It is also the client library used in [TeamCity Provider](https://github.com/cvbarros/terraform-provider-teamcity), a [Hashicorp's Terraform](https://www.terraform.io) custom provider to configure TeamCity fully in code.
+It is also the client library used in [TeamCity Provider](https://github.com/cvbarros/terraform-provider-teamcity), a [Hashicorp's Terraform](https://www.terraform.io) custom provider to configure TeamCity as code.
 
 ## Usage ##
 
@@ -35,9 +35,15 @@ project,  err := client.Projects.GetById("myproject")
 
 For now, [integration tests](https://github.com/cvbarros/go-teamcity/search?q=filename%3A*_test.go&unscoped_q=filename%3A*_test.go) are the best examples on how to use the library to interact with the several services.
 
-## Project Status ##
+## Other Information ##
 
-This project is under heavy development for now. We follow [semantic versioning](https://semver.org) conventions, meaning that the public API compability under `1.0` is suitable to change without prior notice.
+We follow [semantic versioning](https://semver.org) conventions. Thus releases are tagged in the `<major>.<minor>.<patch>` format, meaning:
+
+- Public API breaking changes or major TeamCity version support (2018, 2019, etc) **MUST** increment the `major` version.
+- Features and considerable refactorings without breaking compatibility should increment the `minor`.
+- Bugfixes and minor patches should increment `patch`
+
+All changes released are documented on the [CHANGELOG](CHANGELOG.MD).  
 
 Issues, contributions and feature requests are welcome, please see [contributing](CONTRIBUTING.MD) for guidance on how to get involved.
 
