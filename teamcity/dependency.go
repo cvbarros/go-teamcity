@@ -61,13 +61,13 @@ func (s *DependencyService) AddArtifactDependency(dep *ArtifactDependency) (*Art
 		return nil, errors.New("dep can't be nil")
 	}
 
-	resp, err := s.snapshotSling.New().ResponseDecoder(responseDecoder{}).Post("").BodyJSON(dep).Receive(&out, &depError)
+	resp, err := s.artifactSling.New().ResponseDecoder(responseDecoder{}).Post("").BodyJSON(dep).Receive(&out, &depError)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Unknown error when adding snapshot dependency, statusCode: %d with the error: %v", resp.StatusCode, depError)
+		return nil, fmt.Errorf("Unknown error when adding artifact dependency, statusCode: %d with the error: %v", resp.StatusCode, depError)
 	}
 
 	out.SetBuildTypeID(s.BuildTypeID)
