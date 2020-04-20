@@ -25,3 +25,6 @@ integration_tests/log_dir/
 
 #OSX
 .DS_Store
+
+# vendor folders aren't needed in libraries
+vendor/
