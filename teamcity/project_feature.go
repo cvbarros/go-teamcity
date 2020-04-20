@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/dghubble/sling"
-	"github.com/pkg/errors"
 )
 
 // The ProjectFeature interface represents the different types of features that can be added to a project.
@@ -50,10 +49,10 @@ func newProjectFeatureService(projectID string, c *http.Client, sling *sling.Sli
 // Create creates a new ProjectFeature under the current project.
 func (s *ProjectFeatureService) Create(feature ProjectFeature) (ProjectFeature, error) {
 	if feature == nil {
-		return nil, errors.New("feature is nil")
+		return nil, fmt.Errorf("feature is nil")
 	}
 	if feature.ProjectID() != s.ProjectID {
-		return nil, errors.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q.", feature.ProjectID(), s.ProjectID)
+		return nil, fmt.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q.", feature.ProjectID(), s.ProjectID)
 	}
 
 	requestBody := &projectFeatureJSON{
@@ -117,10 +116,10 @@ func (s *ProjectFeatureService) GetByID(id string) (ProjectFeature, error) {
 // Update updated an existing a ProjectFeature under the current project.
 func (s *ProjectFeatureService) Update(feature ProjectFeature) (ProjectFeature, error) {
 	if feature == nil {
-		return nil, errors.New("feature is nil")
+		return nil, fmt.Errorf("feature is nil")
 	}
 	if feature.ProjectID() != s.ProjectID {
-		return nil, errors.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q.", feature.ProjectID(), s.ProjectID)
+		return nil, fmt.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q.", feature.ProjectID(), s.ProjectID)
 	}
 
 	requestBody := &projectFeatureJSON{
@@ -142,6 +141,6 @@ func (s *ProjectFeatureService) parseProjectFeatureJSONResponse(feature projectF
 	case "versionedSettings":
 		return loadProjectFeatureVersionedSettings(s.ProjectID, feature)
 	default:
-		return nil, errors.Errorf("Unknown project feature type %q", feature.Type)
+		return nil, fmt.Errorf("Unknown project feature type %q", feature.Type)
 	}
 }
