@@ -95,61 +95,83 @@ func TestProjectFeature_Update(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 
-	var validate = func(t *testing.T, id string, enabled bool, buildSettings teamcity.VersionedSettingsBuildSettings, format teamcity.VersionedSettingsFormat) {
+	type testData = struct {
+		description     string
+		enabled         bool
+		buildSettings   teamcity.VersionedSettingsBuildSettings
+		format          teamcity.VersionedSettingsFormat
+		credentialsType teamcity.CredentialsStorageType
+	}
+
+	var validate = func(t *testing.T, id string, data testData) {
 		retrievedFeature, err := service.GetByID(id)
 		require.NoError(t, err)
 		versionedSettings, ok := retrievedFeature.(*teamcity.ProjectFeatureVersionedSettings)
 		assert.True(t, ok)
 
-		assert.Equal(t, enabled, versionedSettings.Options.Enabled)
-		assert.Equal(t, buildSettings, versionedSettings.Options.BuildSettings)
-		assert.Equal(t, format, versionedSettings.Options.Format)
+		assert.Equal(t, data.enabled, versionedSettings.Options.Enabled)
+		assert.Equal(t, data.buildSettings, versionedSettings.Options.BuildSettings)
+		assert.Equal(t, data.format, versionedSettings.Options.Format)
+		assert.Equal(t, data.credentialsType, versionedSettings.Options.CredentialsStorageType)
 	}
 	t.Log("Validating initial creation")
-	validate(t, createdFeature.ID(), true, teamcity.VersionedSettingsBuildSettingsPreferCurrent, teamcity.VersionedSettingsFormatXML)
+	validate(t, createdFeature.ID(), testData{
+		enabled:         true,
+		credentialsType: teamcity.CredentialsStorageTypeScrambledInVcs,
+		format:          teamcity.VersionedSettingsFormatXML,
+		buildSettings:   teamcity.VersionedSettingsBuildSettingsPreferCurrent,
+	})
 
 	// then let's toggle some things
-	updateConfigurations := []struct {
-		description   string
-		enabled       bool
-		buildSettings teamcity.VersionedSettingsBuildSettings
-		format        teamcity.VersionedSettingsFormat
-	}{
+	updateConfigurations := []testData{
 		{
-			description:   "Switch to Kotlin",
-			enabled:       true,
-			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
-			format:        teamcity.VersionedSettingsFormatKotlin,
+			description:     "Switch to Kotlin",
+			enabled:         true,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsPreferVcs,
+			format:          teamcity.VersionedSettingsFormatKotlin,
+			credentialsType: teamcity.CredentialsStorageTypeCredentialsJSON,
 		},
 		{
-			description:   "Switch back to XML",
-			enabled:       true,
-			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
-			format:        teamcity.VersionedSettingsFormatXML,
+			description:     "Switch back to XML",
+			enabled:         true,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsPreferVcs,
+			format:          teamcity.VersionedSettingsFormatXML,
+			credentialsType: teamcity.CredentialsStorageTypeScrambledInVcs,
 		},
 		{
-			description:   "Disabled",
-			enabled:       false,
-			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
-			format:        teamcity.VersionedSettingsFormatXML,
+			description:     "Disabled",
+			enabled:         false,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsPreferVcs,
+			format:          teamcity.VersionedSettingsFormatXML,
+			credentialsType: teamcity.CredentialsStorageTypeScrambledInVcs,
 		},
 		{
-			description:   "Enabled & Prefer Current",
-			enabled:       true,
-			buildSettings: teamcity.VersionedSettingsBuildSettingsPreferCurrent,
-			format:        teamcity.VersionedSettingsFormatXML,
+			description:     "Enabled & Prefer Current",
+			enabled:         true,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsPreferCurrent,
+			format:          teamcity.VersionedSettingsFormatXML,
+			credentialsType: teamcity.CredentialsStorageTypeScrambledInVcs,
 		},
 		{
-			description:   "Always Use Current",
-			enabled:       true,
-			buildSettings: teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
-			format:        teamcity.VersionedSettingsFormatXML,
+			description:     "Always Use Current",
+			enabled:         true,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
+			format:          teamcity.VersionedSettingsFormatXML,
+			credentialsType: teamcity.CredentialsStorageTypeScrambledInVcs,
 		},
 		{
-			description:   "Kotlin",
-			enabled:       true,
-			buildSettings: teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
-			format:        teamcity.VersionedSettingsFormatXML,
+			description:     "Kotlin with Scrambled",
+			enabled:         true,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
+			format:          teamcity.VersionedSettingsFormatXML,
+			credentialsType: teamcity.CredentialsStorageTypeScrambledInVcs,
+		},
+		{
+			description:     "Kotlin with CredentialsJSON",
+			enabled:         true,
+			buildSettings:   teamcity.VersionedSettingsBuildSettingsAlwaysUseCurrent,
+			format:          teamcity.VersionedSettingsFormatXML,
+			credentialsType: teamcity.CredentialsStorageTypeCredentialsJSON,
 		},
 	}
 	for _, update := range updateConfigurations {
@@ -164,6 +186,7 @@ func TestProjectFeature_Update(t *testing.T) {
 		settings.Options.BuildSettings = update.buildSettings
 		settings.Options.Enabled = update.enabled
 		settings.Options.Format = update.format
+		settings.Options.CredentialsStorageType = update.credentialsType
 
 		updatedFeature, err := service.Update(settings)
 		require.NoError(t, err)
@@ -172,7 +195,7 @@ func TestProjectFeature_Update(t *testing.T) {
 		// sanity check since we're updating with the same ID
 		assert.Equal(t, createdFeature.ID(), updatedFeature.ID())
 
-		validate(t, updatedFeature.ID(), update.enabled, update.buildSettings, update.format)
+		validate(t, updatedFeature.ID(), update)
 	}
 }
 
