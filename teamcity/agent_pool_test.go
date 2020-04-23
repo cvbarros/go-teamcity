@@ -16,7 +16,7 @@ func TestAgentPools_GetDefaultProject(t *testing.T) {
 	// this is hard-coded in TeamCity so we may as well do the same
 	defaultAgentPoolId := 0
 
-	retrievedPool, err := client.AgentPools.Get(defaultAgentPoolId)
+	retrievedPool, err := client.AgentPools.GetByID(defaultAgentPoolId)
 	assert.NoError(err)
 	assert.Equal("Default", retrievedPool.Name)
 	assert.Nil(retrievedPool.MaxAgents)
@@ -35,7 +35,7 @@ func TestAgentPools_Lifecycle(t *testing.T) {
 	assert.NotEmpty(createdPool.Id)
 	assert.Equal(agentPool.Name, createdPool.Name)
 
-	retrievedPool, err := client.AgentPools.Get(createdPool.Id)
+	retrievedPool, err := client.AgentPools.GetByID(createdPool.Id)
 	assert.NoError(err)
 	assert.Equal(agentPool.Name, retrievedPool.Name)
 	assert.Nil(retrievedPool.MaxAgents)
@@ -78,7 +78,7 @@ func TestAgentPools_ProjectAssignment(t *testing.T) {
 	assert := assert.New(t)
 
 	var validateContainsProject = func(poolId int, projectId string) bool {
-		agentPool, err := client.AgentPools.Get(poolId)
+		agentPool, err := client.AgentPools.GetByID(poolId)
 		assert.NoError(err)
 
 		if agentPool.Projects == nil {
@@ -110,7 +110,7 @@ func TestAgentPools_ProjectAssignment(t *testing.T) {
 	assert.NotEmpty(createdPool.Id)
 	assert.Equal(agentPool.Name, createdPool.Name)
 
-	retrievedPool, err := client.AgentPools.Get(createdPool.Id)
+	retrievedPool, err := client.AgentPools.GetByID(createdPool.Id)
 	assert.NoError(err)
 	assert.Equal(agentPool.Name, retrievedPool.Name)
 	assert.Nil(retrievedPool.MaxAgents)
