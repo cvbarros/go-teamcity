@@ -133,6 +133,19 @@ func (s *AgentPoolsService) List() (*ListAgentPools, error) {
 	return &out, nil
 }
 
+// List returns all of the assigned Agent Pools for a specific Project
+func (s *AgentPoolsService) ListForProject(projectId string) (*ListAgentPools, error) {
+	var out ListAgentPools
+
+	locator := LocatorID(projectId) // /app/rest/agentPools/?locator=project:(id:_Root)
+	err := s.restHelper.get(fmt.Sprintf("?locator=project:(%s)", locator), &out, "Agent Pools")
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
+}
+
 // UnassignProject unassigns a Project from a Agent Pool
 func (s *AgentPoolsService) UnassignProject(poolId int, projectId string) error {
 	poolLocator := LocatorIDInt(poolId).String()
