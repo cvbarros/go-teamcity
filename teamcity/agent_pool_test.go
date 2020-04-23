@@ -32,7 +32,6 @@ func TestAgentPools_GetDefaultProjectByName(t *testing.T) {
 	assert.Equal(0, retrievedPool.Id)
 	assert.Equal("Default", retrievedPool.Name)
 	assert.Nil(retrievedPool.MaxAgents)
-	assert.True(len(retrievedPool.Projects.Project) == 1)
 }
 
 func TestAgentPools_Lifecycle(t *testing.T) {
