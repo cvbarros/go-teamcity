@@ -61,6 +61,7 @@ type Client struct {
 
 	commonBase *sling.Sling
 
+	AgentPools *AgentPoolsService
 	Projects        *ProjectService
 	BuildTypes      *BuildTypeService
 	Server          *ServerService
@@ -109,6 +110,7 @@ func newClientInstance(auth Auth, address string, httpClient *http.Client) (*Cli
 		address:         address,
 		HTTPClient:      httpClient,
 		commonBase:      sharedClient,
+		AgentPools: newAgentPoolsService(sharedClient.New(), httpClient),
 		Projects:        newProjectService(sharedClient.New(), httpClient),
 		BuildTypes:      newBuildTypeService(sharedClient.New(), httpClient),
 		Server:          newServerService(sharedClient.New()),
