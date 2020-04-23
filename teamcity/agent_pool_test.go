@@ -1,10 +1,42 @@
 package teamcity_test
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
+	"github.com/cvbarros/go-teamcity/teamcity"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestAgentPools_Lifecycle(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+
+	agentPool := teamcity.AgentPool{
+		Name: fmt.Sprintf("test-%d", time.Now().Unix()),
+	}
+	createdPool, err := client.AgentPools.Create(agentPool)
+	assert.NoError(err)
+	assert.NotEmpty(createdPool.Id)
+	assert.Equal(agentPool.Name, createdPool.Name)
+
+	retrievedPool, err := client.AgentPools.Get(createdPool.Id)
+	assert.NoError(err)
+	assert.Equal(agentPool.Name, retrievedPool.Name)
+	assert.Nil(retrievedPool.MaxAgents)
+
+	assert.NoError(client.AgentPools.Delete(createdPool.Id))
+
+	// confirm it's gone
+	agentPools, err := client.AgentPools.List()
+	assert.NoError(err)
+	for _, pool := range agentPools.AgentPools {
+		if pool.Name == agentPool.Name {
+			t.Fatalf("Created agent pool still exists!")
+		}
+	}
+}
 
 func TestAgentPools_List(t *testing.T) {
 	client := setup()
