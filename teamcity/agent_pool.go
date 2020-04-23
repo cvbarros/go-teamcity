@@ -1,6 +1,7 @@
 package teamcity
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -56,6 +57,24 @@ func newAgentPoolsService(base *sling.Sling, client *http.Client) *AgentPoolsSer
 	}
 }
 
+// AssignProject assigns a Project to a Agent Pool
+func (s *AgentPoolsService) AssignProject(poolId int, projectId string) error {
+	var project struct {
+		ID string `json:"id" xml:"id"`
+	}
+	project.ID = projectId
+
+	var out Project
+
+	locator := LocatorIDInt(poolId).String()
+	err := s.restHelper.post(fmt.Sprintf("%s/projects", locator), project, &out, "Agent Pool")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Create will create an Agent Pool - which must have a unique name
 func (s *AgentPoolsService) Create(pool CreateAgentPool) (*AgentPool, error) {
 	var created AgentPool
@@ -100,6 +119,19 @@ func (s *AgentPoolsService) List() (*ListAgentPools, error) {
 	}
 
 	return &out, nil
+}
+
+// UnassignProject unassigns a Project from a Agent Pool
+func (s *AgentPoolsService) UnassignProject(poolId int, projectId string) error {
+	poolLocator := LocatorIDInt(poolId).String()
+	projectLocator := LocatorID(projectId).String()
+	uri := fmt.Sprintf("%s/projects/%s", poolLocator, projectLocator)
+	err := s.restHelper.delete(uri, "Agent Pool")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // NOTE: Update support was investigated but is intentionally omitted - as the TC Documentation is incorrect
