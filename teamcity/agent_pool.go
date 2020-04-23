@@ -20,6 +20,7 @@ type AgentPoolReference struct {
 	Name string `json:"name,omitempty" xml:"name"`
 }
 
+// AgentPool contains information about the Agent Pool
 type AgentPool struct {
 	Href      string `json:"href,omitempty" xml:"href"`
 	Id        int    `json:"id,omitempty" xml:"id"`
@@ -43,6 +44,7 @@ func newAgentPoolsService(base *sling.Sling, client *http.Client) *AgentPoolsSer
 	}
 }
 
+// Create will create an Agent Pool - which must have a unique name
 func (s *AgentPoolsService) Create(pool AgentPool) (*AgentPool, error) {
 	var created AgentPool
 
@@ -54,6 +56,7 @@ func (s *AgentPoolsService) Create(pool AgentPool) (*AgentPool, error) {
 	return &created, nil
 }
 
+// Delete will delete an Agent Pool based on it's ID
 func (s *AgentPoolsService) Delete(id int) error {
 	locator := LocatorIDInt(id).String()
 	err := s.restHelper.delete(locator, "Agent Pool")
@@ -64,6 +67,7 @@ func (s *AgentPoolsService) Delete(id int) error {
 	return nil
 }
 
+// Get will return an Agent Pool based on it's ID
 func (s *AgentPoolsService) Get(id int) (*AgentPool, error) {
 	var out AgentPool
 	locator := LocatorIDInt(id).String()
@@ -75,6 +79,7 @@ func (s *AgentPoolsService) Get(id int) (*AgentPool, error) {
 	return &out, nil
 }
 
+// List returns all of the available Agent Pools
 func (s *AgentPoolsService) List() (*ListAgentPools, error) {
 	var out ListAgentPools
 	err := s.restHelper.get("", &out, "Agent Pools")
@@ -84,3 +89,7 @@ func (s *AgentPoolsService) List() (*ListAgentPools, error) {
 
 	return &out, nil
 }
+
+// NOTE: Update support was investigated but is intentionally omitted - as the TC Documentation is incorrect
+//		 PUT /app/rest/agentPools/id:4 at the time of writing returns a 405 Method Not Allowed
+//		 POST /app/rest/agentPools with href & ID set also creates a new node pool
