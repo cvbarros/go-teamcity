@@ -84,26 +84,57 @@ func TestAgentPools_List(t *testing.T) {
 	assert.True(found, "Default Agent Pool was not found")
 }
 
-func TestAgentPools_ProjectAssignment(t *testing.T) {
+func TestAgentPools_ListForProject(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 
-	var validateContainsProject = func(poolId int, projectId string) bool {
-		agentPool, err := client.AgentPools.GetByID(poolId)
-		assert.NoError(err)
+	firstProjectData := getTestProjectData(fmt.Sprintf("Project %d", time.Now().Unix()), "")
+	firstProject, err := client.Projects.Create(firstProjectData)
+	assert.NoError(err)
 
-		if agentPool.Projects == nil {
-			return false
-		}
-
-		for _, v := range agentPool.Projects.Project {
-			if v.ID == projectId {
-				return true
-			}
-		}
-
-		return false
+	agentPool := teamcity.CreateAgentPool{
+		Name: fmt.Sprintf("test-%d", time.Now().Unix()),
 	}
+	createdPool, err := client.AgentPools.Create(agentPool)
+	assert.NoError(err)
+	assert.NotEmpty(createdPool.Id)
+	assert.Equal(agentPool.Name, createdPool.Name)
+
+	retrievedPool, err := client.AgentPools.GetByID(createdPool.Id)
+	assert.NoError(err)
+	assert.Equal(agentPool.Name, retrievedPool.Name)
+	assert.Nil(retrievedPool.MaxAgents)
+
+	assignments, err := client.AgentPools.ListForProject(firstProject.ID)
+	assert.NoError(err)
+	assert.Equal(1, assignments.Count)
+	assert.Equal("Default", assignments.AgentPools[0].Name)
+
+	// assign the build
+	assert.NoError(client.AgentPools.AssignProject(createdPool.Id, firstProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
+
+	assignments, err = client.AgentPools.ListForProject(firstProject.ID)
+	assert.NoError(err)
+	assert.Equal(2, assignments.Count)
+
+	// remove it
+	assert.NoError(client.AgentPools.UnassignProject(createdPool.Id, firstProject.ID))
+	assert.False(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
+
+	// and confirm
+	assignments, err = client.AgentPools.ListForProject(firstProject.ID)
+	assert.NoError(err)
+	assert.Equal(1, assignments.Count)
+	assert.Equal("Default", assignments.AgentPools[0].Name)
+
+	assert.NoError(client.Projects.Delete(firstProject.ID))
+	assert.NoError(client.AgentPools.Delete(createdPool.Id))
+}
+
+func TestAgentPools_ProjectAssignment(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
 
 	firstProjectData := getTestProjectData("First Project", "")
 	secondProjectData := getTestProjectData("Second Project", "")
@@ -128,30 +159,47 @@ func TestAgentPools_ProjectAssignment(t *testing.T) {
 
 	// assign the build
 	assert.NoError(client.AgentPools.AssignProject(createdPool.Id, firstProject.ID))
-	assert.True(validateContainsProject(createdPool.Id, firstProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
 
 	// assign another
 	assert.NoError(client.AgentPools.AssignProject(createdPool.Id, secondProject.ID))
-	assert.True(validateContainsProject(createdPool.Id, firstProject.ID))
-	assert.True(validateContainsProject(createdPool.Id, secondProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, secondProject.ID))
 
 	// remove the first
 	assert.NoError(client.AgentPools.UnassignProject(createdPool.Id, firstProject.ID))
-	assert.False(validateContainsProject(createdPool.Id, firstProject.ID))
-	assert.True(validateContainsProject(createdPool.Id, secondProject.ID))
+	assert.False(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, secondProject.ID))
 
 	// re-assign the first
 	assert.NoError(client.AgentPools.AssignProject(createdPool.Id, firstProject.ID))
-	assert.True(validateContainsProject(createdPool.Id, firstProject.ID))
-	assert.True(validateContainsProject(createdPool.Id, secondProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
+	assert.True(validateContainsProject(assert, client, createdPool.Id, secondProject.ID))
 
 	// then remove everything
 	assert.NoError(client.AgentPools.UnassignProject(createdPool.Id, firstProject.ID))
 	assert.NoError(client.AgentPools.UnassignProject(createdPool.Id, secondProject.ID))
-	assert.False(validateContainsProject(createdPool.Id, firstProject.ID))
-	assert.False(validateContainsProject(createdPool.Id, secondProject.ID))
+	assert.False(validateContainsProject(assert, client, createdPool.Id, firstProject.ID))
+	assert.False(validateContainsProject(assert, client, createdPool.Id, secondProject.ID))
 
 	assert.NoError(client.Projects.Delete(firstProject.ID))
 	assert.NoError(client.Projects.Delete(secondProject.ID))
 	assert.NoError(client.AgentPools.Delete(createdPool.Id))
+}
+
+func validateContainsProject(assert *assert.Assertions, client *teamcity.Client, poolId int, projectId string) bool {
+	agentPool, err := client.AgentPools.GetByID(poolId)
+	assert.NoError(err)
+
+	if agentPool.Projects == nil {
+		return false
+	}
+
+	for _, v := range agentPool.Projects.Project {
+		if v.ID == projectId {
+			return true
+		}
+	}
+
+	return false
 }
