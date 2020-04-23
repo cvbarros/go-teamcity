@@ -99,7 +99,7 @@ func (s *AgentPoolsService) Delete(id int) error {
 }
 
 // Get will return an Agent Pool based on it's ID
-func (s *AgentPoolsService) Get(id int) (*AgentPool, error) {
+func (s *AgentPoolsService) GetByID(id int) (*AgentPool, error) {
 	var out AgentPool
 	locator := LocatorIDInt(id).String()
 	err := s.restHelper.get(locator, &out, "Agent Pool")
