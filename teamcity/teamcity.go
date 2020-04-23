@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/dghubble/sling"
+	// goimports has a bug which attempts to remove this if unaliased
+	loghttp "github.com/motemen/go-loghttp"
 
-	"github.com/motemen/go-loghttp"
 	// Enable HTTP log tracing
 	_ "github.com/motemen/go-loghttp/global"
 )
@@ -61,11 +62,12 @@ type Client struct {
 
 	commonBase *sling.Sling
 
-	Projects   *ProjectService
+	AgentPools *AgentPoolsService
 	BuildTypes *BuildTypeService
+	Groups     *GroupService
+	Projects   *ProjectService
 	Server     *ServerService
 	VcsRoots   *VcsRootService
-	Groups     *GroupService
 }
 
 func NewClient(auth Auth, httpClient *http.Client) (*Client, error) {
@@ -108,11 +110,12 @@ func newClientInstance(auth Auth, address string, httpClient *http.Client) (*Cli
 		address:    address,
 		HTTPClient: httpClient,
 		commonBase: sharedClient,
-		Projects:   newProjectService(sharedClient.New(), httpClient),
+		AgentPools: newAgentPoolsService(sharedClient.New(), httpClient),
 		BuildTypes: newBuildTypeService(sharedClient.New(), httpClient),
+		Groups:     newGroupService(sharedClient.New(), httpClient),
+		Projects:   newProjectService(sharedClient.New(), httpClient),
 		Server:     newServerService(sharedClient.New()),
 		VcsRoots:   newVcsRootService(sharedClient.New(), httpClient),
-		Groups:     newGroupService(sharedClient.New(), httpClient),
 	}, nil
 }
 
