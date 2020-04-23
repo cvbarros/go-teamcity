@@ -110,6 +110,18 @@ func (s *AgentPoolsService) GetByID(id int) (*AgentPool, error) {
 	return &out, nil
 }
 
+// Get will return an Agent Pool based on it's Name
+func (s *AgentPoolsService) GetByName(name string) (*AgentPool, error) {
+	var out AgentPool
+	locator := LocatorName(name).String()
+	err := s.restHelper.get(locator, &out, "Agent Pool")
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
+}
+
 // List returns all of the available Agent Pools
 func (s *AgentPoolsService) List() (*ListAgentPools, error) {
 	var out ListAgentPools
