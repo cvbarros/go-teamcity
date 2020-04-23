@@ -13,7 +13,7 @@ func TestAgentPools_Lifecycle(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 
-	agentPool := teamcity.AgentPool{
+	agentPool := teamcity.CreateAgentPool{
 		Name: fmt.Sprintf("test-%d", time.Now().Unix()),
 	}
 	createdPool, err := client.AgentPools.Create(agentPool)
@@ -38,6 +38,20 @@ func TestAgentPools_Lifecycle(t *testing.T) {
 	}
 }
 
+func TestAgentPools_GetDefaultProject(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+
+	// this is hard-coded in TeamCity so we may as well do the same
+	defaultAgentPoolId := 0
+
+	retrievedPool, err := client.AgentPools.Get(defaultAgentPoolId)
+	assert.NoError(err)
+	assert.Equal("Default", retrievedPool.Name)
+	assert.Nil(retrievedPool.MaxAgents)
+	assert.True(len(retrievedPool.Projects.Project) == 1)
+}
+
 func TestAgentPools_List(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
@@ -56,5 +70,5 @@ func TestAgentPools_List(t *testing.T) {
 		}
 	}
 
-	assert.True(found, "Default agent pool was not found")
+	assert.True(found, "Default Agent Pool was not found")
 }

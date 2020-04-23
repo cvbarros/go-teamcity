@@ -22,10 +22,22 @@ type AgentPoolReference struct {
 
 // AgentPool contains information about the Agent Pool
 type AgentPool struct {
-	Href      string `json:"href,omitempty" xml:"href"`
-	Id        int    `json:"id,omitempty" xml:"id"`
+	Href      string                       `json:"href,omitempty" xml:"href"`
+	Id        int                          `json:"id,omitempty" xml:"id"`
+	Name      string                       `json:"name,omitempty" xml:"name"`
+	MaxAgents *int                         `json:"maxAgents,omitempty" xml:"maxAgents"`
+	Projects  *AgentPoolProjectAssignments `json:"projects,omitempty" xml:"projects"`
+}
+
+// CreateAgentPool contains information needed to create an Agent Pool
+type CreateAgentPool struct {
 	Name      string `json:"name,omitempty" xml:"name"`
 	MaxAgents *int   `json:"maxAgents,omitempty" xml:"maxAgents"`
+}
+
+// AgentPoolProjectAssignments is a wrapper containing the Projects attached to this Agent Pool
+type AgentPoolProjectAssignments struct {
+	Project []ProjectReference `json:"project,omitempty" xml:"project"`
 }
 
 // AgentPoolsService has operations for handling agent pools
@@ -45,7 +57,7 @@ func newAgentPoolsService(base *sling.Sling, client *http.Client) *AgentPoolsSer
 }
 
 // Create will create an Agent Pool - which must have a unique name
-func (s *AgentPoolsService) Create(pool AgentPool) (*AgentPool, error) {
+func (s *AgentPoolsService) Create(pool CreateAgentPool) (*AgentPool, error) {
 	var created AgentPool
 
 	err := s.restHelper.post("", pool, &created, "Agent Pool")
