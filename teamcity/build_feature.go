@@ -48,10 +48,11 @@ type BuildFeatureService struct {
 }
 
 func newBuildFeatureService(buildTypeID string, c *http.Client, base *sling.Sling) *BuildFeatureService {
+	locator := LocatorID(buildTypeID)
 	return &BuildFeatureService{
 		BuildTypeID: buildTypeID,
 		httpClient:  c,
-		base:        base.New().Path(fmt.Sprintf("buildTypes/%s/features/", buildTypeID)),
+		base:        base.New().Path(fmt.Sprintf("buildTypes/%s/features/", locator)),
 	}
 }
 
@@ -62,7 +63,6 @@ func (s *BuildFeatureService) Create(bf BuildFeature) (BuildFeature, error) {
 	}
 
 	req, err := s.base.New().Post("").BodyJSON(bf).Request()
-
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +144,15 @@ func (s *BuildFeatureService) readBuildFeatureResponse(resp *http.Response) (Bui
 	case "commit-status-publisher":
 		{
 			var csp FeatureCommitStatusPublisher
+			if err := csp.UnmarshalJSON(bodyBytes); err != nil {
+				return nil, err
+			}
+
+			out = &csp
+		}
+	case "golang":
+		{
+			var csp FeatureGolangPublisher
 			if err := csp.UnmarshalJSON(bodyBytes); err != nil {
 				return nil, err
 			}

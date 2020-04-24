@@ -228,7 +228,7 @@ func newBuildTypeService(base *sling.Sling, httpClient *http.Client) *BuildTypeS
 }
 
 // Create Creates a new build type under a project
-func (s *BuildTypeService) Create(projectID string, buildType *BuildType) (*BuildTypeReference, error) {
+func (s *BuildTypeService) Create(buildType *BuildType) (*BuildTypeReference, error) {
 	var created BuildTypeReference
 
 	err := s.restHelper.post("", buildType, &created, "Build Type")
