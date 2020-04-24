@@ -101,6 +101,7 @@ func TestBuildType_Update(t *testing.T) {
 	actual, err := sut.GetByID(created.ID) //Refresh
 
 	//Update some fields
+	actual.Name = "Updated name"
 	actual.Description = "Updated description"
 	actual.Options.ArtifactRules = []string{"rule1", "rule2"}
 	actual.Options.BuildCounter = 10
@@ -111,6 +112,7 @@ func TestBuildType_Update(t *testing.T) {
 
 	require.NoError(t, err)
 
+	assert.Equal("Updated name", updated.Name)
 	assert.Equal("Updated description", updated.Description)
 	assert.Equal([]string{"rule1", "rule2"}, updated.Options.ArtifactRules)
 	assert.Equal(10, updated.Options.BuildCounter)
