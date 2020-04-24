@@ -28,14 +28,26 @@ const (
 	VersionedSettingsBuildSettingsAlwaysUseCurrent VersionedSettingsBuildSettings = "ALWAYS_USE_CURRENT"
 )
 
+// CredentialsStorageType represents how credentials should be stored in versioned settings
+type CredentialsStorageType string
+
+const (
+	// Credentials should be scrambled and stored in VCS
+	CredentialsStorageTypeScrambledInVcs CredentialsStorageType = ""
+
+	// Credentials should be stored as Secure Tokens within the Project
+	CredentialsStorageTypeCredentialsJSON CredentialsStorageType = "credentialsJSON"
+)
+
 // ProjectFeatureVersionedSettingsOptions holds all properties for the versioned settings project feature.
 type ProjectFeatureVersionedSettingsOptions struct {
-	Enabled        bool
-	ShowChanges    bool
-	UseRelativeIds bool
-	VcsRootID      string
-	Format         VersionedSettingsFormat
-	BuildSettings  VersionedSettingsBuildSettings
+	Enabled                bool
+	ShowChanges            bool
+	UseRelativeIds         bool
+	VcsRootID              string
+	Format                 VersionedSettingsFormat
+	BuildSettings          VersionedSettingsBuildSettings
+	CredentialsStorageType CredentialsStorageType
 }
 
 // ProjectFeatureVersionedSettings represents the versioned settings feature for a project.
@@ -82,7 +94,7 @@ func (f *ProjectFeatureVersionedSettings) SetProjectID(value string) {
 
 // Properties returns all properties for the versioned settings project feature.
 func (f *ProjectFeatureVersionedSettings) Properties() *Properties {
-	return NewProperties(
+	props := NewProperties(
 		NewProperty("buildSettings", string(f.Options.BuildSettings)),
 		NewProperty("format", string(f.Options.Format)),
 		NewProperty("rootId", f.Options.VcsRootID),
@@ -90,6 +102,13 @@ func (f *ProjectFeatureVersionedSettings) Properties() *Properties {
 		NewProperty("useRelativeIds", fmt.Sprintf("%t", f.Options.UseRelativeIds)),
 		NewProperty("enabled", fmt.Sprintf("%t", f.Options.Enabled)),
 	)
+
+	// TeamCity doesn't send this if unset
+	if f.Options.CredentialsStorageType != "" {
+		props.Add(NewProperty("credentialsStorageType", string(f.Options.CredentialsStorageType)))
+	}
+
+	return props
 }
 
 func loadProjectFeatureVersionedSettings(projectID string, feature projectFeatureJSON) (ProjectFeature, error) {
@@ -101,6 +120,13 @@ func loadProjectFeatureVersionedSettings(projectID string, feature projectFeatur
 
 	if encodedValue, ok := feature.Properties.GetOk("buildSettings"); ok {
 		settings.Options.BuildSettings = VersionedSettingsBuildSettings(encodedValue)
+	}
+
+	if encodedValue, ok := feature.Properties.GetOk("credentialsStorageType"); ok {
+		settings.Options.CredentialsStorageType = CredentialsStorageType(encodedValue)
+	} else {
+		// defaulted but not returned
+		settings.Options.CredentialsStorageType = CredentialsStorageTypeScrambledInVcs
 	}
 
 	if encodedValue, ok := feature.Properties.GetOk("enabled"); ok {
