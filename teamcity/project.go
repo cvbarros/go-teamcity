@@ -152,8 +152,12 @@ func (s *ProjectService) Delete(id string) error {
 }
 
 func (s *ProjectService) updateProject(project *Project, isCreate bool) (*Project, error) {
-	_, err := s.restHelper.putTextPlain(project.ID+"/description", project.Description, "project description")
+	_, err := s.restHelper.putTextPlain(project.ID+"/name", project.Name, "project name")
+	if err != nil {
+		return nil, err
+	}
 
+	_, err = s.restHelper.putTextPlain(project.ID+"/description", project.Description, "project description")
 	if err != nil {
 		return nil, err
 	}

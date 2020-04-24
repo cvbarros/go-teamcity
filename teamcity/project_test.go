@@ -66,6 +66,27 @@ func TestProject_UpdateWithSameParentDoesNotChangeName(t *testing.T) {
 	assert.Equal(t, "ChildProject", updated.Name)
 }
 
+func TestProject_UpdateName(t *testing.T) {
+	parent, _ := teamcity.NewProject("ParentProject", "Parent Project", "")
+	child, _ := teamcity.NewProject("ChildProject", "Child Project", "ParentProject")
+
+	client := setup()
+
+	_, err := client.Projects.Create(parent)
+	require.NoError(t, err)
+	defer cleanUpProject(t, client, "ParentProject")
+
+	created, err := client.Projects.Create(child)
+	require.NoError(t, err)
+
+	actual, _ := client.Projects.GetByID(created.ID)
+	actual.Name = "Updated"
+	updated, _ := client.Projects.Update(actual)
+
+	assert.Equal(t, "Updated", updated.Name)
+	assert.Equal(t, parent.ID, updated.ParentProjectID)
+}
+
 func TestProject_UpdateParent(t *testing.T) {
 	parent, _ := teamcity.NewProject(testProjectId, "Parent Project", "")
 	newParent, _ := teamcity.NewProject("NewParent", "NewParent Project", "")
