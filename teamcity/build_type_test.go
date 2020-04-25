@@ -127,7 +127,7 @@ func TestBuildType_CreateWithParameters(t *testing.T) {
 	bt.Parameters.AddOrReplaceValue(teamcity.ParameterTypes.System, "param2", "value2")
 
 	sut := client.BuildTypes
-	created, err := sut.Create(bt)
+	created, err := sut.Create("", bt)
 	require.NoError(t, err)
 
 	actual, _ := sut.GetByID(created.ID) //Refresh
@@ -276,7 +276,7 @@ func createTestBuildTypeInternal(t *testing.T, client *teamcity.Client, buildTyp
 
 	newBuildType := getTestBuildTypeData(name, "Inspection", buildTypeProjectId, template)
 
-	createdBuildType, err := client.BuildTypes.Create(newBuildType)
+	createdBuildType, err := client.BuildTypes.Create("", newBuildType)
 	if err != nil {
 		t.Fatalf("Failed to CreateBuildType: %s", err)
 	}

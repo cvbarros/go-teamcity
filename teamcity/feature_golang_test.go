@@ -21,7 +21,7 @@ func TestFeatureGolang_Lifecycle(t *testing.T) {
 
 	buildType, err := teamcity.NewBuildType(project.ID, "Hello")
 	require.NoError(t, err)
-	buildConfig, err := client.BuildTypes.Create(buildType)
+	buildConfig, err := client.BuildTypes.Create("", buildType)
 	require.NoError(t, err)
 
 	service := client.BuildFeatureService(buildConfig.ID)
