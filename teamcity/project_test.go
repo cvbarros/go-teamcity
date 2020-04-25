@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/cvbarros/go-teamcity/teamcity"
 	"github.com/stretchr/testify/assert"
@@ -67,24 +68,20 @@ func TestProject_UpdateWithSameParentDoesNotChangeName(t *testing.T) {
 }
 
 func TestProject_UpdateName(t *testing.T) {
-	parent, _ := teamcity.NewProject("ParentProject", "Parent Project", "")
-	child, _ := teamcity.NewProject("ChildProject", "Child Project", "ParentProject")
+	projectName := fmt.Sprintf("Project %d", time.Now().Unix())
+	project, _ := teamcity.NewProject(projectName, "", "")
 
 	client := setup()
 
-	_, err := client.Projects.Create(parent)
+	created, err := client.Projects.Create(project)
 	require.NoError(t, err)
-	defer cleanUpProject(t, client, "ParentProject")
-
-	created, err := client.Projects.Create(child)
-	require.NoError(t, err)
+	defer cleanUpProject(t, client, created.ID)
 
 	actual, _ := client.Projects.GetByID(created.ID)
-	actual.Name = "Updated"
+	actual.Name = fmt.Sprintf("Updated %s", projectName)
 	updated, _ := client.Projects.Update(actual)
 
-	assert.Equal(t, "Updated", updated.Name)
-	assert.Equal(t, parent.ID, updated.ParentProjectID)
+	assert.Equal(t, fmt.Sprintf("Updated %s", projectName), updated.Name)
 }
 
 func TestProject_UpdateParent(t *testing.T) {
