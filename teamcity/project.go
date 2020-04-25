@@ -120,7 +120,10 @@ func (s *ProjectService) GetByID(id string) (*Project, error) {
 	}
 
 	//For now, filter all inherited parameters, until figuring out a proper way of exposing filtering options to the caller
-	out.Parameters = out.Parameters.NonInherited()
+	//Parameters can be nil for users that have no permission to view them
+	if out.Parameters != nil {
+		out.Parameters = out.Parameters.NonInherited()
+	}
 	return &out, err
 }
 
