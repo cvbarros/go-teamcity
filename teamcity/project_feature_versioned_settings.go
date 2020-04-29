@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // VersionedSettingsFormat represents the supported formats for the versioned settings project feature.
@@ -48,6 +49,7 @@ type ProjectFeatureVersionedSettingsOptions struct {
 	Format                 VersionedSettingsFormat
 	BuildSettings          VersionedSettingsBuildSettings
 	CredentialsStorageType CredentialsStorageType
+	ContextParameters      map[string]string
 }
 
 // ProjectFeatureVersionedSettings represents the versioned settings feature for a project.
@@ -108,6 +110,12 @@ func (f *ProjectFeatureVersionedSettings) Properties() *Properties {
 		props.Add(NewProperty("credentialsStorageType", string(f.Options.CredentialsStorageType)))
 	}
 
+	// these are `context.foo` rather than a nested object
+	for k, v := range f.Options.ContextParameters {
+		key := fmt.Sprintf("context.%s", k)
+		props.Add(NewProperty(key, v))
+	}
+
 	return props
 }
 
@@ -121,6 +129,19 @@ func loadProjectFeatureVersionedSettings(projectID string, feature projectFeatur
 	if encodedValue, ok := feature.Properties.GetOk("buildSettings"); ok {
 		settings.Options.BuildSettings = VersionedSettingsBuildSettings(encodedValue)
 	}
+
+	// Context Parameters are a map, rather than a nested object
+	// as the key `context.foo` and `context.bar`
+	contextParams := make(map[string]string)
+	for k, value := range feature.Properties.Map() {
+		if !strings.HasPrefix(k, "context.") {
+			continue
+		}
+
+		key := strings.TrimPrefix(k, "context.")
+		contextParams[key] = value
+	}
+	settings.Options.ContextParameters = contextParams
 
 	if encodedValue, ok := feature.Properties.GetOk("credentialsStorageType"); ok {
 		settings.Options.CredentialsStorageType = CredentialsStorageType(encodedValue)

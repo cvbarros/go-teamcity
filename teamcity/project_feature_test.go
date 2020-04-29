@@ -28,6 +28,30 @@ func TestProjectFeature_CreateKotlin(t *testing.T) {
 	assert.NotEmpty(t, createdFeature.ID)
 }
 
+func TestProjectFeature_CreateWithContextParameters(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatKotlin,
+		VcsRootID:     createdRoot.ID,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+		ContextParameters: map[string]string{
+			"Hello": "World",
+		},
+	})
+
+	createdFeature, err := service.Create(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+	assert.Equal(t, "World", createdFeature.Properties().Map()["context.Hello"])
+}
+
 func TestProjectFeature_CreateXML(t *testing.T) {
 	client := safeSetup(t)
 
@@ -199,6 +223,66 @@ func TestProjectFeature_Update(t *testing.T) {
 	}
 }
 
+func TestProjectFeature_UpdateContextParameters(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatXML,
+		VcsRootID:     createdRoot.ID,
+		Enabled:       true,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferCurrent,
+		ContextParameters: map[string]string{
+			"Hello": "World",
+		},
+	})
+
+	createdFeature, err := service.Create(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+	assert.Equal(t, "World", createdFeature.Properties().Map()["context.Hello"])
+
+	retrieved, err := service.GetByID(createdFeature.ID())
+	require.NoError(t, err)
+	retrievedFeature := retrieved.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.Equal(t, "World", retrievedFeature.Options.ContextParameters["Hello"])
+
+	feature.SetID(createdFeature.ID())
+	feature.Options.ContextParameters["Hello"] = "London"
+	_, err = service.Update(feature)
+
+	require.NoError(t, err)
+	retrieved, err = service.GetByID(createdFeature.ID())
+	require.NoError(t, err)
+	retrievedFeature = retrieved.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.Equal(t, "London", retrievedFeature.Options.ContextParameters["Hello"])
+
+	feature.Options.ContextParameters["Hello"] = "World"
+	feature.Options.ContextParameters["Germany"] = "Deutschland"
+	_, err = service.Update(feature)
+
+	require.NoError(t, err)
+	retrieved, err = service.GetByID(createdFeature.ID())
+	require.NoError(t, err)
+	retrievedFeature = retrieved.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.Equal(t, "World", retrievedFeature.Options.ContextParameters["Hello"])
+	assert.Equal(t, "Deutschland", retrievedFeature.Options.ContextParameters["Germany"])
+
+	feature.Options.ContextParameters = make(map[string]string)
+	_, err = service.Update(feature)
+	require.NoError(t, err)
+
+	retrieved, err = service.GetByID(createdFeature.ID())
+	require.NoError(t, err)
+	retrievedFeature = retrieved.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.Equal(t, 0, len(retrievedFeature.Options.ContextParameters))
+}
+
 func TestProjectFeature_UpdateVCSRoot(t *testing.T) {
 	client := safeSetup(t)
 
@@ -294,10 +378,14 @@ func TestProjectFeature_GetByIdWithCreatedFeature(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, createdFeature.ID)
 
-	retrievedFeature, err := service.GetByID(createdFeature.ID())
+	retrieved, err := service.GetByID(createdFeature.ID())
 	require.NoError(t, err)
-	assert.Equal(t, createdFeature.ID(), retrievedFeature.ID())
-	assert.Equal(t, createdFeature.Type(), retrievedFeature.Type())
+	assert.Equal(t, createdFeature.ID(), retrieved.ID())
+	assert.Equal(t, createdFeature.Type(), retrieved.Type())
+
+	// sanity check - should be none by default
+	retrievedFeature := retrieved.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.Equal(t, 0, len(retrievedFeature.Options.ContextParameters))
 }
 
 func TestProjectFeature_GetByIdWithFeatureNotExisting(t *testing.T) {
