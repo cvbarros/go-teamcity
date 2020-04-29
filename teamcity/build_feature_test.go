@@ -15,6 +15,7 @@ type SuiteBuildFeature struct {
 	VcsRootID        string
 
 	Github *teamcity.FeatureCommitStatusPublisher
+	Golang *teamcity.FeatureGolangPublisher
 }
 
 func NewSuiteBuildFeature(t *testing.T) *SuiteBuildFeature {
@@ -29,6 +30,7 @@ func (suite *SuiteBuildFeature) SetupTest() {
 
 	opt := teamcity.NewCommitStatusPublisherGithubOptionsToken("https://api.github.com", "1234")
 	suite.Github, _ = teamcity.NewFeatureCommitStatusPublisherGithub(opt, suite.BuildTypeContext.VcsRoot.ID)
+	suite.Golang = teamcity.NewFeatureGolang()
 }
 
 func (suite *SuiteBuildFeature) TearDownTest() {
@@ -71,6 +73,38 @@ func (suite *SuiteBuildFeature) TestCommitPublisher_Get() {
 	suite.Equal("commit-status-publisher", csp.Type())
 	suite.Equal(false, csp.Disabled())
 	suite.Equal(suite.VcsRootID, csp.VcsRootID())
+}
+
+func (suite *SuiteBuildFeature) TestGolang_Create() {
+	sut := suite.Service()
+	actual, err := sut.Create(suite.Golang)
+	suite.Require().NoError(err)
+
+	suite.Require().IsType(new(teamcity.FeatureGolangPublisher), actual)
+
+	csp := actual.(*teamcity.FeatureGolangPublisher)
+
+	suite.NotEqual("", csp.ID())
+	suite.Equal(suite.BuildTypeID, csp.BuildTypeID())
+	suite.Equal("golang", csp.Type())
+	suite.Equal(false, csp.Disabled())
+}
+
+func (suite *SuiteBuildFeature) TestGolang_Get() {
+	sut := suite.Service()
+	actual, err := sut.Create(suite.Golang)
+	suite.Require().NoError(err)
+
+	actual, err = sut.GetByID(actual.ID())
+	suite.Require().NoError(err)
+	suite.Require().IsType(new(teamcity.FeatureGolangPublisher), actual)
+
+	csp := actual.(*teamcity.FeatureGolangPublisher)
+
+	suite.NotEqual("", csp.ID())
+	suite.Equal(suite.BuildTypeID, csp.BuildTypeID())
+	suite.Equal("golang", csp.Type())
+	suite.Equal(false, csp.Disabled())
 }
 
 func TestBuildFeatureSuite(t *testing.T) {

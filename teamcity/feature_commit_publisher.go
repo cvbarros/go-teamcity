@@ -35,12 +35,12 @@ func (f *FeatureCommitStatusPublisher) Type() string {
 	return "commit-status-publisher"
 }
 
-//VcsRootID returns the ID that this build feature is associated with.
+//VcsRootID returns the VCS Root ID that this build feature is associated with.
 func (f *FeatureCommitStatusPublisher) VcsRootID() string {
 	return f.vcsRootID
 }
 
-//SetVcsRootID sets the ID that this build feature is associated with.
+//SetVcsRootID sets the VCS Root ID that this build feature is associated with.
 func (f *FeatureCommitStatusPublisher) SetVcsRootID(value string) {
 	f.vcsRootID = value
 }

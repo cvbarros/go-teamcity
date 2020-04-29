@@ -15,8 +15,6 @@ type BuildFeature interface {
 	ID() string
 	SetID(value string)
 	Type() string
-	VcsRootID() string
-	SetVcsRootID(value string)
 	Properties() *Properties
 	BuildTypeID() string
 	SetBuildTypeID(value string)
@@ -33,7 +31,6 @@ type buildFeatureJSON struct {
 	Inherited  *bool       `json:"inherited,omitempty" xml:"inherited"`
 	Properties *Properties `json:"properties,omitempty"`
 	Type       string      `json:"type,omitempty" xml:"type"`
-	VcsRootID  string      `json:"vcsRootId,omitempty" xml:"vcsRootId"`
 }
 
 // Features is a collection of BuildFeature
@@ -51,10 +48,11 @@ type BuildFeatureService struct {
 }
 
 func newBuildFeatureService(buildTypeID string, c *http.Client, base *sling.Sling) *BuildFeatureService {
+	locator := LocatorID(buildTypeID)
 	return &BuildFeatureService{
 		BuildTypeID: buildTypeID,
 		httpClient:  c,
-		base:        base.New().Path(fmt.Sprintf("buildTypes/%s/features/", buildTypeID)),
+		base:        base.New().Path(fmt.Sprintf("buildTypes/%s/features/", locator)),
 	}
 }
 
@@ -65,7 +63,6 @@ func (s *BuildFeatureService) Create(bf BuildFeature) (BuildFeature, error) {
 	}
 
 	req, err := s.base.New().Post("").BodyJSON(bf).Request()
-
 	if err != nil {
 		return nil, err
 	}
@@ -145,12 +142,23 @@ func (s *BuildFeatureService) readBuildFeatureResponse(resp *http.Response) (Bui
 	var out BuildFeature
 	switch payload.Type {
 	case "commit-status-publisher":
-		var csp FeatureCommitStatusPublisher
-		if err := csp.UnmarshalJSON(bodyBytes); err != nil {
-			return nil, err
-		}
+		{
+			var csp FeatureCommitStatusPublisher
+			if err := csp.UnmarshalJSON(bodyBytes); err != nil {
+				return nil, err
+			}
 
-		out = &csp
+			out = &csp
+		}
+	case "golang":
+		{
+			var csp FeatureGolangPublisher
+			if err := csp.UnmarshalJSON(bodyBytes); err != nil {
+				return nil, err
+			}
+
+			out = &csp
+		}
 	default:
 		return nil, fmt.Errorf("Unsupported build feature type: '%s' (id:'%s') for buildTypeID: %s", payload.Type, payload.ID, s.BuildTypeID)
 	}
