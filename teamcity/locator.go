@@ -21,6 +21,11 @@ func LocatorKey(key string) Locator {
 	return Locator(url.QueryEscape("key:") + url.PathEscape(key))
 }
 
+//LocatorType creates a locator for a Project Feature by Type
+func LocatorType(id string) Locator {
+	return Locator(url.QueryEscape("type:") + id)
+}
+
 func (l Locator) String() string {
 	return string(l)
 }

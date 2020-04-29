@@ -401,6 +401,35 @@ func TestProjectFeature_GetByIdWithFeatureNotExisting(t *testing.T) {
 	assert.Contains(t, err.Error(), "404")
 }
 
+func TestProjectFeature_GetByType(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	createdRoot := setupFakeRoot(t, client, project, "Test Root")
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectFeatureVersionedSettings(project.ID, teamcity.ProjectFeatureVersionedSettingsOptions{
+		Format:        teamcity.VersionedSettingsFormatKotlin,
+		VcsRootID:     createdRoot.ID,
+		BuildSettings: teamcity.VersionedSettingsBuildSettingsPreferVcs,
+	})
+
+	createdFeature, err := service.Create(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+
+	retrieved, err := service.GetByType("versionedSettings")
+	require.NoError(t, err)
+	// we can't compare the ID, since they change after creation
+	assert.Equal(t, createdFeature.Type(), retrieved.Type())
+
+	// sanity check - should be none by default
+	retrievedFeature := retrieved.(*teamcity.ProjectFeatureVersionedSettings)
+	assert.Equal(t, 0, len(retrievedFeature.Options.ContextParameters))
+}
+
 func setupFakeRoot(t *testing.T, client *teamcity.Client, project *teamcity.Project, name string) *teamcity.VcsRootReference {
 	rootOptions, err := teamcity.NewGitVcsRootOptionsDefaults("master", "git@test.com")
 	require.NoError(t, err)

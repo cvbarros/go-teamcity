@@ -105,7 +105,21 @@ func (s *ProjectFeatureService) Get() ([]ProjectFeature, error) {
 func (s *ProjectFeatureService) GetByID(id string) (ProjectFeature, error) {
 	var out projectFeatureJSON
 
-	url := fmt.Sprintf("projects/%s/projectFeatures/%s", s.ProjectID, id)
+	loc := LocatorID(id)
+	url := fmt.Sprintf("projects/%s/projectFeatures/%s", s.ProjectID, loc)
+	if err := s.restHelper.get(url, &out, "projectFeature"); err != nil {
+		return nil, err
+	}
+
+	return s.parseProjectFeatureJSONResponse(out)
+}
+
+// GetByType returns a single ProjectFeature for the current project by it's typw.
+func (s *ProjectFeatureService) GetByType(id string) (ProjectFeature, error) {
+	var out projectFeatureJSON
+
+	loc := LocatorType(id)
+	url := fmt.Sprintf("projects/%s/projectFeatures/%s", s.ProjectID, loc)
 	if err := s.restHelper.get(url, &out, "projectFeature"); err != nil {
 		return nil, err
 	}
