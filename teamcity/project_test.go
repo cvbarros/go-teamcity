@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/cvbarros/go-teamcity/teamcity"
 	"github.com/stretchr/testify/assert"
@@ -64,6 +65,42 @@ func TestProject_UpdateWithSameParentDoesNotChangeName(t *testing.T) {
 	cleanUpProject(t, client, "ParentProject")
 
 	assert.Equal(t, "ChildProject", updated.Name)
+}
+
+func TestProject_UpdateName(t *testing.T) {
+	projectName := fmt.Sprintf("Project %d", time.Now().Unix())
+	project, _ := teamcity.NewProject(projectName, "", "")
+
+	client := setup()
+
+	created, err := client.Projects.Create(project)
+	require.NoError(t, err)
+	defer cleanUpProject(t, client, created.ID)
+
+	actual, _ := client.Projects.GetByID(created.ID)
+	actual.Name = fmt.Sprintf("Updated %s", projectName)
+	_, _ = client.Projects.Update(actual)
+
+	actual, _ = client.Projects.GetByID(created.ID)
+	assert.Equal(t, fmt.Sprintf("Updated %s", projectName), actual.Name)
+}
+
+func TestProject_UpdateDescription(t *testing.T) {
+	projectName := fmt.Sprintf("Project %d", time.Now().Unix())
+	project, _ := teamcity.NewProject(projectName, "", "")
+
+	client := setup()
+
+	created, err := client.Projects.Create(project)
+	require.NoError(t, err)
+	defer cleanUpProject(t, client, created.ID)
+
+	actual, _ := client.Projects.GetByID(created.ID)
+	actual.Description = "Updated Description"
+	_, _ = client.Projects.Update(actual)
+
+	actual, _ = client.Projects.GetByID(created.ID)
+	assert.Equal(t, "Updated Description", actual.Description)
 }
 
 func TestProject_UpdateParent(t *testing.T) {
