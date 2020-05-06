@@ -61,11 +61,12 @@ type Client struct {
 
 	commonBase *sling.Sling
 
-	Projects   *ProjectService
-	BuildTypes *BuildTypeService
-	Server     *ServerService
-	VcsRoots   *VcsRootService
-	Groups     *GroupService
+	Projects             *ProjectService
+	BuildTypes           *BuildTypeService
+	Server               *ServerService
+	VcsRoots             *VcsRootService
+	Groups               *GroupService
+	GroupRoleAssignments *GroupRoleAssignmentService
 }
 
 func NewClient(auth Auth, httpClient *http.Client) (*Client, error) {
@@ -105,14 +106,15 @@ func newClientInstance(auth Auth, address string, httpClient *http.Client) (*Cli
 	}
 
 	return &Client{
-		address:    address,
-		HTTPClient: httpClient,
-		commonBase: sharedClient,
-		Projects:   newProjectService(sharedClient.New(), httpClient),
-		BuildTypes: newBuildTypeService(sharedClient.New(), httpClient),
-		Server:     newServerService(sharedClient.New()),
-		VcsRoots:   newVcsRootService(sharedClient.New(), httpClient),
-		Groups:     newGroupService(sharedClient.New(), httpClient),
+		address:              address,
+		HTTPClient:           httpClient,
+		commonBase:           sharedClient,
+		Projects:             newProjectService(sharedClient.New(), httpClient),
+		BuildTypes:           newBuildTypeService(sharedClient.New(), httpClient),
+		Server:               newServerService(sharedClient.New()),
+		VcsRoots:             newVcsRootService(sharedClient.New(), httpClient),
+		Groups:               newGroupService(sharedClient.New(), httpClient),
+		GroupRoleAssignments: newGroupRoleAssignmentService(sharedClient.New(), httpClient),
 	}, nil
 }
 
