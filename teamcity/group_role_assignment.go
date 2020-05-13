@@ -36,7 +36,7 @@ func NewGroupRoleAssignment(groupKey string, roleID string, scope string) (*Grou
 	}
 
 	if scope == "" {
-		return nil, fmt.Errorf("scope is required. Use the Project ID or use \"_Root\" for the Root project")
+		return nil, fmt.Errorf("scope is required. Use \"g\" at the global level for System Administrators, otherwise for other roles, use \"p:_Root\" for the root project, or \"p:<project_id>\" for other projects")
 	}
 
 	return &GroupRoleAssignment{
@@ -66,8 +66,8 @@ func newGroupRoleAssignmentService(base *sling.Sling, httpClient *http.Client) *
 func (s *GroupRoleAssignmentService) Assign(assignment *GroupRoleAssignment) (*GroupRoleAssignmentReference, error) {
 	var out GroupRoleAssignmentReference
 
-	// URL for assigning role is /app/rest/userGroups/{groupLocator}/roles/{roleId}/p:{scope}
-	err := s.restHelper.post(fmt.Sprintf("%s/roles/%s/p:%s", assignment.GroupKey, assignment.RoleID, assignment.Scope), nil, &out, "Assign role to group")
+	// URL for assigning role is /app/rest/userGroups/{groupLocator}/roles/{roleId}/{scope}
+	err := s.restHelper.post(fmt.Sprintf("%s/roles/%s/%s", assignment.GroupKey, assignment.RoleID, assignment.Scope), nil, &out, "Assign role to group")
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func (s *GroupRoleAssignmentService) Assign(assignment *GroupRoleAssignment) (*G
 func (s *GroupRoleAssignmentService) Get(assignment *GroupRoleAssignment) (*GroupRoleAssignmentReference, error) {
 	var out GroupRoleAssignmentReference
 
-	// URL for getting a specific role assignments is /app/rest/userGroups/{groupLocator}/roles/{roleId}/p:{scope}
-	err := s.restHelper.get(fmt.Sprintf("%s/roles/%s/p:%s", assignment.GroupKey, assignment.RoleID, assignment.Scope), &out, "Get role assignmens for group")
+	// URL for getting a specific role assignments is /app/rest/userGroups/{groupLocator}/roles/{roleId}/{scope}
+	err := s.restHelper.get(fmt.Sprintf("%s/roles/%s/%s", assignment.GroupKey, assignment.RoleID, assignment.Scope), &out, "Get role assignmens for group")
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +100,6 @@ func (s *GroupRoleAssignmentService) GetAll(group *Group) ([]GroupRoleAssignment
 
 // Unassign removes the role assignment from a group
 func (s *GroupRoleAssignmentService) Unassign(assignment *GroupRoleAssignment) error {
-	// URL for unassigning role is /app/rest/userGroups/{groupLocator}/roles/{roleId}/p:{scope}
-	return s.restHelper.delete(fmt.Sprintf("%s/roles/%s/p:%s", assignment.GroupKey, assignment.RoleID, assignment.Scope), "Unassign role from group")
+	// URL for unassigning role is /app/rest/userGroups/{groupLocator}/roles/{roleId}/{scope}
+	return s.restHelper.delete(fmt.Sprintf("%s/roles/%s/%s", assignment.GroupKey, assignment.RoleID, assignment.Scope), "Unassign role from group")
 }
