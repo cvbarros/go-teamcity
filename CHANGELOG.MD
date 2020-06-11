@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0]
+
+### Added
+- Added support for TeamCity Role Assignments for User Groups [#86]
+- build-type: support updating the `name` field [#82]
+- project: support for updating the name [#81]
+- New Build Feature: Golang [#80]
+- project-feature/versioned-settings: support for configuring credentialsStorageType [#76]
+
+
+### Fixes
+- Fix panic if parameters is nil [#83]
+  
 ## [1.1.0]  
 
 - Project Features incl update/delete [#73]
@@ -60,3 +73,11 @@ First release.
 [#68]: https://github.com/cvbarros/go-teamcity/pull/68
 [#72]: https://github.com/cvbarros/go-teamcity/pull/72
 [#73]: https://github.com/cvbarros/go-teamcity/pull/73
+[#86]: https://github.com/cvbarros/go-teamcity/pull/86
+[#83]: https://github.com/cvbarros/go-teamcity/pull/83
+[#82]: https://github.com/cvbarros/go-teamcity/pull/82
+[#81]: https://github.com/cvbarros/go-teamcity/pull/81
+[#80]: https://github.com/cvbarros/go-teamcity/pull/80
+[#76]: https://github.com/cvbarros/go-teamcity/pull/76
+
+
