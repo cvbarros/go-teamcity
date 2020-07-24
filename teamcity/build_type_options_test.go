@@ -137,6 +137,25 @@ func Test_PropertiesIfTemplate_OmitBuildCounter(t *testing.T) {
 	pa.assertPropertyDoesNotExist(actual, "buildNumberCounter")
 }
 
+func Test_PropertiesCleanBuild_OmitWhenFalse(t *testing.T) {
+	pa := newPropertyAssertions(t)
+	sut := NewBuildTypeOptionsWithDefaults()
+	sut.CleanBuild = false //Default, but explicit
+	actual := sut.properties()
+
+	pa.assertPropertyDoesNotExist(actual, "cleanBuild")
+}
+
+func Test_ConvertFromPropertiesCleanBuild_SetsDefault(t *testing.T) {
+	assert := assert.New(t)
+	props := NewPropertiesEmpty()
+	props.AddOrReplaceValue("someProperty", "someValue")
+
+	actual := props.buildTypeOptions(false)
+
+	assert.Equal(actual.CleanBuild, false)
+}
+
 func Test_Properties_Full(t *testing.T) {
 	pa := newPropertyAssertions(t)
 	sut := NewBuildTypeOptionsWithDefaults()
@@ -150,6 +169,7 @@ func Test_Properties_Full(t *testing.T) {
 	sut.ArtifactRules = []string{"abc", "def"}
 	sut.MaxSimultaneousBuilds = 10
 	sut.BuildCounter = 5
+	sut.CleanBuild = !sut.CleanBuild
 
 	actual := sut.properties()
 
@@ -161,4 +181,5 @@ func Test_Properties_Full(t *testing.T) {
 	pa.assertPropertyValue(actual, "artifactRules", "abc\ndef")
 	pa.assertPropertyValue(actual, "maximumNumberOfBuilds", "10")
 	pa.assertPropertyValue(actual, "buildNumberCounter", "5")
+	pa.assertPropertyValue(actual, "cleanBuild", "true")
 }
