@@ -22,7 +22,12 @@ type Project struct {
 	ParentProjectID string              `json:"parentProjectId,omitempty" xml:"parentProjectId"`
 	WebURL          string              `json:"webUrl,omitempty" xml:"webUrl"`
 	BuildTypes      BuildTypeReferences `json:"buildTypes,omitempty" xml:"buildTypes"`
-	Projects        []*ProjectReference `json:"projects>project,omitempty" xml:"projects>project"`
+	ChildProjects   *ProjectsReferences `json:"projects,omitempty" xml:"projects"`
+}
+
+type ProjectsReferences struct {
+	Count   int                 `json:"count,omitempty" xml:"count"`
+	Project []*ProjectReference `json:"project,omitempty"`
 }
 
 // ProjectReference contains basic information, usually enough to use as a type for relationships.
