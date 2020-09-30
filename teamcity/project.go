@@ -25,6 +25,7 @@ type Project struct {
 	ChildProjects   ProjectsReferences  `json:"projects,omitempty" xml:"projects"`
 }
 
+// ProjectsReferences contains subprojects, if exists
 type ProjectsReferences struct {
 	Count   int                 `json:"count,omitempty" xml:"count"`
 	Project []*ProjectReference `json:"project,omitempty"`
