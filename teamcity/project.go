@@ -27,8 +27,8 @@ type Project struct {
 
 // ProjectsReferences contains subprojects, if exists
 type ProjectsReferences struct {
-	Count   int                 `json:"count,omitempty" xml:"count"`
-	Project []*ProjectReference `json:"project,omitempty"`
+	Count int                 `json:"count,omitempty" xml:"count"`
+	Items []*ProjectReference `json:"project,omitempty"`
 }
 
 // ProjectReference contains basic information, usually enough to use as a type for relationships.
