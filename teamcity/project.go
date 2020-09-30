@@ -22,7 +22,7 @@ type Project struct {
 	ParentProjectID string              `json:"parentProjectId,omitempty" xml:"parentProjectId"`
 	WebURL          string              `json:"webUrl,omitempty" xml:"webUrl"`
 	BuildTypes      BuildTypeReferences `json:"buildTypes,omitempty" xml:"buildTypes"`
-	ChildProjects   *ProjectsReferences `json:"projects,omitempty" xml:"projects"`
+	ChildProjects   ProjectsReferences  `json:"projects,omitempty" xml:"projects"`
 }
 
 type ProjectsReferences struct {
