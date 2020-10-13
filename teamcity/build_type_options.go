@@ -14,6 +14,7 @@ type BuildTypeOptions struct {
 	EnableHangingBuildsDetection bool     `prop:"enableHangingBuildsDetection" force:""`
 	EnableStatusWidget           bool     `prop:"allowExternalStatus"`
 	BuildCounter                 int      `prop:"buildNumberCounter"`
+	CleanBuild                   bool     `prop:"cleanBuild"`
 	BuildNumberFormat            string   `prop:"buildNumberPattern"`
 	BuildConfigurationType       string   `prop:"buildConfigurationType"`
 	MaxSimultaneousBuilds        int      `prop:"maximumNumberOfBuilds"`
@@ -31,6 +32,7 @@ func NewBuildTypeOptionsWithDefaults() *BuildTypeOptions {
 		MaxSimultaneousBuilds:        0,
 		BuildConfigurationType:       DefaultBuildConfigurationType,
 		BuildCounter:                 1,
+		CleanBuild:                   false,
 		BuildNumberFormat:            DefaultBuildNumberFormat,
 	}
 }
