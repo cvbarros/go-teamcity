@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strconv"
 	"testing"
 	"time"
 
@@ -197,6 +198,27 @@ func TestProject_GetRootByName(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "<Root project>", actual.Name)
+}
+
+func TestProject_GetChild(t *testing.T) {
+	client := setup()
+	_ = createTestProject(t, client, testProjectId)
+	sut := client.Projects
+
+	for _, num := range []int{1, 2, 3} {
+		actualParent, err := sut.GetByName(testProjectId)
+		require.NoError(t, err)
+
+		assert.Equal(t, actualParent.ChildProjects.Count, num-1)
+		createdChild := createTestProjectWithParent(t, client, "ChildProjectTest"+strconv.Itoa(num), testProjectId)
+
+		actualChild, err := sut.GetByName(actualParent.Name)
+		require.NoError(t, err)
+
+		assert.Equal(t, actualChild.ChildProjects.Count, num)
+		assert.Equal(t, actualChild.ChildProjects.Items[num-1].Name, createdChild.Name)
+	}
+
 }
 
 func TestProject_BuildTypes(t *testing.T) {
