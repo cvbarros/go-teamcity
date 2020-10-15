@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
-	"strconv"
 	"testing"
 	"time"
 
@@ -202,23 +201,28 @@ func TestProject_GetRootByName(t *testing.T) {
 
 func TestProject_GetChild(t *testing.T) {
 	client := setup()
+	assert := assert.New(t)
 	_ = createTestProject(t, client, testProjectId)
 	sut := client.Projects
+	actual, err := sut.GetByName(testProjectId)
+	require.NoError(t, err)
 
-	for _, num := range []int{1, 2, 3} {
-		actualParent, err := sut.GetByName(testProjectId)
-		require.NoError(t, err)
+	assert.Equal(t, actual.ChildProjects.Count, 0)
+	child1 := createTestProjectWithParent(t, client, "ChildProjectTest1", testProjectId)
+	child2 := createTestProjectWithParent(t, client, "ChildProjectTest2", testProjectId)
 
-		assert.Equal(t, actualParent.ChildProjects.Count, num-1)
-		createdChild := createTestProjectWithParent(t, client, "ChildProjectTest"+strconv.Itoa(num), testProjectId)
+	actual, err = sut.GetByName(testProjectId)
+	require.NoError(t, err)
+	cleanUpProject(t, client, testProjectId)
 
-		actualChild, err := sut.GetByName(actualParent.Name)
-		require.NoError(t, err)
-
-		assert.Equal(t, actualChild.ChildProjects.Count, num)
-		assert.Equal(t, actualChild.ChildProjects.Items[num-1].Name, createdChild.Name)
+	assert.Equal(t, int32(2), actual.ChildProjects.Count)
+	childProjects := make(map[string]string, 2)
+	for _, i := range actual.ChildProjects.Items {
+		childProjects[i.ID] = i.Name
+		cleanUpProject(t, client, i.ID)
 	}
-
+	assert.Contains(t, childProjects, child1.ID)
+	assert.Contains(t, childProjects, child2.ID)
 }
 
 func TestProject_BuildTypes(t *testing.T) {
