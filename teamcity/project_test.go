@@ -207,7 +207,7 @@ func TestProject_GetChild(t *testing.T) {
 	actual, err := sut.GetByName(testProjectId)
 	require.NoError(t, err)
 
-	assert.Equal(t, actual.ChildProjects.Count, 0)
+	assert.Equal(actual.ChildProjects.Count, 0)
 	child1 := createTestProjectWithParent(t, client, "ChildProjectTest1", testProjectId)
 	child2 := createTestProjectWithParent(t, client, "ChildProjectTest2", testProjectId)
 
@@ -215,7 +215,7 @@ func TestProject_GetChild(t *testing.T) {
 	require.NoError(t, err)
 	cleanUpProject(t, client, testProjectId)
 
-	assert.Equal(t, int32(2), actual.ChildProjects.Count)
+	assert.Equal(int32(2), actual.ChildProjects.Count)
 	childProjects := make(map[string]string, 2)
 	for _, i := range actual.ChildProjects.Items {
 		childProjects[i.ID] = i.Name
