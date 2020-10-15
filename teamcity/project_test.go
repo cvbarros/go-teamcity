@@ -221,7 +221,9 @@ func TestProject_ChildProjects(t *testing.T) {
 		childProjects[i.ID] = i.Name
 	}
 	assert.Contains(childProjects, child1.ID)
+	assert.Equal(childProjects[child1.ID], child1.Name)
 	assert.Contains(childProjects, child2.ID)
+	assert.Equal(childProjects[child2.ID], child2.Name)
 }
 
 func TestProject_BuildTypes(t *testing.T) {
