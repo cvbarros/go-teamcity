@@ -199,6 +199,33 @@ func TestProject_GetRootByName(t *testing.T) {
 	assert.Equal(t, "<Root project>", actual.Name)
 }
 
+func TestProject_ChildProjects(t *testing.T) {
+	client := setup()
+	assert := assert.New(t)
+	_ = createTestProject(t, client, testProjectId)
+	sut := client.Projects
+	actual, err := sut.GetByName(testProjectId)
+	require.NoError(t, err)
+
+	assert.Equal(0, actual.ChildProjects.Count)
+	child1 := createTestProjectWithParent(t, client, "ChildProjectTest1", testProjectId)
+	child2 := createTestProjectWithParent(t, client, "ChildProjectTest2", testProjectId)
+
+	actual, err = sut.GetByName(testProjectId)
+	require.NoError(t, err)
+	cleanUpProject(t, client, testProjectId)
+
+	assert.Equal(2, actual.ChildProjects.Count)
+	childProjects := make(map[string]string, 2)
+	for _, i := range actual.ChildProjects.Items {
+		childProjects[i.ID] = i.Name
+	}
+	assert.Contains(childProjects, child1.ID)
+	assert.Equal(childProjects[child1.ID], child1.Name)
+	assert.Contains(childProjects, child2.ID)
+	assert.Equal(childProjects[child2.ID], child2.Name)
+}
+
 func TestProject_BuildTypes(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
