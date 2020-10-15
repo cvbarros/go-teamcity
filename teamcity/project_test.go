@@ -199,7 +199,7 @@ func TestProject_GetRootByName(t *testing.T) {
 	assert.Equal(t, "<Root project>", actual.Name)
 }
 
-func TestProject_GetChild(t *testing.T) {
+func TestProject_ChildProjects(t *testing.T) {
 	client := setup()
 	assert := assert.New(t)
 	_ = createTestProject(t, client, testProjectId)
