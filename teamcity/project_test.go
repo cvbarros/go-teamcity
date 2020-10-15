@@ -214,8 +214,6 @@ func TestProject_GetChild(t *testing.T) {
 	actual, err = sut.GetByName(testProjectId)
 	require.NoError(t, err)
 	cleanUpProject(t, client, testProjectId)
-	cleanUpProject(t, client, "ChildProjectTest1")
-	cleanUpProject(t, client, "ChildProjectTest2")
 
 	assert.Equal(2, actual.ChildProjects.Count)
 	childProjects := make(map[string]string, 2)
