@@ -220,8 +220,8 @@ func TestProject_GetChild(t *testing.T) {
 	for _, i := range actual.ChildProjects.Items {
 		childProjects[i.ID] = i.Name
 	}
-	assert.Contains(t, childProjects, child1.ID)
-	assert.Contains(t, childProjects, child2.ID)
+	assert.Contains(childProjects, child1.ID)
+	assert.Contains(childProjects, child2.ID)
 }
 
 func TestProject_BuildTypes(t *testing.T) {
