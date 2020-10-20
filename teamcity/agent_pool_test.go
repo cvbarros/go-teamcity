@@ -22,7 +22,7 @@ func TestAgentPools_GetDefaultProject(t *testing.T) {
 	assert.Nil(retrievedPool.MaxAgents)
 	// count of projects determined by content of integration_tests/teamcity_data.tar.gz
 	// inside archive path 'data_dir/config/projects'
-	assert.True(len(retrievedPool.Projects.Project) == 3)
+	assert.Equal(3, len(retrievedPool.Projects.Project))
 }
 
 func TestAgentPools_GetDefaultProjectByName(t *testing.T) {
