@@ -52,7 +52,7 @@ func (s *ProjectFeatureService) Create(feature ProjectFeature) (ProjectFeature, 
 		return nil, fmt.Errorf("feature is nil")
 	}
 	if feature.ProjectID() != s.ProjectID {
-		return nil, fmt.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q.", feature.ProjectID(), s.ProjectID)
+		return nil, fmt.Errorf("given ProjectFeature for project %q to ProjectFeatureService for project %q", feature.ProjectID(), s.ProjectID)
 	}
 
 	requestBody := &projectFeatureJSON{
@@ -152,6 +152,8 @@ func (s *ProjectFeatureService) Update(feature ProjectFeature) (ProjectFeature, 
 
 func (s *ProjectFeatureService) parseProjectFeatureJSONResponse(feature projectFeatureJSON) (ProjectFeature, error) {
 	switch feature.Type {
+	case "OAuthProvider":
+		return loadConnectionProviderVault(s.ProjectID, feature)
 	case "versionedSettings":
 		return loadProjectFeatureVersionedSettings(s.ProjectID, feature)
 	default:
