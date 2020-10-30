@@ -1,6 +1,9 @@
 package teamcity
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
 //Locator represents a arbitraty locator to be used when querying resources, such as id:, type:, or key:
 //These are used in GET requests within the URL so must be properly escaped
@@ -24,6 +27,12 @@ func LocatorKey(key string) Locator {
 //LocatorType creates a locator for a Project Feature by Type
 func LocatorType(id string) Locator {
 	return Locator(url.QueryEscape("type:") + id)
+}
+
+//LocatorTypeProvider creates a locator for a Project Feature by Type and Provider
+func LocatorTypeProvider(featureType string, featureProvider string) Locator {
+	queryString := fmt.Sprintf("type:%s,property(name:providerType,value:%s)", featureType, featureProvider)
+	return Locator(url.QueryEscape(queryString))
 }
 
 func (l Locator) String() string {
