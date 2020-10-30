@@ -129,6 +129,34 @@ func TestProjectFeature_GetByType(t *testing.T) {
 	assert.Equal(t, 0, len(retrievedFeature.Options.ContextParameters))
 }
 
+func TestProjectFeature_GetByTypeAndProvider(t *testing.T) {
+	client := safeSetup(t)
+
+	project := createTestProjectWithImplicitName(t, client)
+	defer cleanUpProject(t, client, project.ID)
+
+	service := client.ProjectFeatureService(project.ID)
+
+	feature := teamcity.NewProjectConnectionVault(project.ID, teamcity.ConnectionProviderVaultOptions{
+		DisplayName: "Hashicorp Vault",
+		URL:         "http://vault.service:8200",
+	})
+
+	createdFeature, err := service.Create(feature)
+	require.NoError(t, err)
+	assert.NotEmpty(t, createdFeature.ID)
+
+	retrieved, err := service.GetByTypeAndProvider("OAuthProvider", "teamcity-vault")
+	require.NoError(t, err)
+	// we can't compare the ID, since they change after creation
+	assert.Equal(t, createdFeature.Type(), retrieved.Type())
+
+	// sanity check - should be none by default
+	retrievedFeature := retrieved.(*teamcity.ConnectionProviderVault)
+	assert.Equal(t, feature.Options.DisplayName, retrievedFeature.Options.DisplayName)
+	assert.Equal(t, feature.Options.URL, retrievedFeature.Options.URL)
+}
+
 func setupFakeRoot(t *testing.T, client *teamcity.Client, project *teamcity.Project, name string) *teamcity.VcsRootReference {
 	rootOptions, err := teamcity.NewGitVcsRootOptionsDefaults("master", "git@test.com")
 	require.NoError(t, err)
