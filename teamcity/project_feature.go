@@ -154,6 +154,8 @@ func (s *ProjectFeatureService) parseProjectFeatureJSONResponse(feature projectF
 	switch feature.Type {
 	case "versionedSettings":
 		return loadProjectFeatureVersionedSettings(s.ProjectID, feature)
+	case "CloudProfile":
+		return loadProjectFeatureGoogleCloudProfile(s.ProjectID, feature)
 	default:
 		return nil, fmt.Errorf("Unknown project feature type %q", feature.Type)
 	}
