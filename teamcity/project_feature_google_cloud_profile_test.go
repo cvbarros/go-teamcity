@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestProjectFeature_CloudProfile_Create(t *testing.T) {
+func TestProjectFeature_GoogleCloudProfile_Create(t *testing.T) {
 	client := safeSetup(t)
 
 	project := createTestProjectWithImplicitName(t, client)
@@ -29,7 +29,7 @@ func TestProjectFeature_CloudProfile_Create(t *testing.T) {
 	assert.NotEmpty(t, createdFeature.ID)
 }
 
-func TestProjectFeature_CloudProfile_Delete(t *testing.T) {
+func TestProjectFeature_GoogleCloudProfile_Delete(t *testing.T) {
 	client := safeSetup(t)
 
 	project := createTestProjectWithImplicitName(t, client)
