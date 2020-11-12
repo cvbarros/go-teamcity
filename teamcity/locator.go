@@ -19,9 +19,14 @@ func LocatorIDInt(id int) Locator {
 	return Locator(url.QueryEscape("id:") + fmt.Sprintf("%d", id))
 }
 
-//LocatorName creates a locator for Project/BuildType by Name
+//LocatorName creates a locator for User/Project/BuildType by Name
 func LocatorName(name string) Locator {
 	return Locator(url.QueryEscape("name:") + url.PathEscape(name))
+}
+
+//LocatorUsername creates a locator for User by Username
+func LocatorUsername(name string) Locator {
+	return Locator(url.QueryEscape("username:") + url.PathEscape(name))
 }
 
 //LocatorKey creates a locator for Group by Key

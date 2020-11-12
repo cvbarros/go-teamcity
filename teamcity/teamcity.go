@@ -67,6 +67,7 @@ type Client struct {
 	Server          *ServerService
 	VcsRoots        *VcsRootService
 	Groups          *GroupService
+	Users           *UserService
 	RoleAssignments *RoleAssignmentService
 }
 
@@ -116,6 +117,7 @@ func newClientInstance(auth Auth, address string, httpClient *http.Client) (*Cli
 		Server:          newServerService(sharedClient.New()),
 		VcsRoots:        newVcsRootService(sharedClient.New(), httpClient),
 		Groups:          newGroupService(sharedClient.New(), httpClient),
+		Users:           newUserService(sharedClient.New(), httpClient),
 		RoleAssignments: newRoleAssignmentService(sharedClient.New(), httpClient),
 	}, nil
 }

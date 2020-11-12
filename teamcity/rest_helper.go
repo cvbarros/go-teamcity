@@ -150,6 +150,7 @@ func (r *restHelper) putTextPlain(path string, data string, resourceDescription 
 	return "", r.handleRestError(bodyBytes, resp.StatusCode, "PUT", resourceDescription)
 }
 
+
 func (r *restHelper) post(path string, data interface{}, out interface{}, resourceDescription string) error {
 	request, _ := r.sling.New().Post(path).BodyJSON(data).Request()
 	response, err := r.httpClient.Do(request)
