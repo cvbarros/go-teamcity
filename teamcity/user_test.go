@@ -152,6 +152,26 @@ func TestUser_Group(t *testing.T) {
 
 }
 
+func TestUser_Member(t *testing.T) {
+	client := setup()
+	admin, err := client.Users.GetByUsername("admin")
+	require.NoError(t, err)
+	groupKey := "ALL_USERS_GROUP"
+
+	member, err := client.Users.IsGroupMemberByID(admin.ID, groupKey)
+	require.NoError(t, err)
+	require.True(t, member)
+
+	member, err = client.Users.IsGroupMemberByID(admin.ID, "INVALID_GROUP")
+	require.NoError(t, err)
+	require.False(t, member)
+
+	member, err = client.Users.IsGroupMemberByUsername("INVALIDUSERNAME", groupKey)
+	require.NoError(t, err)
+	require.False(t, member)
+
+}
+
 func cleanUpUser(t *testing.T, client *teamcity.Client, id int) {
 	client.Users.DeleteByID(id)
 }

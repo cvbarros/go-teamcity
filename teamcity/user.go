@@ -3,6 +3,7 @@ package teamcity
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/dghubble/sling"
 )
@@ -180,4 +181,32 @@ func (s *UserService) groupDeleteByKey(locator Locator, groupKey string) (*Group
 		return nil, err
 	}
 	return &out, nil
+}
+
+// IsGroupMemberByID - checks the user's group membership by ID
+func (s *UserService) IsGroupMemberByID(id int, key string) (bool, error) {
+	return s.isGroupMemberByLocator(LocatorID(fmt.Sprint(id)), key)
+}
+
+// IsGroupMemberByUsername - checks the user's group membership by Username
+func (s *UserService) IsGroupMemberByUsername(username, key string) (bool, error) {
+	return s.isGroupMemberByLocator(LocatorUsername(username), key)
+}
+
+// IsGroupMemberByName - checks the user's group membership by Name
+func (s *UserService) IsGroupMemberByName(name, key string) (bool, error) {
+	return s.isGroupMemberByLocator(LocatorName(name), key)
+}
+
+func (s *UserService) isGroupMemberByLocator(locator Locator, key string) (bool, error) {
+	var out Group
+	err := s.restHelper.get(fmt.Sprintf("%s/groups/%s", locator, LocatorKey(key)), &out, "User")
+	if err != nil {
+		strErr := err.Error()
+		if strings.Contains(strErr, "status code: 404") {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
