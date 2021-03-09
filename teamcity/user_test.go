@@ -102,7 +102,7 @@ func TestUser_List(t *testing.T) {
 		_, err = client.Users.Create(user)
 		require.NoError(t, err)
 	}
-	userList, err := client.Users.List()
+	userList, err := client.Users.List(0, 0)
 
 	require.NoError(t, err)
 	require.Equal(t, 5, userList.Count-1)
@@ -119,57 +119,9 @@ func TestUser_List(t *testing.T) {
 		_, err = client.Users.GetByName(user.Name)
 		require.Error(t, err)
 	}
-	userList, err = client.Users.List()
+	userList, err = client.Users.List(0, 0)
 	require.NoError(t, err)
 	require.Equal(t, 1, userList.Count)
-}
-
-func TestUser_Group(t *testing.T) {
-	client := setup()
-
-	newGroup, _ := teamcity.NewGroup("TESTGROUPMEMBER", "Test Group Member", "")
-	actualGroup, err := client.Groups.Create(newGroup)
-	require.NoError(t, err)
-	require.Zero(t, actualGroup.Users.Count)
-
-	newUser, _ := teamcity.NewUser("testusermember", "Test User Member", "test@member.com")
-	actualUser, err := client.Users.Create(newUser)
-	require.NoError(t, err)
-
-	actualGroup, err = client.Users.GroupAddByID(actualUser.ID, actualGroup.Key)
-	require.NoError(t, err)
-	require.NotNil(t, actualGroup)
-	require.NotZero(t, actualGroup.Users.Count)
-
-	actualGroup, err = client.Users.GroupDeleteByID(actualUser.ID, actualGroup.Key)
-
-	cleanUpGroup(t, client, newGroup.Key)
-	cleanUpUser(t, client, actualUser.ID)
-
-	require.NoError(t, err)
-	require.NotNil(t, actualGroup)
-	require.Nil(t, actualGroup.Users)
-
-}
-
-func TestUser_Member(t *testing.T) {
-	client := setup()
-	admin, err := client.Users.GetByUsername("admin")
-	require.NoError(t, err)
-	groupKey := "ALL_USERS_GROUP"
-
-	member, err := client.Users.IsGroupMemberByID(admin.ID, groupKey)
-	require.NoError(t, err)
-	require.True(t, member)
-
-	member, err = client.Users.IsGroupMemberByID(admin.ID, "INVALID_GROUP")
-	require.NoError(t, err)
-	require.False(t, member)
-
-	member, err = client.Users.IsGroupMemberByUsername("INVALIDUSERNAME", groupKey)
-	require.NoError(t, err)
-	require.False(t, member)
-
 }
 
 func cleanUpUser(t *testing.T, client *teamcity.Client, id int) {

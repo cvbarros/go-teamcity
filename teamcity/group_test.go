@@ -81,7 +81,7 @@ func TestGroup_List(t *testing.T) {
 	groups := []*teamcity.Group{}
 	client := setup()
 
-	groupListBefore, err := client.Groups.List()
+	groupListBefore, err := client.Groups.ListAll()
 	require.NoError(t, err)
 	for i := 0; i < 5; i++ {
 		group, err := teamcity.NewGroup(
@@ -93,7 +93,7 @@ func TestGroup_List(t *testing.T) {
 		groups = append(groups, group)
 		client.Groups.Create(group)
 	}
-	groupList, err := client.Groups.List()
+	groupList, err := client.Groups.ListAll()
 
 	require.NoError(t, err)
 	assert.Equal(t, groupListBefore.Count+5, groupList.Count)

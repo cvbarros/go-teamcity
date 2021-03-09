@@ -3,7 +3,6 @@ package teamcity
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/dghubble/sling"
 )
@@ -16,12 +15,6 @@ type User struct {
 	Email      string               `json:"email,omitempty" xml:"email"`
 	Properties *Properties          `json:"properties,omitempty" xml:"properties"`
 	Roles      *roleAssignmentsJSON `json:"roles,omitempty" xml:"roles"`
-	Groups     *groupAssignments    `json:"groups,omitempty" xml:"groups"`
-}
-
-type groupAssignments struct {
-	Count int     `json:"count,omitempty" xml:"count"`
-	Items []Group `json:"group,omitempty" xml:"groups"`
 }
 
 // UserList contains list of users
@@ -124,14 +117,22 @@ func (s *UserService) deleteByLocator(locator Locator) error {
 	return err
 }
 
-// List - Get list of all User
-func (s *UserService) List() (*UserList, error) {
+// List - Get list of users in range [offset:limit)
+func (s *UserService) List(offset, limit int) (*UserList, error) {
 	var out UserList
-	err := s.restHelper.get("", &out, "Users")
+	err := s.restHelper.get("", &out, "Users", buildQueryLocator(
+		LocatorStart(offset),
+		LocatorCount(limit),
+	))
 	if err != nil {
 		return nil, err
 	}
 	return &out, err
+}
+
+// ListAll returns list of all users
+func (s *UserService) ListAll() (*UserList, error) {
+	return s.List(0, -1)
 }
 
 // GroupAddByID - Add User with userID to Group with groupKey
@@ -157,56 +158,4 @@ func (s *UserService) groupAddByKey(locator Locator, groupKey string) (*Group, e
 		return nil, err
 	}
 	return &out, nil
-}
-
-// GroupDeleteByID - Add User with userID to Group with groupKey
-func (s *UserService) GroupDeleteByID(userID int, groupKey string) (*Group, error) {
-	return s.groupDeleteByKey(LocatorID(fmt.Sprint(userID)), groupKey)
-}
-
-// GroupDeleteByUsername - Add User with username to Group with groupKey
-func (s *UserService) GroupDeleteByUsername(username, groupKey string) (*Group, error) {
-	return s.groupDeleteByKey(LocatorUsername(username), groupKey)
-}
-
-// GroupDeleteByName - Add User with name to Group with groupKey
-func (s *UserService) GroupDeleteByName(userName, groupKey string) (*Group, error) {
-	return s.groupDeleteByKey(LocatorName(userName), groupKey)
-}
-
-func (s *UserService) groupDeleteByKey(locator Locator, groupKey string) (*Group, error) {
-	var out Group
-	err := s.restHelper.delete(fmt.Sprintf("%s/groups/%s", locator, groupKey), "User")
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-// IsGroupMemberByID - checks the user's group membership by ID
-func (s *UserService) IsGroupMemberByID(id int, key string) (bool, error) {
-	return s.isGroupMemberByLocator(LocatorID(fmt.Sprint(id)), key)
-}
-
-// IsGroupMemberByUsername - checks the user's group membership by Username
-func (s *UserService) IsGroupMemberByUsername(username, key string) (bool, error) {
-	return s.isGroupMemberByLocator(LocatorUsername(username), key)
-}
-
-// IsGroupMemberByName - checks the user's group membership by Name
-func (s *UserService) IsGroupMemberByName(name, key string) (bool, error) {
-	return s.isGroupMemberByLocator(LocatorName(name), key)
-}
-
-func (s *UserService) isGroupMemberByLocator(locator Locator, key string) (bool, error) {
-	var out Group
-	err := s.restHelper.get(fmt.Sprintf("%s/groups/%s", locator, LocatorKey(key)), &out, "User")
-	if err != nil {
-		strErr := err.Error()
-		if strings.Contains(strErr, "status code: 404") {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
 }

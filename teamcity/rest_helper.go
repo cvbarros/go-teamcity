@@ -20,6 +20,14 @@ type restHelper struct {
 	sling      *sling.Sling
 }
 
+type queryStruct struct {
+	key, value string
+}
+
+func (q *queryStruct) String() string {
+	return fmt.Sprintf("%s=%s", q.key, q.value)
+}
+
 func newRestHelper(httpClient *http.Client) *restHelper {
 	return newRestHelperWithSling(httpClient, nil)
 }
@@ -54,8 +62,13 @@ func (r *restHelper) getCustom(path string, out interface{}, resourceDescription
 	return r.handleRestError(bodyBytes, response.StatusCode, "GET", resourceDescription)
 }
 
-func (r *restHelper) get(path string, out interface{}, resourceDescription string) error {
+func (r *restHelper) get(path string, out interface{}, resourceDescription string, query ...*queryStruct) error {
 	request, _ := r.sling.New().Get(path).Request()
+	for _, q := range query {
+		if q != nil {
+			request.URL.Query().Set(q.key, q.value)
+		}
+	}
 	response, err := r.httpClient.Do(request)
 	if err != nil {
 		return err
@@ -149,7 +162,6 @@ func (r *restHelper) putTextPlain(path string, data string, resourceDescription 
 
 	return "", r.handleRestError(bodyBytes, resp.StatusCode, "PUT", resourceDescription)
 }
-
 
 func (r *restHelper) post(path string, data interface{}, out interface{}, resourceDescription string) error {
 	request, _ := r.sling.New().Post(path).BodyJSON(data).Request()
