@@ -5,8 +5,8 @@
 
 ## LOOKING FOR MAINTAINTERS ##
 
-This project is in need of new maintainers, please see here:
-https://github.com/cvbarros/go-teamcity/issues/94
+This project is in need of new maintainers, please see here:  
+https://github.com/cvbarros/go-teamcity/issues/94.  
 https://github.com/cvbarros/terraform-provider-teamcity/issues/113
 
 ---
