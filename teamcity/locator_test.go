@@ -19,3 +19,12 @@ func Test_LocatorId(t *testing.T) {
 
 	assert.Equal(t, "id%3A_Root", actual)
 }
+
+func Test_LocatorTypeProvider(t *testing.T) {
+	sut := LocatorTypeProvider("OAuthProvider", "teamcity-vault")
+	actual := sut.String()
+
+	expected := "type%3AOAuthProvider%2Cproperty%28name%3AproviderType%2Cvalue%3Ateamcity-vault%29"
+
+	assert.Equal(t, expected, actual)
+}

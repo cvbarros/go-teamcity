@@ -42,6 +42,7 @@ ci: test ## Run all the CI targets
 start-docker: ## Starts up docker container running TeamCity Server
 	@test -d  $(TEAMCITY_DATA_DIR) || bsdtar xfz $(INTEGRATION_TEST_DIR)/teamcity_data.tar.gz -C $(INTEGRATION_TEST_DIR)
 	@curl -sL https://download.octopusdeploy.com/octopus-teamcity/4.42.1/Octopus.TeamCity.zip -o $(TEAMCITY_DATA_DIR)/plugins/Octopus.TeamCity.zip
+	@curl -sL "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=100790" -o ${TEAMCITY_DATA_DIR}/plugins/teamcity-hashicorp-vault-plugin.zip
 	@test -n "$$(docker ps -q -f name=$(CONTAINER_NAME))" || docker run --rm -d \
 		--name $(CONTAINER_NAME) \
 		-v $(PWD)/$(TEAMCITY_DATA_DIR):/data/teamcity_server/datadir \

@@ -34,6 +34,12 @@ func LocatorType(id string) Locator {
 	return Locator(url.QueryEscape("type:") + id)
 }
 
+//LocatorTypeProvider creates a locator for a Project Feature by Type and Provider
+func LocatorTypeProvider(featureType string, featureProvider string) Locator {
+	queryString := fmt.Sprintf("type:%s,property(name:providerType,value:%s)", featureType, featureProvider)
+	return Locator(url.QueryEscape(queryString))
+}
+
 func (l Locator) String() string {
 	return string(l)
 }
