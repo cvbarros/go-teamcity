@@ -2,6 +2,14 @@
 
 [![GoDoc](https://godoc.org/github.com/cvbarros/go-teamcity/github?status.svg)](https://godoc.org/github.com/cvbarros/go-teamcity) [![Build Status](https://travis-ci.com/cvbarros/go-teamcity.svg?branch=master)](https://travis-ci.com/cvbarros/go-teamcity)
 
+
+## LOOKING FOR MAINTAINTERS ##
+
+This project is in need of new maintainers, please see here:
+https://github.com/cvbarros/go-teamcity/issues/94
+https://github.com/cvbarros/terraform-provider-teamcity/issues/113
+
+---
 _go-teamcity_ is a Go client library interacting with Jetbrain's [TeamCity CI server REST API](https://confluence.jetbrains.com/display/TCD10/REST+API).  
 Currently, guaranteed supported API version (on CI tests) is **TeamCity 2019.2.2 or up**.
 
