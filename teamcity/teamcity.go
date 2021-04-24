@@ -61,13 +61,15 @@ type Client struct {
 
 	commonBase *sling.Sling
 
-	AgentPools      *AgentPoolsService
-	Projects        *ProjectService
-	BuildTypes      *BuildTypeService
-	Server          *ServerService
-	VcsRoots        *VcsRootService
-	Groups          *GroupService
-	RoleAssignments *RoleAssignmentService
+	AgentPools          *AgentPoolsService
+	Projects            *ProjectService
+	BuildTypes          *BuildTypeService
+	Server              *ServerService
+	VcsRoots            *VcsRootService
+	Groups              *GroupService
+	Users               *UserService
+	UserGroupMemberShip *UserGroupMemberShipService
+	RoleAssignments     *RoleAssignmentService
 }
 
 func NewClient(auth Auth, httpClient *http.Client) (*Client, error) {
@@ -107,16 +109,18 @@ func newClientInstance(auth Auth, address string, httpClient *http.Client) (*Cli
 	}
 
 	return &Client{
-		address:         address,
-		HTTPClient:      httpClient,
-		commonBase:      sharedClient,
-		AgentPools:      newAgentPoolsService(sharedClient.New(), httpClient),
-		Projects:        newProjectService(sharedClient.New(), httpClient),
-		BuildTypes:      newBuildTypeService(sharedClient.New(), httpClient),
-		Server:          newServerService(sharedClient.New()),
-		VcsRoots:        newVcsRootService(sharedClient.New(), httpClient),
-		Groups:          newGroupService(sharedClient.New(), httpClient),
-		RoleAssignments: newRoleAssignmentService(sharedClient.New(), httpClient),
+		address:             address,
+		HTTPClient:          httpClient,
+		commonBase:          sharedClient,
+		AgentPools:          newAgentPoolsService(sharedClient.New(), httpClient),
+		Projects:            newProjectService(sharedClient.New(), httpClient),
+		BuildTypes:          newBuildTypeService(sharedClient.New(), httpClient),
+		Server:              newServerService(sharedClient.New()),
+		VcsRoots:            newVcsRootService(sharedClient.New(), httpClient),
+		Groups:              newGroupService(sharedClient.New(), httpClient),
+		Users:               newUserService(sharedClient.New(), httpClient),
+		UserGroupMemberShip: newUserGroupMembershipService(sharedClient.New(), httpClient),
+		RoleAssignments:     newRoleAssignmentService(sharedClient.New(), httpClient),
 	}, nil
 }
 

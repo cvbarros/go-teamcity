@@ -9,9 +9,17 @@ import (
 
 // Group is the model for group entities in TeamCity
 type Group struct {
-	Key         string `json:"key,omitempty" xml:"key"`
-	Description string `json:"description,omitempty" xml:"description"`
-	Name        string `json:"name,omitempty" xml:"name"`
+	Key         string               `json:"key,omitempty" xml:"key"`
+	Description string               `json:"description,omitempty" xml:"description"`
+	Name        string               `json:"name,omitempty" xml:"name"`
+	Roles       *roleAssignmentsJSON `json:"roles,omitempty" xml:"roles"`
+	Properties  *Properties          `json:"properties,omitempty" xml:"properties"`
+}
+
+// GroupList is the model for group list in TeamCity
+type GroupList struct {
+	Count int     `json:"count,omitempty" xml:"count"`
+	Items []Group `json:"group,omitempty" xml:"group"`
 }
 
 // NewGroup returns an instance of a Group. A non-empty Key and Name is required.
@@ -62,9 +70,17 @@ func (s *GroupService) Create(group *Group) (*Group, error) {
 
 // GetByKey - Get a group by its group key
 func (s *GroupService) GetByKey(key string) (*Group, error) {
+	return s.getByLocator(LocatorKey(key))
+}
+
+// GetByName - Get a group by its group name
+func (s *GroupService) GetByName(name string) (*Group, error) {
+	return s.getByLocator(LocatorName(name))
+}
+
+func (s *GroupService) getByLocator(locator Locator) (*Group, error) {
 	var out Group
-	locator := LocatorKey(key).String()
-	err := s.restHelper.get(locator, &out, "group")
+	err := s.restHelper.get(locator.String(), &out, "group")
 	if err != nil {
 		return nil, err
 	}
@@ -77,4 +93,22 @@ func (s *GroupService) Delete(key string) error {
 	locator := LocatorKey(key).String()
 	err := s.restHelper.delete(locator, "group")
 	return err
+}
+
+// List - List of groups in range [offset:limit)
+func (s *GroupService) List(offset, limit int) (*GroupList, error) {
+	var out GroupList
+	err := s.restHelper.get("", &out, "group", buildQueryLocator(
+		LocatorStart(offset),
+		LocatorCount(limit),
+	))
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListAll returns all groups
+func (s *GroupService) ListAll() (*GroupList, error) {
+	return s.List(0, -1)
 }
