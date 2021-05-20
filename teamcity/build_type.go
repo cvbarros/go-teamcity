@@ -300,7 +300,12 @@ func (s *BuildTypeService) Update(buildType *BuildType) (*BuildType, error) {
 		return nil, err
 	}
 
-
+	//Update Parameters
+	var parameters *Properties
+	err := s.restHelper.put(buildType.ID+"/parameters", buildType.Parameters, &parameters, "build type parameters")
+	if err != nil {
+		return nil, err
+	}
 
 	//Update Steps
 	if buildType.Steps != nil && len(buildType.Steps) > 0 {
