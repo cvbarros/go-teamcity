@@ -21,12 +21,17 @@ type StepPowershell struct {
 	ScriptArgs string
 	//ExecuteMode is the execute mode for the step. See StepExecuteMode for details.
 	ExecuteMode StepExecuteMode
+	//Conditions
+	Conditions string
 }
 
 //NewStepPowershellScriptFile creates a powershell build step that runs a script file instead of inline code.
-func NewStepPowershellScriptFile(name string, scriptFile string, scriptArgs string) (*StepPowershell, error) {
+func NewStepPowershellScriptFile(name string, scriptFile string, scriptArgs string, mode string, conditions string) (*StepPowershell, error) {
 	if scriptFile == "" {
 		return nil, errors.New("scriptFile is required")
+	}
+	if mode == "" {
+		mode = StepExecuteModeDefault
 	}
 
 	return &StepPowershell{
@@ -35,21 +40,26 @@ func NewStepPowershellScriptFile(name string, scriptFile string, scriptArgs stri
 		stepType:    StepTypePowershell,
 		ScriptFile:  scriptFile,
 		ScriptArgs:  scriptArgs,
-		ExecuteMode: StepExecuteModeDefault,
+		ExecuteMode: mode,
+		Conditions:  conditions,
 	}, nil
 }
 
 //NewStepPowershellCode creates a powershell build step that runs the inline code.
-func NewStepPowershellCode(name string, code string) (*StepPowershell, error) {
+func NewStepPowershellCode(name string, code string, mode string, conditions string) (*StepPowershell, error) {
 	if code == "" {
 		return nil, errors.New("code is required")
+	}
+	if mode == "" {
+		mode = StepExecuteModeDefault
 	}
 
 	return &StepPowershell{
 		Name:        name,
 		stepType:    StepTypePowershell,
 		Code:        code,
-		ExecuteMode: StepExecuteModeDefault,
+		ExecuteMode: mode,
+		Conditions:  conditions,
 	}, nil
 }
 
@@ -71,6 +81,7 @@ func (s *StepPowershell) Type() BuildStepType {
 func (s *StepPowershell) properties() *Properties {
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("teamcity.step.mode", string(s.ExecuteMode))
+	props.AddOrReplaceValue("teamcity.step.conditions", string(s.Conditions))
 	// Defaults
 	props.AddOrReplaceValue("jetbrains_powershell_noprofile", "true")
 	props.AddOrReplaceValue("jetbrains_powershell_execution", "PS1")
@@ -134,6 +145,9 @@ func (s *StepPowershell) UnmarshalJSON(data []byte) error {
 
 	if v, ok := props.GetOk("teamcity.step.mode"); ok {
 		s.ExecuteMode = StepExecuteMode(v)
+	}
+	if v, ok := props.GetOk("teamcity.step.conditions"); ok {
+		s.Conditions = v
 	}
 	return nil
 }

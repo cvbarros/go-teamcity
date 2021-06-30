@@ -25,13 +25,13 @@ func NewSuiteBuildTypeSteps(t *testing.T) *SuiteBuildTypeSteps {
 }
 
 func (suite *SuiteBuildTypeSteps) SetupSuite() {
-	suite.StepPowershell, _ = teamcity.NewStepPowershellScriptFile("step1", "build.ps1", "")
-	suite.StepCmdLineExecutable, _ = teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello")
+	suite.StepPowershell, _ = teamcity.NewStepPowershellScriptFile("step1", "build.ps1", "", `[["DOES_NOT_EQUAL","teamcity.build.branch","release"],["EQUALS","teamcity.build.triggeredBy.username","admin"]]`, "execute_if_success")
+	suite.StepCmdLineExecutable, _ = teamcity.NewStepCommandLineExecutable("step_exe", "./script.sh", "hello", `[["DOES_NOT_EQUAL","env.BUILD_IS_PERSONAL","true"]]`, "execute_if_failed")
 	script := `echo "Hello World
 	echo "World, Hello!
 	export HELLO_WORLD=1
 	`
-	suite.StepCmdLineScript, _ = teamcity.NewStepCommandLineScript("step_exe", script)
+	suite.StepCmdLineScript, _ = teamcity.NewStepCommandLineScript("step_exe", script, `[["EQUALS","teamcity.build.branch.is_default","true"]]`, "default")
 	suite.StepOctopusPushPackage, _ = teamcity.NewStepOctopusPushPackage("Octopus package")
 	suite.StepOctopusCreateRelease, _ = teamcity.NewStepOctopusCreateRelease("Octopus Release")
 }
