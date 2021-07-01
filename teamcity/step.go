@@ -57,6 +57,69 @@ type stepsJSON struct {
 	Items []*stepJSON `json:"step"`
 }
 
+//OperatorStrings - All possible condition strings. Do not change the values.
+var OperatorStrings = []string{
+	"EXISTS",
+	"NOT_EXISTS",
+	"EQUALS",
+	"DOES_NOT_EQUAL",
+	"MORE_THAN",
+	"NO_MORE_THAN",
+	"LESS_THAN",
+	"NO_LESS_THAN",
+	"STARTS_WITH",
+	"CONTAINS",
+	"DOES_NOT_CONTAIN",
+	"ENDS_WITH",
+	"MATCHES",
+	"DOES_NOT_MATCH",
+	"VER_MORE_THAN",
+	"VER_NO_MORE_THAN",
+	"VER_LESS_THAN",
+	"VER_NO_LESS_THAN",
+}
+
+//Operators - Possible conditions for build step. Do not change the values.
+var Operators = struct {
+	Exists            string
+	NotExists         string
+	Equals            string
+	DoesNotEqual      string
+	MoreThan          string
+	NoMoreThan        string
+	LessThan          string
+	NoLessThan        string
+	StartsWith        string
+	Contains          string
+	DoesNotContain    string
+	EndsWith          string
+	Matches           string
+	DoesNotMatch      string
+	VersionMoreThan   string
+	VersionNoMoreThan string
+	VersionLessThan   string
+	VersionNoLessThan string
+}{
+	Exists:            OperatorStrings[0],
+	NotExists:         OperatorStrings[1],
+	Equals:            OperatorStrings[2],
+	DoesNotEqual:      OperatorStrings[3],
+	MoreThan:          OperatorStrings[4],
+	NoMoreThan:        OperatorStrings[5],
+	LessThan:          OperatorStrings[6],
+	NoLessThan:        OperatorStrings[7],
+	StartsWith:        OperatorStrings[8],
+	Contains:          OperatorStrings[9],
+	DoesNotContain:    OperatorStrings[10],
+	EndsWith:          OperatorStrings[11],
+	Matches:           OperatorStrings[12],
+	DoesNotMatch:      OperatorStrings[13],
+	VersionMoreThan:   OperatorStrings[14],
+	VersionNoMoreThan: OperatorStrings[15],
+	VersionLessThan:   OperatorStrings[16],
+	VersionNoLessThan: OperatorStrings[17],
+}
+
 var stepsReadingFunc = func(dt []byte, out interface{}) error {
 	var payload stepsJSON
 	if err := json.Unmarshal(dt, &payload); err != nil {

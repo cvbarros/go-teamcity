@@ -21,12 +21,17 @@ type StepCommandLine struct {
 	CommandParameters string
 	//ExecuteMode is the execute mode for the step. See StepExecuteMode for details.
 	ExecuteMode StepExecuteMode
+	//Conditions
+	Conditions string
 }
 
 //NewStepCommandLineScript creates a command line build step that runs an inline platform-specific script.
-func NewStepCommandLineScript(name string, script string) (*StepCommandLine, error) {
+func NewStepCommandLineScript(name string, script string, mode string, conditions string) (*StepCommandLine, error) {
 	if script == "" {
 		return nil, errors.New("script is required")
+	}
+	if mode == "" {
+		mode = StepExecuteModeDefault
 	}
 
 	return &StepCommandLine{
@@ -34,14 +39,18 @@ func NewStepCommandLineScript(name string, script string) (*StepCommandLine, err
 		isExecutable: false,
 		stepType:     StepTypeCommandLine,
 		CustomScript: script,
-		ExecuteMode:  StepExecuteModeDefault,
+		ExecuteMode:  mode,
+		Conditions:   conditions,
 	}, nil
 }
 
 //NewStepCommandLineExecutable creates a command line that invokes an external executable.
-func NewStepCommandLineExecutable(name string, executable string, args string) (*StepCommandLine, error) {
+func NewStepCommandLineExecutable(name string, executable string, args string, mode string, conditions string) (*StepCommandLine, error) {
 	if executable == "" {
 		return nil, errors.New("executable is required")
+	}
+	if mode == "" {
+		mode = StepExecuteModeDefault
 	}
 
 	return &StepCommandLine{
@@ -50,7 +59,8 @@ func NewStepCommandLineExecutable(name string, executable string, args string) (
 		isExecutable:      true,
 		CommandExecutable: executable,
 		CommandParameters: args,
-		ExecuteMode:       StepExecuteModeDefault,
+		ExecuteMode:       mode,
+		Conditions:        conditions,
 	}, nil
 }
 
@@ -72,6 +82,7 @@ func (s *StepCommandLine) Type() BuildStepType {
 func (s *StepCommandLine) properties() *Properties {
 	props := NewPropertiesEmpty()
 	props.AddOrReplaceValue("teamcity.step.mode", string(s.ExecuteMode))
+	props.AddOrReplaceValue("teamcity.step.conditions", string(s.Conditions))
 
 	if s.isExecutable {
 		props.AddOrReplaceValue("command.executable", s.CommandExecutable)
@@ -133,6 +144,9 @@ func (s *StepCommandLine) UnmarshalJSON(data []byte) error {
 
 	if v, ok := props.GetOk("teamcity.step.mode"); ok {
 		s.ExecuteMode = StepExecuteMode(v)
+	}
+	if v, ok := props.GetOk("teamcity.step.conditions"); ok {
+		s.Conditions = v
 	}
 	return nil
 }

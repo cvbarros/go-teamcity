@@ -12,6 +12,7 @@ import (
 //ConditionStrings - All possible condition strings. Do not change the values.
 var ConditionStrings = []string{
 	"exists",
+	"not-exists",
 	"equals",
 	"does-not-equal",
 	"more-than",
@@ -33,6 +34,7 @@ var ConditionStrings = []string{
 //Conditions - Possible conditions for requirements. Do not change the values.
 var Conditions = struct {
 	Exists            string
+	NotExists         string
 	Equals            string
 	DoesNotEqual      string
 	MoreThan          string
@@ -51,22 +53,23 @@ var Conditions = struct {
 	VersionNoLessThan string
 }{
 	Exists:            ConditionStrings[0],
-	Equals:            ConditionStrings[1],
-	DoesNotEqual:      ConditionStrings[2],
-	MoreThan:          ConditionStrings[3],
-	NoMoreThan:        ConditionStrings[4],
-	LessThan:          ConditionStrings[5],
-	NoLessThan:        ConditionStrings[6],
-	StartsWith:        ConditionStrings[7],
-	Contains:          ConditionStrings[8],
-	DoesNotContain:    ConditionStrings[9],
-	EndsWith:          ConditionStrings[10],
-	Matches:           ConditionStrings[11],
-	DoesNotMatch:      ConditionStrings[12],
-	VersionMoreThan:   ConditionStrings[13],
-	VersionNoMoreThan: ConditionStrings[14],
-	VersionLessThan:   ConditionStrings[15],
-	VersionNoLessThan: ConditionStrings[16],
+	NotExists:         ConditionStrings[1],
+	Equals:            ConditionStrings[2],
+	DoesNotEqual:      ConditionStrings[3],
+	MoreThan:          ConditionStrings[4],
+	NoMoreThan:        ConditionStrings[5],
+	LessThan:          ConditionStrings[6],
+	NoLessThan:        ConditionStrings[7],
+	StartsWith:        ConditionStrings[8],
+	Contains:          ConditionStrings[9],
+	DoesNotContain:    ConditionStrings[10],
+	EndsWith:          ConditionStrings[11],
+	Matches:           ConditionStrings[12],
+	DoesNotMatch:      ConditionStrings[13],
+	VersionMoreThan:   ConditionStrings[14],
+	VersionNoMoreThan: ConditionStrings[15],
+	VersionLessThan:   ConditionStrings[16],
+	VersionNoLessThan: ConditionStrings[17],
 }
 
 // AgentRequirement is a condition evaluated per agent to see if a build type is compatible or not
