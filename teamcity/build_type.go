@@ -262,6 +262,23 @@ func (s *BuildTypeService) GetByID(id string) (*BuildType, error) {
 	return &out, err
 }
 
+
+//UpdateParameters changes the resource in-place for this build configuration.
+func (s *BuildTypeService) UpdateParameters(buildType *BuildType) (*BuildType, error) {
+	//Update Parameters
+	var parameters *Properties
+	err := s.restHelper.put(buildType.ID+"/parameters", buildType.Parameters, &parameters, "build type parameters")
+	if err != nil {
+		return nil, err
+	}
+	out, err := s.GetByID(buildType.ID) //Refresh after update
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 //Update changes the resource in-place for this build configuration.
 //TeamCity API does not support "PUT" on the whole Build Configuration resource, so the only updateable fields are "Name" and "Description". Other field updates will be ignored.
 //This method also updates Settings and Parameters, but this is not an atomic operation. If an error occurs, it will be returned to caller what was updated or not.
